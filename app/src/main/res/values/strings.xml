@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Animator</string>
+    <string name="authority">com.tejpratapsingh.animator</string>
 </resources>

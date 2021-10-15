@@ -13,7 +13,7 @@ import org.jcodec.common.AndroidUtil
 import org.jcodec.common.model.ColorSpace
 import java.io.File
 
-class SampleViewModel : ViewModel() {
+class VideoViewModel : ViewModel() {
 
     private val renderedFile: MutableLiveData<File> by lazy {
         MutableLiveData<File>()

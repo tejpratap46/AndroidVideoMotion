@@ -8,13 +8,19 @@ class MotionInterpolatorTest {
     @Test
     fun `Assert linear interpolation`() {
 
-        val expectedValue = 0.5F
+        val expectedValue = 0.5f
 
-        val currentFrame: Float = 110F
-        val frameRange: Pair<Float, Float> = Pair(first = 100F, second = 120F)
-        val valueRange: Pair<Float, Float> = Pair(first = 0F, second = 1F)
-        val interpolatedValue =
-            MotionInterpolator.interpolateForRange(MotionInterpolator.Companion.Linear.easeNone, currentFrame, frameRange, valueRange)
+        val currentFrame: Float = 0.5f
+        val frameRange: Pair<Float, Float> = Pair(first = 0f, second = 1f)
+        val valueRange: Pair<Float, Float> = Pair(first = 0f, second = 1f)
+        
+        val interpolatedValue: Float =
+            MotionInterpolator.interpolateForRange(
+                MotionInterpolator.Companion.Linear.easeNone,
+                currentFrame,
+                frameRange,
+                valueRange
+            )
 
         assertEquals(
             expectedValue,

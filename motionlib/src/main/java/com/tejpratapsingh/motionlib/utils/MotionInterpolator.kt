@@ -9,10 +9,6 @@ import kotlin.math.sin
 class MotionInterpolator {
 
     companion object {
-        private const val DOMAIN = 1.0f
-        private const val DURATION = 1.0f
-        private const val START = 0.0f
-
         fun interpolateForRange(
             interpolator: Interpolator,
             currentFrame: Float,
@@ -34,18 +30,21 @@ class MotionInterpolator {
         }
 
         internal object Cubic {
-            val easeIn = Interpolator { input ->
-                var input = input
-                DOMAIN * DURATION.let { input /= it; input } * input * input + START
+            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
+                DOMAIN * (input.apply {
+                    this / DURATION
+                }) * input * input + START
             }
-            val easeOut =
+
+            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     DOMAIN * ((input / DURATION - 1.also {
                         input = it.toFloat()
                     }) * input * input + 1) + START
                 }
-            val easeInOut =
+
+            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     if (DURATION / 2.let { input /= it; input } < 1.0f) DOMAIN / 2 * input * input * input + START else DOMAIN / 2 * (2.let { input -= it; input } * input * input + 2) + START
@@ -53,16 +52,18 @@ class MotionInterpolator {
         }
 
         internal object Quad {
-            val easeIn = Interpolator { input ->
+            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 var input = input
                 DOMAIN * DURATION.let { input /= it; input } * input + START
             }
-            val easeOut =
+
+            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     -DOMAIN * DURATION.let { input /= it; input } * (input - 2) + START
                 }
-            val easeInOut =
+
+            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input + START else -DOMAIN / 2 * (--input * (input - 2) - 1) + START
@@ -70,18 +71,20 @@ class MotionInterpolator {
         }
 
         internal object Quart {
-            val easeIn = Interpolator { input ->
+            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 var input = input
                 DOMAIN * DURATION.let { input /= it; input } * input * input * input + START
             }
-            val easeOut =
+
+            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     -DOMAIN * ((input / DURATION - 1.also {
                         input = it.toFloat()
                     }) * input * input * input - 1) + START
                 }
-            val easeInOut =
+
+            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input * input * input + START else -DOMAIN / 2 * (2.let { input -= it; input } * input * input * input - 2) + START
@@ -89,18 +92,20 @@ class MotionInterpolator {
         }
 
         internal object Quint {
-            val easeIn = Interpolator { input ->
+            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 var input = input
                 DOMAIN * DURATION.let { input /= it; input } * input * input * input * input + START
             }
-            val easeOut =
+
+            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     DOMAIN * ((input / DURATION - 1.also {
                         input = it.toFloat()
                     }) * input * input * input * input + 1) + START
                 }
-            val easeInOut =
+
+            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
                 Interpolator { input ->
                     var input = input
                     if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input * input * input * input + START else DOMAIN / 2 * (2.let { input -= it; input } * input * input * input * input + 2) + START
@@ -108,14 +113,16 @@ class MotionInterpolator {
         }
 
         internal object Sine {
-            val easeIn = Interpolator { input ->
+            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 -DOMAIN * cos(input / DURATION * (Math.PI / 2)).toFloat() + DOMAIN + START
             }
-            val easeOut = Interpolator { input ->
+
+            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 DOMAIN * sin(input / DURATION * (Math.PI / 2))
                     .toFloat() + START
             }
-            val easeInOut = Interpolator { input ->
+
+            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
                 -DOMAIN / 2 * (cos(Math.PI * input / DURATION)
                     .toFloat() - 1.0f) + START
             }
