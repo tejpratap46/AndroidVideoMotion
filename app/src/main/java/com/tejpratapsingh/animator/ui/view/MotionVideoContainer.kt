@@ -2,52 +2,40 @@ package com.tejpratapsingh.animator.ui.view
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import android.util.Log
 import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.SeekBar
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
-import com.tejpratapsingh.motionlib.ui.MotionComposerView
+import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionlib.utils.MotionVideo
 import kotlinx.coroutines.*
 import java.io.File
 
 
-class MotionVideoContainer(context: Context, motionComposerView: MotionComposerView) :
+class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
     ContourLayout(context) {
 
-    val toolbar: Toolbar = Toolbar(context).apply {
+    private val TAG = "MotionVideoContainer"
+
+    private val toolbar: Toolbar = Toolbar(context).apply {
         title = "Video"
         subtitle = "Create New"
         setBackgroundColor(Color.CYAN)
     }
 
-    val seekBar: SeekBar = SeekBar(context).apply {
-        max = motionComposerView.motionConfig.totalFrames
+    private val videoPlayer: MotionVideoPlayer = MotionVideoPlayer(
+        context, motionVideo
+    )
 
-        setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                motionComposerView.forFrame(p1 + 1)
-            }
+    private val exportVideo: Button = Button(context).apply {
+        text = context.getString(R.string.export_video)
 
-            override fun onStartTrackingTouch(p0: SeekBar?) {
-
-            }
-
-            override fun onStopTrackingTouch(p0: SeekBar?) {
-
-            }
-        })
-    }
-
-    val exportVideo: Button = Button(context).apply {
-        text = "Export Video"
-
-        val scope: CoroutineScope = CoroutineScope(
+        val scope = CoroutineScope(
             Dispatchers.Main + SupervisorJob()
         )
 
@@ -55,12 +43,21 @@ class MotionVideoContainer(context: Context, motionComposerView: MotionComposerV
             visibility = GONE
 
             scope.launch {
-                val uri: Uri = generateVideo(motionComposerView = motionComposerView)
+                val uri: Uri = generateVideo(
+                    motionVideo = motionVideo,
+                    progressListener = { progress, bitmap ->
+                        scope.launch {
+                            Log.d(TAG, "Progress: $progress")
+                            videoPlayer.imagePreview.setImageBitmap(bitmap)
+                            videoPlayer.seekBar.progress = progress
+                        }
+                    }
+                )
 
                 visibility = VISIBLE
                 val shareIntent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    type = "video/mp4"
+                    type = "video/*"
                     putExtra(Intent.EXTRA_STREAM, uri)
 
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -70,18 +67,6 @@ class MotionVideoContainer(context: Context, motionComposerView: MotionComposerV
             }
         }
     }
-
-    val controlsLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
-        orientation = LinearLayoutCompat.VERTICAL
-        setBackgroundColor(Color.RED)
-    }
-
-    val previewLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
-        orientation = LinearLayoutCompat.VERTICAL
-        setBackgroundColor(Color.GREEN)
-    }
-
-    val progressBar: ProgressBar = ProgressBar(context)
 
     init {
         toolbar.layoutBy(
@@ -95,10 +80,7 @@ class MotionVideoContainer(context: Context, motionComposerView: MotionComposerV
             }
         )
 
-        controlsLayout.addView(seekBar)
-        controlsLayout.addView(exportVideo)
-
-        controlsLayout.layoutBy(
+        exportVideo.layoutBy(
             x = leftTo {
                 parent.left()
             }.rightTo {
@@ -109,9 +91,7 @@ class MotionVideoContainer(context: Context, motionComposerView: MotionComposerV
             }
         )
 
-//        previewLayout.addView(motionComposerView)
-//        previewLayout.addView(progressBar)
-        previewLayout.layoutBy(
+        videoPlayer.layoutBy(
             x = leftTo {
                 parent.left()
             }.rightTo {
@@ -120,19 +100,23 @@ class MotionVideoContainer(context: Context, motionComposerView: MotionComposerV
             y = topTo {
                 toolbar.bottom()
             }.bottomTo {
-                controlsLayout.top()
+                exportVideo.top()
             }
         )
     }
 
-    suspend fun generateVideo(motionComposerView: MotionComposerView): Uri =
+    suspend fun generateVideo(
+        motionVideo: MotionVideo,
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
+    ): Uri =
         withContext(Dispatchers.IO) {
-            val fileToShare = motionComposerView.produceVideo(
-                File.createTempFile(
+            val fileToShare = motionVideo.produceVideo(
+                outputFile = File.createTempFile(
                     "out",
                     ".mp4",
                     context.filesDir
-                )
+                ),
+                progressListener = progressListener
             )
 
             FileProvider.getUriForFile(

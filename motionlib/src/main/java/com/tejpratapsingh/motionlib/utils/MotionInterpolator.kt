@@ -1,131 +1,111 @@
 package com.tejpratapsingh.motionlib.utils
 
+import android.animation.ArgbEvaluator
+import android.graphics.Color
+import android.util.Log
 import android.view.animation.Interpolator
-import kotlin.math.cos
-import kotlin.math.sin
 
 //https://gist.github.com/mik9/9528041
 
 class MotionInterpolator {
 
     companion object {
+        private const val TAG = "MotionInterpolator"
+
+        /**
+         * Get Interpolated value in correspondence of current frame and interpolator
+         *
+         * eg. for LinearInterpolator and frameRange(1,10) and valueRange(100, 200)
+         *
+         * return value for currentFrame(7) will be 170
+         *
+         * @param interpolator interpolator from Interpolators(Easing)
+         * @param currentFrame current frame value
+         * @param frameRange Range of frame this interpolation start and end
+         * @param valueRange Range of corresponding value in respect to frame value
+         */
         fun interpolateForRange(
             interpolator: Interpolator,
-            currentFrame: Float,
-            frameRange: Pair<Float, Float>,
+            currentFrame: Int,
+            frameRange: Pair<Int, Int>,
             valueRange: Pair<Float, Float>
         ): Float {
-            val interpolatedCurrentFrame: Float = interpolator.getInterpolation(currentFrame)
-            val currentPercent =
-                ((interpolatedCurrentFrame - frameRange.first) / (frameRange.second - frameRange.first)) * 100
-            val valueFromPercent = ((valueRange.second - valueRange.first) / 100) * currentPercent
+
+            if (currentFrame < frameRange.first) {
+                return valueRange.first
+            }
+            if (currentFrame > frameRange.second) {
+                return valueRange.second
+            }
+
+            Log.i(TAG, "interpolateForRange: currentFrame: $currentFrame")
+
+            val framePercent =
+                (currentFrame.toFloat() - frameRange.first.toFloat()) / (frameRange.second.toFloat() - frameRange.first.toFloat())
+
+            Log.i(TAG, "interpolateForRange: framePercent: $framePercent")
+
+            val interpolatedCurrentFrame: Float =
+                interpolator.getInterpolation(framePercent)
+
+            Log.i(TAG, "interpolateForRange: interpolatedCurrentFrame: $interpolatedCurrentFrame")
+
+            val valueFromPercent =
+                framePercent * (valueRange.second - valueRange.first) + valueRange.first
+
+            Log.i(TAG, "interpolateForRange: valueFromPercent: $valueFromPercent")
+
             return valueFromPercent
         }
 
         /**
-         * Interpolator implementation
+         * Similar to interpolateForRange, this function will return color interpolated color
+         *
+         * @param interpolator interpolator from Interpolators(Easing)
+         * @param currentFrame current frame value
+         * @param frameRange Range of frame this interpolation start and end
+         * @param valueRange Range is accepted as @ColorInt , you can pass Color.parseColor("#color")
          */
-        internal object Linear {
-            val easeNone = Interpolator { input -> input }
+        fun interpolateColorForRange(
+            interpolator: Interpolator,
+            currentFrame: Int,
+            frameRange: Pair<Int, Int>,
+            valueRange: Pair<Int, Int>
+        ): Int {
+            if (currentFrame < frameRange.first) {
+                return valueRange.first
+            }
+            if (currentFrame > frameRange.second) {
+                return valueRange.second
+            }
+
+            Log.i(TAG, "interpolateForRange: currentFrame: $currentFrame")
+
+            val framePercent =
+                (currentFrame.toFloat() - frameRange.first.toFloat()) / (frameRange.second.toFloat() - frameRange.first.toFloat())
+
+            Log.i(TAG, "interpolateForRange: framePercent: $framePercent")
+
+            val interpolatedCurrentFrame: Float =
+                interpolator.getInterpolation(framePercent)
+
+            val evaluatedColor: Int = ArgbEvaluator().evaluate(
+                interpolatedCurrentFrame,
+                valueRange.first,
+                valueRange.second
+            ) as Int
+
+            return evaluatedColor
         }
 
-        internal object Cubic {
-            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                DOMAIN * (input.apply {
-                    this / DURATION
-                }) * input * input + START
-            }
-
-            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    DOMAIN * ((input / DURATION - 1.also {
-                        input = it.toFloat()
-                    }) * input * input + 1) + START
-                }
-
-            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    if (DURATION / 2.let { input /= it; input } < 1.0f) DOMAIN / 2 * input * input * input + START else DOMAIN / 2 * (2.let { input -= it; input } * input * input + 2) + START
-                }
-        }
-
-        internal object Quad {
-            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                var input = input
-                DOMAIN * DURATION.let { input /= it; input } * input + START
-            }
-
-            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    -DOMAIN * DURATION.let { input /= it; input } * (input - 2) + START
-                }
-
-            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input + START else -DOMAIN / 2 * (--input * (input - 2) - 1) + START
-                }
-        }
-
-        internal object Quart {
-            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                var input = input
-                DOMAIN * DURATION.let { input /= it; input } * input * input * input + START
-            }
-
-            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    -DOMAIN * ((input / DURATION - 1.also {
-                        input = it.toFloat()
-                    }) * input * input * input - 1) + START
-                }
-
-            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input * input * input + START else -DOMAIN / 2 * (2.let { input -= it; input } * input * input * input - 2) + START
-                }
-        }
-
-        internal object Quint {
-            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                var input = input
-                DOMAIN * DURATION.let { input /= it; input } * input * input * input * input + START
-            }
-
-            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    DOMAIN * ((input / DURATION - 1.also {
-                        input = it.toFloat()
-                    }) * input * input * input * input + 1) + START
-                }
-
-            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) =
-                Interpolator { input ->
-                    var input = input
-                    if (DURATION / 2.let { input /= it; input } < 1) DOMAIN / 2 * input * input * input * input * input + START else DOMAIN / 2 * (2.let { input -= it; input } * input * input * input * input + 2) + START
-                }
-        }
-
-        internal object Sine {
-            fun getEaseIn(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                -DOMAIN * cos(input / DURATION * (Math.PI / 2)).toFloat() + DOMAIN + START
-            }
-
-            fun getEaseOut(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                DOMAIN * sin(input / DURATION * (Math.PI / 2))
-                    .toFloat() + START
-            }
-
-            fun getEaseInOut(DOMAIN: Float, START: Float, DURATION: Float) = Interpolator { input ->
-                -DOMAIN / 2 * (cos(Math.PI * input / DURATION)
-                    .toFloat() - 1.0f) + START
-            }
+        fun getComplementaryColor(colorToInvert: Int): Int {
+            val hsv = FloatArray(3)
+            Color.RGBToHSV(
+                Color.red(colorToInvert), Color.green(colorToInvert),
+                Color.blue(colorToInvert), hsv
+            )
+            hsv[0] = (hsv[0] + 180) % 360
+            return Color.HSVToColor(hsv)
         }
     }
 }

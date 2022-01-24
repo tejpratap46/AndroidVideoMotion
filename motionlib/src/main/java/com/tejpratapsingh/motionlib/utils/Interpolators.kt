@@ -8,7 +8,7 @@ import androidx.core.view.animation.PathInterpolatorCompat
 class Interpolators(@NonNull val easing: Easings) : Interpolator {
 
     private var interpolator: Interpolator = when (easing) {
-        Easings.LINEAR -> LinearInterpolator()
+        Easings.LINEAR -> PathInterpolatorCompat.create(0f, 0f, 1f, 1f)
         Easings.SIN_IN -> PathInterpolatorCompat.create(.47f, 0f, .745f, .715f)
         Easings.SIN_OUT -> PathInterpolatorCompat.create(.39f, .575f, .565f, 1f)
         Easings.SIN_IN_OUT -> PathInterpolatorCompat.create(.445f, .05f, .55f, .95f)

@@ -20,14 +20,14 @@ fun Device() {
             .fillMaxSize()
             .padding(horizontal = 4.dp, vertical = 8.dp)
             .background(color = Color.LightGray)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(32.dp))
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 4.dp, vertical = 8.dp)
                 .background(color = Color.DarkGray)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(32.dp))
         ) {
 
         }
