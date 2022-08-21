@@ -1,4 +1,4 @@
-package com.tejpratapsingh.motionlib.utils
+package com.tejpratapsingh.motionlib.core
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,7 +6,8 @@ import android.util.Log
 import android.view.View
 import com.tejpratapsingh.motionlib.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.ui.MotionComposerView
-import com.tejpratapsingh.motionlib.ui.MotionView
+import com.tejpratapsingh.motionlib.utils.MotionConfig
+import com.tejpratapsingh.motionlib.utils.Utilities
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 

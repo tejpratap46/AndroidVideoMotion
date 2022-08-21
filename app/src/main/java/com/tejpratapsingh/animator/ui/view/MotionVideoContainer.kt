@@ -12,7 +12,7 @@ import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
-import com.tejpratapsingh.motionlib.utils.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideo
 import kotlinx.coroutines.*
 import java.io.File
 

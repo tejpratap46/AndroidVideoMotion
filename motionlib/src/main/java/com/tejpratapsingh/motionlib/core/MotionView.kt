@@ -1,13 +1,9 @@
-package com.tejpratapsingh.motionlib.ui
+package com.tejpratapsingh.motionlib.core
 
 import android.content.Context
 import android.util.Log
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.utils.MotionConfig
-
-interface OnMotionFrameListener {
-    fun forFrame(frame: Int)
-}
 
 enum class Orientation {
     HORIZONTAL,
@@ -21,20 +17,14 @@ open class MotionView(
     endFrame: Int,
     orientation: Orientation = Orientation.VERTICAL
 ) :
-    ContourLayout(context), OnMotionFrameListener {
+    ContourLayout(context), IMotionView {
     private val TAG = "MotionView"
 
     var startFrame = startFrame
-        get() = field
-        private set(value) {
-            field = value
-        }
+        private set
 
     var endFrame = endFrame
-        get() = field
-        private set(value) {
-            field = value
-        }
+        private set
 
     lateinit var motionConfig: MotionConfig
 
@@ -54,7 +44,7 @@ open class MotionView(
         for (i in 0..this.childCount) {
             val view = this.getChildAt(i)
 
-            if (view is MotionView) {
+            if (view is IMotionView) {
                 view.forFrame(frame)
             }
         }

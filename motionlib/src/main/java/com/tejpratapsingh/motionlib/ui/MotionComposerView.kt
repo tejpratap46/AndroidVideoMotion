@@ -2,10 +2,12 @@ package com.tejpratapsingh.motionlib.ui
 
 import android.content.Context
 import com.squareup.contour.ContourLayout
+import com.tejpratapsingh.motionlib.core.IMotionView
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.utils.MotionConfig
 
 open class MotionComposerView(context: Context, val motionConfig: MotionConfig) :
-    ContourLayout(context), OnMotionFrameListener {
+    ContourLayout(context), IMotionView {
     private val TAG = "MotionComposerView"
 
     init {

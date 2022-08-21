@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk 30
+    compileSdk 32
 
     defaultConfig {
-        minSdk 21
-        targetSdk 30
+        minSdk 25
+        targetSdk 32
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -38,6 +38,8 @@ dependencies {
     api "org.jcodec:jcodec-android:$jcodec_version"
 
     api "app.cash.contour:contour:$contour_version"
+
+    api "androidx.work:work-runtime-ktx:$work_version"
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"

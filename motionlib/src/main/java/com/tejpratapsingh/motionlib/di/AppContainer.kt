@@ -5,6 +5,10 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.features.logging.*
 
 object AppContainer {
+
+    lateinit var authority: String
+
+
     val httpClient by lazy {
         HttpClient(CIO) {
             install(Logging) {

@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
-import com.tejpratapsingh.motionlib.utils.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideo
 import com.tejpratapsingh.motionlib.utils.Utilities
 
 class MotionVideoPlayer(context: Context, motionVideo: MotionVideo) :

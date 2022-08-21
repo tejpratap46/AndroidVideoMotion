@@ -3,8 +3,8 @@ package com.tejpratapsingh.motionlib.ui.custom.background
 import android.content.Context
 import android.graphics.*
 import android.util.Log
-import com.tejpratapsingh.motionlib.ui.MotionView
-import com.tejpratapsingh.motionlib.ui.Orientation
+import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.Orientation
 import com.tejpratapsingh.motionlib.utils.Easings
 import com.tejpratapsingh.motionlib.utils.Interpolators
 import com.tejpratapsingh.motionlib.utils.MotionInterpolator
