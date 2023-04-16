@@ -3,6 +3,7 @@ package com.tejpratapsingh.animator.ui.view
 import android.content.Context
 import android.graphics.Color
 import android.view.Gravity
+import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
 import com.tejpratapsingh.motionlib.utils.Easings
@@ -51,7 +52,7 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
         }
     }
 
-    override fun forFrame(frame: Int) {
+    override fun forFrame(frame: Int): View {
         super.forFrame(frame)
 
         val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(
@@ -70,5 +71,7 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
                 backgroundColor
             )
         )
+
+        return this
     }
 }

@@ -12,7 +12,7 @@ enum class NotificationChannelType(
         "rendering_progress",
         "Rendering In Progress",
         "Progress of rendered videos",
-        NotificationManagerCompat.IMPORTANCE_DEFAULT
+        NotificationManagerCompat.IMPORTANCE_LOW
     ),
 
     RENDERING_COMPLETED(

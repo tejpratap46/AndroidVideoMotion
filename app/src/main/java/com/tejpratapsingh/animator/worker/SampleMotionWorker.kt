@@ -4,9 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -20,10 +22,12 @@ import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionVideo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.Orientation
+import com.tejpratapsingh.motionlib.templates.views.DeviceFrameView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.utils.MotionConfig
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import java.io.File
+import java.io.FileInputStream
 import java.net.URLConnection
 import java.util.*
 
@@ -68,9 +72,42 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
             setBackgroundColor(Color.WHITE)
         }
 
+        val motionView3: MotionView = object : MotionView(context, motionConfig.fps * 4 + 1, motionConfig.fps * 6) {
+            val imageFile = File.createTempFile("testImage", "jpg")
+
+            val deviceFrameView: DeviceFrameView = DeviceFrameView(context = context, bitmap = BitmapFactory.decodeStream(FileInputStream(imageFile)))
+
+            override fun forFrame(frame: Int): View {
+                super.forFrame(frame)
+
+                deviceFrameView.layoutBy(
+                    x = leftTo {
+                        parent.left()
+                    }.rightTo {
+                        parent.right()
+                    },
+                    y = topTo {
+                        parent.top()
+                    }.bottomTo {
+                        parent.bottom()
+                    }
+                )
+
+                contourHeightOf {
+                    motionConfig.height.toYInt()
+                }
+                contourWidthOf {
+                    motionConfig.width.toXInt()
+                }
+
+                return this
+            }
+        }
+
         MotionVideo.with(applicationContext, motionConfig)
             .addMotionViewToSequence(motionView)
             .addMotionViewToSequence(motionView2)
+            .addMotionViewToSequence(motionView3)
     }
 
     override fun getMotionVideo(): MotionVideo {
@@ -89,8 +126,8 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
                 totalFrames
             )
         )
-        val percentage = (totalFrames.toDouble() / progress) * 100
-        progressNotificationBuilder.setContentText(String.format(Locale.getDefault(), "%.1f", percentage))
+        val percentage = (progress / totalFrames.toDouble()) * 100
+        progressNotificationBuilder.setContentText(String.format(Locale.getDefault(), "%.0f", percentage))
 
         with(NotificationManagerCompat.from(applicationContext)) {
             // notificationId is a unique int for each notification that you must define

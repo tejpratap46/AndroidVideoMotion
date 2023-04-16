@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.tejpratapsingh.animator"
         minSdk 25
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -43,6 +43,7 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    namespace 'com.tejpratapsingh.animator'
 }
 
 dependencies {
@@ -50,15 +51,16 @@ dependencies {
     implementation "androidx.core:core-ktx:$ktx_version"
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$material_version"
+
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
-    implementation 'androidx.activity:activity-compose:1.5.1'
+    implementation "androidx.activity:activity-compose:$activity_compose"
 
-    implementation "androidx.work:work-runtime-ktx:2.7.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_runtime_ktx"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
 
-    implementation project(path: ':motionlib')
+    implementation project(path: ':templates')
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

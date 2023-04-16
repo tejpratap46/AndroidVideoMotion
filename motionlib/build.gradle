@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 25
-        targetSdk 32
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -27,6 +27,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'com.tejpratapsingh.motionlib'
 }
 
 dependencies {
@@ -47,6 +48,8 @@ dependencies {
     api "io.ktor:ktor-client-core:$ktor_version"
     api "io.ktor:ktor-client-cio:$ktor_version"
     api "io.ktor:ktor-client-logging:$ktor_version"
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     testImplementation "junit:junit:4.+"
     androidTestImplementation "androidx.test.ext:junit:1.1.3"

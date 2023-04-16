@@ -5,9 +5,9 @@ import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
 import com.tejpratapsingh.motionlib.extensions.compressToBitmap
+import com.tejpratapsingh.motionlib.extensions.getViewBitmap
 import com.tejpratapsingh.motionlib.ui.MotionComposerView
 import com.tejpratapsingh.motionlib.utils.MotionConfig
-import com.tejpratapsingh.motionlib.utils.Utilities
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
@@ -24,7 +24,11 @@ open class MotionVideo private constructor(
     var totalFrames: Int = 0
 
     companion object {
+        lateinit var motionConfig: MotionConfig
+
         fun with(context: Context, motionConfig: MotionConfig): MotionVideo {
+            MotionVideo.motionConfig = motionConfig
+
             val instance = MotionVideo(context = context, motionConfig = motionConfig)
             instance.motionComposerView = MotionComposerView(
                 context = context,
@@ -82,10 +86,9 @@ open class MotionVideo private constructor(
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
 
         for (i in 1..totalFrames) {
-            motionComposerView.forFrame(i)
             Log.d(TAG, "produceVideo: frame $i")
             val frameBitmap: Bitmap =
-                Utilities.getViewBitmap(motionComposerView).compressToBitmap(100)
+                motionComposerView.forFrame(i).getViewBitmap().compressToBitmap(100)
 
             encoder.encodeImage(frameBitmap)
 

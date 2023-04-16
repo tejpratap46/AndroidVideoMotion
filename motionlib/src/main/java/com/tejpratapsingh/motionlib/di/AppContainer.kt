@@ -8,7 +8,6 @@ object AppContainer {
 
     lateinit var authority: String
 
-
     val httpClient by lazy {
         HttpClient(CIO) {
             install(Logging) {

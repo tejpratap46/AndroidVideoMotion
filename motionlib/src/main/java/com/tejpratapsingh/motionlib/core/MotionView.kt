@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.core
 
 import android.content.Context
 import android.util.Log
+import android.view.View
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.utils.MotionConfig
 
@@ -14,8 +15,7 @@ enum class Orientation {
 open class MotionView(
     context: Context,
     startFrame: Int,
-    endFrame: Int,
-    orientation: Orientation = Orientation.VERTICAL
+    endFrame: Int
 ) :
     ContourLayout(context), IMotionView {
     private val TAG = "MotionView"
@@ -28,14 +28,14 @@ open class MotionView(
 
     lateinit var motionConfig: MotionConfig
 
-    override fun forFrame(frame: Int) {
+    override fun forFrame(frame: Int): View {
         if (frame < startFrame) {
             visibility = INVISIBLE
-            return
+            return this
         }
         if (frame > endFrame) {
             visibility = INVISIBLE
-            return
+            return this
         }
         visibility = VISIBLE
 
@@ -48,6 +48,8 @@ open class MotionView(
                 view.forFrame(frame)
             }
         }
+
+        return this
     }
 
 //    suspend fun forFrameSuspended(frame: Int): Bitmap = suspendCoroutine { cont ->

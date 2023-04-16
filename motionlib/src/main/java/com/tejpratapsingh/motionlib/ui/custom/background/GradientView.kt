@@ -3,8 +3,10 @@ package com.tejpratapsingh.motionlib.ui.custom.background
 import android.content.Context
 import android.graphics.*
 import android.util.Log
+import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.Orientation
+import com.tejpratapsingh.motionlib.core.OrientedMotionView
 import com.tejpratapsingh.motionlib.utils.Easings
 import com.tejpratapsingh.motionlib.utils.Interpolators
 import com.tejpratapsingh.motionlib.utils.MotionInterpolator
@@ -16,7 +18,7 @@ class GradientView(
     private val orientation: Orientation,
     private val colors: IntArray
 ) :
-    MotionView(
+    OrientedMotionView(
         context = context,
         startFrame = startFrame,
         endFrame = endFrame,
@@ -40,22 +42,24 @@ class GradientView(
         }
     }
 
-    override fun forFrame(frame: Int) {
+    override fun forFrame(frame: Int): View {
         super.forFrame(frame)
         currentFrame = frame
 
-        when (orientation) {
+        valueRange = when (orientation) {
             Orientation.CIRCULAR -> {
-                valueRange = Pair(first = 0f, second = motionConfig.width.toFloat())
+                Pair(first = 0f, second = motionConfig.width.toFloat())
             }
             Orientation.VERTICAL -> {
-                valueRange = Pair(first = 0f, second = motionConfig.height.toFloat())
+                Pair(first = 0f, second = motionConfig.height.toFloat())
             }
             Orientation.HORIZONTAL -> {
-                valueRange = Pair(first = 0f, second = motionConfig.width.toFloat())
+                Pair(first = 0f, second = motionConfig.width.toFloat())
             }
         }
         valueRange = Pair(first = 200f, second = 2000f)
+
+        return this
     }
 
     override fun onDraw(canvas: Canvas?) {

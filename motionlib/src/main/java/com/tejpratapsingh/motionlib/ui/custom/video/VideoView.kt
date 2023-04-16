@@ -4,9 +4,10 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import android.view.View
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.extensions.downloadFile
 import io.ktor.client.*
 import kotlinx.coroutines.runBlocking
 import org.jcodec.api.FrameGrab
@@ -76,7 +77,7 @@ class VideoView(
         return this@VideoView
     }
 
-    override fun forFrame(frame: Int) {
+    override fun forFrame(frame: Int): View {
         super.forFrame(frame)
 
         if (!::retriever.isInitialized || !::frameGrab.isInitialized) {
@@ -105,5 +106,7 @@ class VideoView(
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
+
+        return this
     }
 }

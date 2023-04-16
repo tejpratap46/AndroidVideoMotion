@@ -1,4 +1,4 @@
-package com.tejpratapsingh.animator
+package com.tejpratapsingh.animator.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

@@ -8,7 +8,7 @@ import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionVideo
-import com.tejpratapsingh.motionlib.utils.Utilities
+import com.tejpratapsingh.motionlib.extensions.getViewBitmap
 
 class MotionVideoPlayer(context: Context, motionVideo: MotionVideo) :
     ContourLayout(context) {
@@ -22,7 +22,7 @@ class MotionVideoPlayer(context: Context, motionVideo: MotionVideo) :
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 motionVideo.motionComposerView.forFrame(p1)
 
-                imagePreview.setImageBitmap(Utilities.getViewBitmap(motionVideo.motionComposerView))
+                imagePreview.setImageBitmap(motionVideo.motionComposerView.getViewBitmap())
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {}
@@ -31,12 +31,12 @@ class MotionVideoPlayer(context: Context, motionVideo: MotionVideo) :
         })
     }
 
-    val controlsLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
+    private val controlsLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.VERTICAL
         setBackgroundColor(Color.RED)
     }
 
-    val previewLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
+    private val previewLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.VERTICAL
         setBackgroundColor(Color.GREEN)
     }

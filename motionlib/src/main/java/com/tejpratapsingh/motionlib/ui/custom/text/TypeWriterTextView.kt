@@ -6,6 +6,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.view.View
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 import com.tejpratapsingh.motionlib.utils.Easings
 import com.tejpratapsingh.motionlib.utils.Interpolators
@@ -22,7 +23,7 @@ class TypeWriterTextView(
         "TypeWriterTextView"
     }
 
-    override fun forFrame(frame: Int) {
+    override fun forFrame(frame: Int): View {
         super.forFrame(frame)
 
         val visibleCharsCount: Int = MotionInterpolator.interpolateForRange(
@@ -42,5 +43,7 @@ class TypeWriterTextView(
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         textView.text = spannableString
+
+        return this
     }
 }
