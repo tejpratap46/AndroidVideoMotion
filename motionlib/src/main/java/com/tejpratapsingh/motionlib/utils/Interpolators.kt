@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.utils
 
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
-import androidx.annotation.NonNull
 import androidx.core.view.animation.PathInterpolatorCompat
 
 class Interpolators(val easing: Easings) : Interpolator {

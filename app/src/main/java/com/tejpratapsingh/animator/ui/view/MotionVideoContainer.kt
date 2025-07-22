@@ -11,9 +11,13 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
-import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
 import com.tejpratapsingh.motionlib.core.MotionVideo
-import kotlinx.coroutines.*
+import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 

@@ -1,0 +1,35 @@
+[versions]
+constraintlayoutVersion = "2.2.1"
+contourVersion = "1.1.0"
+gradleVersion = "8.11.1"
+jcodecVersion = "0.2.5"
+kotlinGradlePluginVersion = "2.0.20"
+ktorClientCoreVersion = "3.2.2"
+ktx_version = "1.16.0"
+appcompat_version = "1.7.1"
+material_version = "1.12.0"
+lifecycle_runtime_ktx = "2.9.2"
+work_version = "2.10.2"
+junit_version = "4.13.2"
+androidx_test_ext_junit_version = "1.2.1"
+espresso_core_version = "3.6.1"
+
+[libraries]
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx_version" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat_version" }
+contour = { module = "app.cash.contour:contour", version.ref = "contourVersion" }
+google-android-material = { group = "com.google.android.material", name = "material", version.ref = "material_version" }
+
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle_runtime_ktx" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work_version" }
+
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
+jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodecVersion" }
+jcodec-android = { module = "org.jcodec:jcodec-android", version.ref = "jcodecVersion" }
+junit = { group = "junit", name = "junit", version.ref = "junit_version" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx_test_ext_junit_version" }
+androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso_core_version" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinGradlePluginVersion" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCoreVersion" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCoreVersion" }

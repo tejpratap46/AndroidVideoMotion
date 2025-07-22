@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionlib.extensions
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.View
+import androidx.core.graphics.createBitmap
 
 fun View.getViewBitmap(): Bitmap {
     //Get the dimensions of the view so we can re-layout the view at its current size
@@ -17,7 +18,7 @@ fun View.getViewBitmap(): Bitmap {
     this.layout(0, 0, this.measuredWidth, this.measuredHeight)
 
     //Create a bitmap backed Canvas to draw the view into
-    val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val b = createBitmap(width, height)
     val c = Canvas(b)
 
     //Now that the view is laid out and we have a canvas, ask the view to draw itself into the canvas

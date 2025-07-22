@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.extensions.downloadFile
-import io.ktor.client.*
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.runBlocking
 import org.jcodec.api.FrameGrab
 import org.jcodec.api.android.AndroidFrameGrab

@@ -1,35 +1,29 @@
 package com.tejpratapsingh.animator.worker
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.util.Log
-import android.view.View
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
-import androidx.work.ExistingWorkPolicy
+import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.animator.BuildConfig
 import com.tejpratapsingh.animator.notification.NotificationFactory
-import com.tejpratapsingh.animator.ui.view.ContourDevice
+import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.motionlib.core.MotionVideo
-import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.Orientation
-import com.tejpratapsingh.motionlib.templates.views.DeviceFrameView
-import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
-import com.tejpratapsingh.motionlib.utils.MotionConfig
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import java.io.File
-import java.io.FileInputStream
 import java.net.URLConnection
-import java.util.*
+import java.util.Locale
 
 
 class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
@@ -38,100 +32,50 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
     private val TAG = "SampleMotionWorker"
 
     private val progressNotificationBuilder: NotificationCompat.Builder by lazy {
-        NotificationFactory.getRenderProgressNotification(context)
+        NotificationFactory.getRenderProgressNotification(applicationContext)
     }
 
     private val completedNotificationBuilder: NotificationCompat.Builder by lazy {
-        NotificationFactory.getRenderCompleteNotification(context)
+        NotificationFactory.getRenderCompleteNotification(applicationContext)
     }
 
-    private val sampleMotionVideo: MotionVideo by lazy {
-        val motionConfig = MotionConfig(
-            width = 768,
-            height = 1366,
-            fps = 30
-        )
-
-        val motionView: MotionView = ContourDevice(
-            context = applicationContext,
-            startFrame = 1,
-            endFrame = motionConfig.fps * 3
-        )
-
-        val motionView2: MotionView = GradientView(
-            context = applicationContext,
-            startFrame = motionConfig.fps * 3 + 1,
-            endFrame = motionConfig.fps * 4,
-            orientation = Orientation.CIRCULAR,
-            intArrayOf(
-                Color.parseColor("#2568ff"),
-                Color.parseColor("#7048ff"),
-                Color.parseColor("#ba28ff")
-            )
-        ).apply {
-            setBackgroundColor(Color.WHITE)
-        }
-
-        val motionView3: MotionView = object : MotionView(context, motionConfig.fps * 4 + 1, motionConfig.fps * 6) {
-            val imageFile = File.createTempFile("testImage", "jpg")
-
-            val deviceFrameView: DeviceFrameView = DeviceFrameView(context = context, bitmap = BitmapFactory.decodeStream(FileInputStream(imageFile)))
-
-            override fun forFrame(frame: Int): View {
-                super.forFrame(frame)
-
-                deviceFrameView.layoutBy(
-                    x = leftTo {
-                        parent.left()
-                    }.rightTo {
-                        parent.right()
-                    },
-                    y = topTo {
-                        parent.top()
-                    }.bottomTo {
-                        parent.bottom()
-                    }
-                )
-
-                contourHeightOf {
-                    motionConfig.height.toYInt()
-                }
-                contourWidthOf {
-                    motionConfig.width.toXInt()
-                }
-
-                return this
-            }
-        }
-
-        MotionVideo.with(applicationContext, motionConfig)
-            .addMotionViewToSequence(motionView)
-            .addMotionViewToSequence(motionView2)
-            .addMotionViewToSequence(motionView3)
+    override fun getMotionVideo(inputData: Data): MotionVideo {
+        return sampleMotionVideo(applicationContext)
     }
 
-    override fun getMotionVideo(): MotionVideo {
-        return sampleMotionVideo
-    }
+    override fun onProgress(totalFrames: Int, currentProgress: Int, bitmap: Bitmap) {
+        Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
 
-    override fun onProgress(totalFrames: Int, progress: Int, bitmap: Bitmap) {
-        Log.d(TAG, "onProgress: $progress / $totalFrames")
-
-        progressNotificationBuilder.setProgress(totalFrames, progress, false)
+        progressNotificationBuilder.setProgress(totalFrames, currentProgress, false)
         progressNotificationBuilder.setSubText(
             String.format(
                 Locale.getDefault(),
                 "%d/%d frames completed",
-                progress,
+                currentProgress,
                 totalFrames
             )
         )
-        val percentage = (progress / totalFrames.toDouble()) * 100
-        progressNotificationBuilder.setContentText(String.format(Locale.getDefault(), "%.0f", percentage))
+        val percentage = (currentProgress / totalFrames.toDouble()) * 100
+        progressNotificationBuilder.setContentText(
+            String.format(
+                Locale.getDefault(),
+                "%.0f",
+                percentage
+            )
+        )
 
         with(NotificationManagerCompat.from(applicationContext)) {
             // notificationId is a unique int for each notification that you must define
-            notify(WORK_ID, progressNotificationBuilder.build())
+            if (ActivityCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                notify(
+                    this@SampleMotionWorker.id.clockSequence(),
+                    progressNotificationBuilder.build()
+                )
+            }
         }
     }
 
@@ -140,7 +84,7 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
 
         with(NotificationManagerCompat.from(applicationContext)) {
             // notificationId is a unique int for each notification that you must define
-            cancel(WORK_ID)
+            cancel(this@SampleMotionWorker.id.clockSequence())
         }
 
         val intentShareFile = Intent(Intent.ACTION_SEND)
@@ -178,7 +122,16 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
 
         with(NotificationManagerCompat.from(applicationContext)) {
             // notificationId is a unique int for each notification that you must define
-            notify(WORK_ID, completedNotificationBuilder.build())
+            if (ActivityCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                notify(
+                    this@SampleMotionWorker.id.clockSequence(),
+                    completedNotificationBuilder.build()
+                )
+            }
         }
     }
 
@@ -186,9 +139,7 @@ class SampleMotionWorker(context: Context, parameters: WorkerParameters) :
         fun startWork(context: Context) {
             WorkManager
                 .getInstance(context)
-                .enqueueUniqueWork(
-                    WORK_ID.toString(),
-                    ExistingWorkPolicy.REPLACE,
+                .enqueue(
                     OneTimeWorkRequest.from(SampleMotionWorker::class.java)
                 )
         }
