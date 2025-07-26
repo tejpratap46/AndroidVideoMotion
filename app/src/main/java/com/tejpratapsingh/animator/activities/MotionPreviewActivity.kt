@@ -12,10 +12,6 @@ import com.tejpratapsingh.motionlib.core.MotionVideo
 
 class MotionPreviewActivity : PreviewActivity() {
 
-    override fun getMotionVideo(): MotionVideo {
-        return sampleMotionVideo(applicationContext)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,5 +30,9 @@ class MotionPreviewActivity : PreviewActivity() {
                 )
             }
         }
+    }
+
+    override fun getMotionVideo(): MotionVideo {
+        return sampleMotionVideo(applicationContext)
     }
 }

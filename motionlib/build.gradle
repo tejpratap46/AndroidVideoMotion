@@ -31,22 +31,21 @@ android {
 }
 
 dependencies {
-
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.androidx.constraintlayout
 
     api libs.contour
 
-    api libs.jcodec
-    api libs.jcodec.android
+    implementation libs.jcodec
+    implementation libs.jcodec.android
 
-    api libs.ktor.client.core
-    api libs.ktor.client.cio
+    implementation libs.ktor.client.core
+    implementation libs.ktor.client.cio
 
-    api libs.androidx.work.runtime.ktx
+    implementation libs.androidx.work.runtime.ktx
 
-    api libs.androidx.work.runtime.ktx
+    implementation libs.androidx.work.runtime.ktx
 
     testImplementation libs.junit
 }

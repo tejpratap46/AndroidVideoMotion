@@ -2,4 +2,17 @@
     <string name="app_name">Animator</string>
     <string name="authority">com.tejpratapsingh.animator</string>
     <string name="export_video">Export Video</string>
+    <string name="notification_channel_rendering_progress_name">Rendering Progress</string>
+    <string name="notification_channel_rendering_progress_description">Shows the progress of
+            video rendering.
+        </string>
+    <string name="notification_channel_rendering_completed_name">Rendering Completed</string>
+    <string name="notification_channel_rendering_completed_description">Notifies when video
+            rendering is finished.
+        </string>
+
+    <string name="notification_render_progress_title">Rendering In Progress</string>
+    <string name="notification_render_progress_text_starting">Starting Render</string>
+    <string name="notification_render_complete_title">Rendering Finished</string>
+    <string name="notification_render_complete_text">Video Rendering finished</string>
 </resources>

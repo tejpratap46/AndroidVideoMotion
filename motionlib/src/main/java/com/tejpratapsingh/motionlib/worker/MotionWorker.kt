@@ -2,30 +2,37 @@ package com.tejpratapsingh.motionlib.worker
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log // Added for logging
+import android.util.Log
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf // For progress reporting
+import androidx.work.workDataOf
 import com.tejpratapsingh.motionlib.core.MotionVideo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-abstract class MotionWorker(appContext: Context, workerParams: WorkerParameters) : // Renamed parameters for clarity
-    CoroutineWorker(appContext, workerParams) {
+abstract class MotionWorker(
+    appContext: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
-        private const val TAG = "MotionWorker" // Standard TAG naming
+        private const val TAG = "MotionWorker"
         const val PROGRESS_KEY = "progress"
         const val TOTAL_FRAMES_KEY = "total_frames"
-        // WORK_ID is removed as WorkManager provides its own ID (this.id)
-        // and unique work can be managed with named WorkRequests.
+        const val KEY_OUTPUT_VIDEO_URI = "output_video"
     }
 
-    // Lazy initialization is good.
-    // Consider passing inputData from workerParams if MotionVideo needs it.
+    protected val progressNotificationId = id.hashCode()
+    protected val completedNotificationId = progressNotificationId + 1
+
     private val mMotionVideo: MotionVideo by lazy {
-        getMotionVideo(inputData) // Assuming getMotionVideo now might take WorkParameters' inputData
+        getMotionVideo(inputData)
+    }
+
+    val workId by lazy {
+        (System.currentTimeMillis() / 1000).toInt()
     }
 
     override suspend fun doWork(): Result {
@@ -42,7 +49,7 @@ abstract class MotionWorker(appContext: Context, workerParams: WorkerParameters)
                     setProgressAsync(progressData)
 
                     // Call the abstract onProgress for more specific handling
-                    this.onProgress(
+                    onProgress(
                         totalFrames = mMotionVideo.totalFrames,
                         currentProgress = progress, // Renamed for clarity
                         bitmap = currentBitmap
@@ -50,10 +57,16 @@ abstract class MotionWorker(appContext: Context, workerParams: WorkerParameters)
                 }
             )
             this.onCompleted(videoFile = videoFile)
-            Log.d(TAG, "Worker ${this.id}: Video generation successful: ${videoFile.absolutePath}")
-            Result.success()
+            Log.d(
+                TAG,
+                "Worker ${this.workId}: Video generation successful: ${videoFile.absolutePath}"
+            )
+            val outputData = workDataOf(
+                KEY_OUTPUT_VIDEO_URI to videoFile.toUri().toString()
+            )
+            Result.success(outputData)
         } catch (e: Exception) {
-            Log.e(TAG, "Worker ${this.id}: Error during video generation.", e)
+            Log.e(TAG, "Worker ${this.workId}: Error during video generation.", e)
             onFailed(e) // Optional: abstract method for specific failure handling
             Result.failure()
         }
@@ -103,7 +116,10 @@ abstract class MotionWorker(appContext: Context, workerParams: WorkerParameters)
                 ".mp4",
                 applicationContext.cacheDir // Use cacheDir for temp files that can be cleared
             )
-            Log.d(TAG, "Worker ${this@MotionWorker.id}: Generating video at ${outputFile.absolutePath}")
+            Log.d(
+                TAG,
+                "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}"
+            )
 
             // Assuming produceVideo handles its own exceptions or lets them propagate
             return@withContext motionVideo.produceVideo(
