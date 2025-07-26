@@ -52,7 +52,6 @@ class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
                     progressListener = { progress, bitmap ->
                         scope.launch {
                             Log.d(TAG, "Progress: $progress")
-                            videoPlayer.imagePreview.setImageBitmap(bitmap)
                             videoPlayer.seekBar.progress = progress
                         }
                     }

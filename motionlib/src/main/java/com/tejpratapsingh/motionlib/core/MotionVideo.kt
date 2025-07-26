@@ -7,6 +7,8 @@ import android.view.View
 import com.tejpratapsingh.motionlib.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.extensions.getViewBitmap
 import com.tejpratapsingh.motionlib.utils.MotionConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
@@ -25,15 +27,12 @@ open class MotionVideo private constructor(
     companion object {
         private const val TAG = "MotionVideo"
 
-        lateinit var motionConfig: MotionConfig
+        fun with(context: Context, config: MotionConfig): MotionVideo { // Renamed for clarity
 
-        fun with(context: Context, motionConfig: MotionConfig): MotionVideo {
-            MotionVideo.motionConfig = motionConfig
-
-            val instance = MotionVideo(context = context, motionConfig = motionConfig)
+            val instance = MotionVideo(context = context, motionConfig = config)
             instance.motionComposerView = MotionComposerView(
                 context = context,
-                motionConfig = motionConfig
+                motionConfig = config // Pass the specific config
             )
             return instance
         }
@@ -62,44 +61,42 @@ open class MotionVideo private constructor(
     }
 
     private fun recursiveSetMotionConfig(motionView: MotionView) {
-        for (viewIndex in 0..motionView.childCount) {
+        for (viewIndex in 0 until motionView.childCount) { // Use 'until'
             val view: View? = motionView.getChildAt(viewIndex)
             if (view != null && view is MotionView) {
-                Log.d(TAG, "recursiveSetMotionConfig: motionView.endFrame: ${motionView.endFrame}")
-                Log.d(TAG, "recursiveSetMotionConfig: totalFrames: $totalFrames")
-                if (motionView.endFrame < totalFrames) {
-                    throw IllegalStateException("add to sequence only accepts motion views with end frame")
-                }
                 recursiveSetMotionConfig(view)
             }
         }
-        motionView.motionConfig = motionConfig
+        motionView.motionConfig = this.motionConfig // Use instance motionConfig
     }
 
-    fun produceVideo(
+    suspend fun produceVideo(
         outputFile: File,
         progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)? = null
-    ): File {
+    ): File = withContext(Dispatchers.IO) { // Use Dispatchers.Default for CPU-bound work
         if (outputFile.exists()) {
             outputFile.delete()
         }
 
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
+        try {
+            for (i in 1..totalFrames) {
+                Log.d(TAG, "produceVideo: frame $i")
+                val frameBitmap: Bitmap =
+                    motionComposerView.forFrame(i).getViewBitmap().compressToBitmap(100)
 
-        for (i in 1..totalFrames) {
-            Log.d(TAG, "produceVideo: frame $i")
-            val frameBitmap: Bitmap =
-                motionComposerView.forFrame(i).getViewBitmap().compressToBitmap(100)
+                encoder.encodeImage(frameBitmap)
 
-            encoder.encodeImage(frameBitmap)
+                progressListener?.let {
+                    it(i, frameBitmap)
+                }
 
-            progressListener?.let {
-                it(i, frameBitmap)
+                frameBitmap.recycle() // Be cautious with this, only if necessary.
             }
+        } finally {
+            encoder.finish()
         }
 
-        encoder.finish()
-
-        return outputFile
+        outputFile
     }
 }
