@@ -11,9 +11,10 @@ open class MotionView(
     context: Context,
     startFrame: Int,
     endFrame: Int
-) :
-    ContourLayout(context), IMotionView {
-    private val TAG = "MotionView"
+) : ContourLayout(context), IMotionView {
+    companion object {
+        private const val TAG = "MotionView"
+    }
 
     var startFrame = startFrame
         private set

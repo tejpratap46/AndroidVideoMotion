@@ -12,10 +12,12 @@ import com.tejpratapsingh.motionlib.core.MotionVideo
 
 class MotionPreviewActivity : PreviewActivity() {
 
+    val video by lazy {
+        sampleMotionVideo(applicationContext)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        SampleMotionWorker.startWork(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
@@ -30,9 +32,11 @@ class MotionPreviewActivity : PreviewActivity() {
                 )
             }
         }
+
+        SampleMotionWorker.startWork(applicationContext)
     }
 
     override fun getMotionVideo(): MotionVideo {
-        return sampleMotionVideo(applicationContext)
+        return video
     }
 }

@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.View
 import com.tejpratapsingh.motionlib.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.extensions.getViewBitmap
-import com.tejpratapsingh.motionlib.ui.MotionComposerView
 import com.tejpratapsingh.motionlib.utils.MotionConfig
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
@@ -15,15 +14,17 @@ open class MotionVideo private constructor(
     val context: Context,
     val motionConfig: MotionConfig
 ) {
-    private val TAG = "MotionVideo"
 
     private val addedMotionViews = mutableListOf<MotionView>()
 
     lateinit var motionComposerView: MotionComposerView
 
     var totalFrames: Int = 0
+        private set
 
     companion object {
+        private const val TAG = "MotionVideo"
+
         lateinit var motionConfig: MotionConfig
 
         fun with(context: Context, motionConfig: MotionConfig): MotionVideo {
@@ -65,7 +66,7 @@ open class MotionVideo private constructor(
             val view: View? = motionView.getChildAt(viewIndex)
             if (view != null && view is MotionView) {
                 Log.d(TAG, "recursiveSetMotionConfig: motionView.endFrame: ${motionView.endFrame}")
-                Log.d(TAG, "recursiveSetMotionConfig: totalFrames: ${totalFrames}")
+                Log.d(TAG, "recursiveSetMotionConfig: totalFrames: $totalFrames")
                 if (motionView.endFrame < totalFrames) {
                     throw IllegalStateException("add to sequence only accepts motion views with end frame")
                 }

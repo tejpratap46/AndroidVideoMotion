@@ -6,8 +6,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -18,7 +20,6 @@ import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.tejpratapsingh.animator.BuildConfig
 import com.tejpratapsingh.animator.notification.NotificationFactory
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.motionlib.core.MotionVideo
@@ -41,6 +42,14 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         NotificationFactory.getRenderCompleteNotification(appContext)
     }
 
+    private fun createForegroundInfo(progressNotificationId: Int, notification: Notification): ForegroundInfo {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            ForegroundInfo(progressNotificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING)
+        } else {
+            ForegroundInfo(progressNotificationId, notification)
+        }
+    }
+
     override suspend fun getForegroundInfo(): ForegroundInfo {
         // Create the notification for the foreground service
         val notification = progressNotificationBuilder
@@ -48,7 +57,7 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
             .setProgress(0, 0, true) // Indeterminate progress initially
             .setOngoing(true)
             .build()
-        return ForegroundInfo(progressNotificationId, notification)
+        return createForegroundInfo(progressNotificationId, notification)
     }
 
     override fun getMotionVideo(inputData: Data): MotionVideo {
@@ -76,7 +85,7 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         updateNotification(progressNotificationId, notification)
 
         // If you need to update the foreground notification specifically (often handled by the initial setForegroundAsync)
-         setForegroundAsync(ForegroundInfo(progressNotificationId, notification)) // Usually not needed for every progress update if initial is good
+         setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
     }
 
     override fun onCompleted(videoFile: File) {
@@ -88,7 +97,7 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         val intentShareFile = Intent(Intent.ACTION_SEND)
         val apkURI: Uri = FileProvider.getUriForFile(
             appContext,
-            "${BuildConfig.APPLICATION_ID}.provider",
+            "${appContext.packageName}.fileprovider",
             videoFile
         )
         intentShareFile.setDataAndType(

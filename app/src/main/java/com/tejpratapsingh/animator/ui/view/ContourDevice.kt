@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
 import com.tejpratapsingh.motionlib.utils.Easings
 import com.tejpratapsingh.motionlib.utils.Interpolators
 import com.tejpratapsingh.motionlib.utils.MotionInterpolator
+import androidx.core.graphics.toColorInt
 
 class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
     MotionView(context, startFrame, endFrame) {
@@ -59,7 +60,7 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
             Interpolators(Easings.LINEAR),
             frame,
             Pair(startFrame, endFrame),
-            Pair(Color.parseColor("#2568ff"), Color.parseColor("#ba28ff"))
+            Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt())
         )
 
         typeWriterWriterTextView.setBackgroundColor(
