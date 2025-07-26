@@ -22,7 +22,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.animator.notification.NotificationFactory
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
-import com.tejpratapsingh.motionlib.core.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import java.io.File
 import java.net.URLConnection
@@ -60,7 +60,7 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         return createForegroundInfo(progressNotificationId, notification)
     }
 
-    override fun getMotionVideo(inputData: Data): MotionVideo {
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         return sampleMotionVideo(appContext)
     }
 

@@ -2,33 +2,39 @@ package com.tejpratapsingh.motionlib.ui
 
 import android.content.Context
 import android.graphics.Color
-import android.os.Handler
-import android.os.Looper
 import android.widget.ImageButton
 import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
-import com.tejpratapsingh.motionlib.core.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-class MotionVideoPlayer(context: Context, private val motionVideo: MotionVideo) :
+class MotionVideoPlayer(context: Context, private val motionVideoProducer: MotionVideoProducer) :
     ContourLayout(context) {
 
     companion object {
         private const val TAG = "MotionVideoPlayer"
-        private const val PLAYBACK_DELAY_MS = 100L // Adjust for desired playback speed
     }
 
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var playbackJob: Job? = null
+
+    private val playbackDelayMs = 1000L / motionVideoProducer.motionConfig.fps
+
     private var isPlaying = false
-    private val playbackHandler = Handler(Looper.getMainLooper())
-    private var playbackRunnable: Runnable? = null
 
     val seekBar: SeekBar = SeekBar(context).apply {
-        max = motionVideo.totalFrames
+        max = motionVideoProducer.totalFrames
 
         setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) { // Only update preview if change is from user interaction
-                    motionVideo.motionComposerView.forFrame(progress)
+                    motionVideoProducer.motionComposerView.forFrame(progress)
                 }
             }
 
@@ -46,7 +52,6 @@ class MotionVideoPlayer(context: Context, private val motionVideo: MotionVideo) 
     }
 
     private val playPauseButton: ImageButton = ImageButton(context).apply {
-        // Replace with your actual play/pause icons
         setImageResource(android.R.drawable.ic_media_play)
         setOnClickListener {
             if (isPlaying) {
@@ -70,88 +75,63 @@ class MotionVideoPlayer(context: Context, private val motionVideo: MotionVideo) 
     }
 
     init {
-        controlsLayout.addView(playPauseButton) // Add the button first
-        controlsLayout.addView(seekBar) // Then the SeekBar
+        controlsLayout.addView(playPauseButton)
+        controlsLayout.addView(seekBar)
 
-        // Adjust SeekBar layout params to take remaining space
         val seekBarParams = LinearLayoutCompat.LayoutParams(
-            0, // width
-            LinearLayoutCompat.LayoutParams.WRAP_CONTENT // height
+            0,
+            LinearLayoutCompat.LayoutParams.WRAP_CONTENT
         ).apply {
             weight = 1f
         }
         seekBar.layoutParams = seekBarParams
 
         controlsLayout.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = bottomTo {
-                parent.bottom()
-            }
+            x = leftTo { parent.left() }.rightTo { parent.right() },
+            y = bottomTo { parent.bottom() }
         )
 
-        previewLayout.addView(motionVideo.motionComposerView)
+        previewLayout.addView(motionVideoProducer.motionComposerView)
         previewLayout.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                parent.top()
-            }.bottomTo {
-                controlsLayout.top()
-            }
+            x = leftTo { parent.left() }.rightTo { parent.right() },
+            y = topTo { parent.top() }.bottomTo { controlsLayout.top() }
         )
-        // previewLayout.gravity = Gravity.CENTER_VERTICAL // Already set in constructor
     }
 
     private fun startPlayback() {
         if (isPlaying) return
 
         isPlaying = true
-        playPauseButton.setImageResource(android.R.drawable.ic_media_pause) // Change to pause icon
+        playPauseButton.setImageResource(android.R.drawable.ic_media_pause)
 
-        playbackRunnable = object : Runnable {
-            override fun run() {
-                if (!isPlaying) return
-
+        // Launch a new coroutine for playback
+        playbackJob = scope.launch {
+            while (isPlaying) {
                 var currentProgress = seekBar.progress
                 if (currentProgress < seekBar.max) {
                     currentProgress++
                     seekBar.progress = currentProgress
-                    // Update image preview based on new progress
-                    motionVideo.motionComposerView.forFrame(currentProgress)
-
-                    playbackHandler.postDelayed(this, PLAYBACK_DELAY_MS)
+                    motionVideoProducer.motionComposerView.forFrame(currentProgress)
+                    delay(playbackDelayMs)
                 } else {
-                    // Reached the end, pause and reset
-                    pausePlayback()
                     seekBar.progress = 0 // Optional: reset to beginning
-                    motionVideo.motionComposerView.forFrame(0)
+                    motionVideoProducer.motionComposerView.forFrame(0)
                 }
             }
         }
-        playbackHandler.post(playbackRunnable!!)
     }
 
     private fun pausePlayback() {
-        if (!isPlaying) return
+        if (!isPlaying && playbackJob == null) return // Already paused or never started
 
         isPlaying = false
-        playPauseButton.setImageResource(android.R.drawable.ic_media_play) // Change to play icon
-        playbackRunnable?.let {
-            playbackHandler.removeCallbacks(it)
-        }
-        playbackRunnable = null
+        playPauseButton.setImageResource(android.R.drawable.ic_media_play)
+        playbackJob?.cancel() // Cancel the running coroutine
+        playbackJob = null
     }
 
-    // Call this method when the view is detached to prevent memory leaks
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        pausePlayback() // Ensure playback stops
+        pausePlayback()
     }
 }

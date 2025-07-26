@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.tejpratapsingh.motionlib.core.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideoProducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -27,7 +27,7 @@ abstract class MotionWorker(
     protected val progressNotificationId = id.hashCode()
     protected val completedNotificationId = progressNotificationId + 1
 
-    private val mMotionVideo: MotionVideo by lazy {
+    private val mMotionVideoProducer: MotionVideoProducer by lazy {
         getMotionVideo(inputData)
     }
 
@@ -39,18 +39,18 @@ abstract class MotionWorker(
         Log.d(TAG, "Worker ${this.id}: Starting video generation.")
         return try {
             val videoFile: File = generateVideo(
-                motionVideo = mMotionVideo,
+                motionVideoProducer = mMotionVideoProducer,
                 progressListener = { progress, currentBitmap ->
                     // Report progress to WorkManager
                     val progressData = workDataOf(
                         PROGRESS_KEY to progress,
-                        TOTAL_FRAMES_KEY to mMotionVideo.totalFrames
+                        TOTAL_FRAMES_KEY to mMotionVideoProducer.totalFrames
                     )
                     setProgressAsync(progressData)
 
                     // Call the abstract onProgress for more specific handling
                     onProgress(
-                        totalFrames = mMotionVideo.totalFrames,
+                        totalFrames = mMotionVideoProducer.totalFrames,
                         currentProgress = progress, // Renamed for clarity
                         bitmap = currentBitmap
                     )
@@ -76,7 +76,7 @@ abstract class MotionWorker(
      * Called to retrieve/create the MotionVideo instance.
      * @param inputData The input data passed to the worker.
      */
-    abstract fun getMotionVideo(inputData: androidx.work.Data): MotionVideo
+    abstract fun getMotionVideo(inputData: androidx.work.Data): MotionVideoProducer
 
     /**
      * Called on progress update.
@@ -107,7 +107,7 @@ abstract class MotionWorker(
     }
 
     private suspend fun generateVideo(
-        motionVideo: MotionVideo,
+        motionVideoProducer: MotionVideoProducer,
         progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
     ): File =
         withContext(Dispatchers.IO) {
@@ -122,7 +122,7 @@ abstract class MotionWorker(
             )
 
             // Assuming produceVideo handles its own exceptions or lets them propagate
-            return@withContext motionVideo.produceVideo(
+            return@withContext motionVideoProducer.produceVideo(
                 outputFile = outputFile,
                 progressListener = progressListener
             )

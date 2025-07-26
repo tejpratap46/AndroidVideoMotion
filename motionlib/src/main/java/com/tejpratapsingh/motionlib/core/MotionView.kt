@@ -22,6 +22,7 @@ open class MotionView(
     var endFrame = endFrame
         private set
 
+    // object will be available at the time of processing video
     lateinit var motionConfig: MotionConfig
 
     override fun forFrame(frame: Int): View {

@@ -11,7 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
-import com.tejpratapsingh.motionlib.core.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 
-class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
+class MotionVideoContainer(context: Context, motionVideoProducer: MotionVideoProducer) :
     ContourLayout(context) {
 
     private val TAG = "MotionVideoContainer"
@@ -33,7 +33,7 @@ class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
     }
 
     private val videoPlayer: MotionVideoPlayer = MotionVideoPlayer(
-        context, motionVideo
+        context, motionVideoProducer
     )
 
     private val exportVideo: Button = Button(context).apply {
@@ -48,7 +48,7 @@ class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
 
             scope.launch {
                 val uri: Uri = generateVideo(
-                    motionVideo = motionVideo,
+                    motionVideoProducer = motionVideoProducer,
                     progressListener = { progress, bitmap ->
                         scope.launch {
                             Log.d(TAG, "Progress: $progress")
@@ -109,11 +109,11 @@ class MotionVideoContainer(context: Context, motionVideo: MotionVideo) :
     }
 
     suspend fun generateVideo(
-        motionVideo: MotionVideo,
+        motionVideoProducer: MotionVideoProducer,
         progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
     ): Uri =
         withContext(Dispatchers.IO) {
-            val fileToShare = motionVideo.produceVideo(
+            val fileToShare = motionVideoProducer.produceVideo(
                 outputFile = File.createTempFile(
                     "out",
                     ".mp4",

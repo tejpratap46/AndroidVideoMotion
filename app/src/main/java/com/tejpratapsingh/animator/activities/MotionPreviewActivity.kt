@@ -8,7 +8,7 @@ import androidx.core.app.ActivityCompat
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.animator.worker.SampleMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
-import com.tejpratapsingh.motionlib.core.MotionVideo
+import com.tejpratapsingh.motionlib.core.MotionVideoProducer
 
 class MotionPreviewActivity : PreviewActivity() {
 
@@ -36,7 +36,7 @@ class MotionPreviewActivity : PreviewActivity() {
         SampleMotionWorker.startWork(applicationContext)
     }
 
-    override fun getMotionVideo(): MotionVideo {
+    override fun getMotionVideo(): MotionVideoProducer {
         return video
     }
 }
