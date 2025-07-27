@@ -11,6 +11,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "Animator"
@@ -19,3 +20,4 @@ include ':motionlib'
 include ':templates'
 include ':core'
 include ':jcodec-motion-ext'
+include ':ffmpeg-motion-ext'

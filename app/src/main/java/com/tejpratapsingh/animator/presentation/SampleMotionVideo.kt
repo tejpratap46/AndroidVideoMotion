@@ -1,13 +1,13 @@
 package com.tejpratapsingh.animator.presentation
 
+import RenaultCar
 import android.content.Context
 import android.graphics.Color
 import androidx.core.graphics.toColorInt
-import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.motion.MotionView
+import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
 
@@ -18,15 +18,18 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         fps = 30
     )
 
-    val motionView: MotionView = ContourDevice(
+    val assetManager = applicationContext.assets
+    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+
+    val motionView: MotionView = RenaultCar(
         context = applicationContext,
         startFrame = 1,
-        endFrame = motionConfig.fps * 3
+        endFrame = files?.size ?: 1
     )
 
     val motionView2: MotionView = GradientView(
         context = applicationContext,
-        startFrame = motionConfig.fps * 3 + 1,
+        startFrame = motionView.endFrame + 1,
         endFrame = motionConfig.fps * 4,
         orientation = Orientation.CIRCULAR,
         intArrayOf(
@@ -38,7 +41,10 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         setBackgroundColor(Color.WHITE)
     }
 
-    return MotionVideoProducer.with(context = applicationContext, config = motionConfig, videoProducerAdapter = AndroidVideoProducerAdapter())
+    return MotionVideoProducer.with(
+        context = applicationContext,
+        config = motionConfig,
+        videoProducerAdapter = FfmpegVideoProducerAdapter().apply { context = applicationContext })
         .addMotionViewToSequence(motionView = motionView)
         .addMotionViewToSequence(motionView = motionView2)
 }
