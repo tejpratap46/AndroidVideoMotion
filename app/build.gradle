@@ -50,6 +50,7 @@ dependencies {
 
     implementation project(path: ':motionlib')
     implementation project(path: ':jcodec-motion-ext')
+    implementation project(path: ':ffmpeg-motion-ext')
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit

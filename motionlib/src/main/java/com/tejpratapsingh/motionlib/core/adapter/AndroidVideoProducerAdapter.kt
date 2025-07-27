@@ -5,9 +5,9 @@ import android.util.Log
 import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
-import com.tejpratapsingh.motionlib.core.motion.AndroidVideoGenerator
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.extensions.getViewBitmap
+import com.tejpratapsingh.motionlib.core.motion.AndroidVideoGenerator
 import java.io.File
 
 class AndroidVideoProducerAdapter: VideoProducerAdapter {

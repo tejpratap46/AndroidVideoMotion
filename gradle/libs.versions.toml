@@ -1,14 +1,16 @@
 [versions]
 constraintlayoutVersion = "2.2.1"
 contourVersion = "1.1.0"
-gradleVersion = "8.11.1"
+ffmpegandroidVersion = "0.3.2"
+ffmpegKitFullVersion = "5.1.LTS"
 jcodecVersion = "0.2.5"
-kotlinGradlePluginVersion = "2.0.20"
 ktorClientCoreVersion = "3.2.2"
 ktx_version = "1.16.0"
 appcompat_version = "1.7.1"
 material_version = "1.12.0"
 lifecycle_runtime_ktx = "2.9.2"
+smartExceptionJavaVersion = "0.2.1"
+ssffmpegvideooperationVersion = "1.0.8"
 work_version = "2.10.2"
 junit_version = "4.13.2"
 androidx_test_ext_junit_version = "1.2.1"
@@ -33,6 +35,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso_core_version" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCoreVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCoreVersion" }
+smart-exception-java = { module = "com.arthenica:smart-exception-java", version.ref = "smartExceptionJavaVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
