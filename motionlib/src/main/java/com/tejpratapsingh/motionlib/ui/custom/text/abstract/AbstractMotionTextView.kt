@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
 import android.widget.TextView
-import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.motion.MotionView
 
 abstract class AbstractMotionTextView(
     context: Context,

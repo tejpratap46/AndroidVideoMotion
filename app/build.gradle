@@ -1,6 +1,6 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -48,7 +48,8 @@ dependencies {
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.work.runtime.ktx
 
-    implementation project(path: ':templates')
+    implementation project(path: ':motionlib')
+    implementation project(path: ':jcodec-motion-ext')
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit

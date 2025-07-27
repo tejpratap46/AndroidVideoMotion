@@ -7,7 +7,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class Timer() {
-    private val TAG = "Timer"
+
+    companion object {
+        private const val TAG = "Timer"
+    }
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Default + job)

@@ -7,10 +7,10 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.view.View
-import com.tejpratapsingh.motionlib.core.OrientedMotionView
-import com.tejpratapsingh.motionlib.utils.Easings
-import com.tejpratapsingh.motionlib.utils.Interpolators
-import com.tejpratapsingh.motionlib.utils.MotionInterpolator
+import com.tejpratapsingh.motionlib.core.animation.Easings
+import com.tejpratapsingh.motionlib.core.animation.Interpolators
+import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
+import com.tejpratapsingh.motionlib.core.motion.OrientedMotionView
 
 enum class Orientation {
     HORIZONTAL,

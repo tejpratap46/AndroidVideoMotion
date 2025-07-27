@@ -22,7 +22,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.animator.notification.NotificationFactory
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import java.io.File
 import java.net.URLConnection
@@ -42,9 +42,16 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         NotificationFactory.getRenderCompleteNotification(appContext)
     }
 
-    private fun createForegroundInfo(progressNotificationId: Int, notification: Notification): ForegroundInfo {
+    private fun createForegroundInfo(
+        progressNotificationId: Int,
+        notification: Notification
+    ): ForegroundInfo {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            ForegroundInfo(progressNotificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING)
+            ForegroundInfo(
+                progressNotificationId,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+            )
         } else {
             ForegroundInfo(progressNotificationId, notification)
         }
@@ -85,7 +92,7 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         updateNotification(progressNotificationId, notification)
 
         // If you need to update the foreground notification specifically (often handled by the initial setForegroundAsync)
-         setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
+        setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
     }
 
     override fun onCompleted(videoFile: File) {
@@ -95,27 +102,9 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         notificationManager.cancel(progressNotificationId)
 
         val intentShareFile = Intent(Intent.ACTION_SEND)
-        val apkURI: Uri = FileProvider.getUriForFile(
-            appContext,
-            "${appContext.packageName}.fileprovider",
-            videoFile
-        )
-        intentShareFile.setDataAndType(
-            apkURI,
-            URLConnection.guessContentTypeFromName(videoFile.name)
-        )
-        intentShareFile.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intentShareFile.putExtra(Intent.EXTRA_STREAM, apkURI)
-
-        val pendingShareIntentFlags =
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-
-        val pendingShareIntent = PendingIntent.getActivity(
-            appContext,
-            0, // requestCode, consider making this unique if you have many such intents
-            intentShareFile,
-            pendingShareIntentFlags
-        )
+        val pendingShareIntent = createPendingIntentFor(intentShareFile, videoFile)
+        val intentOpenFile = Intent(Intent.ACTION_VIEW)
+        val pendingOpenFileIntent = createPendingIntentFor(intentOpenFile, videoFile)
 
         val completedNotification = completedNotificationBuilder
             .setContentTitle("Render Complete")
@@ -125,6 +114,13 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
                     android.R.drawable.ic_menu_share, // Consider using a custom icon
                     "Share Video",
                     pendingShareIntent
+                )
+            )
+            .addAction(
+                NotificationCompat.Action(
+                    android.R.drawable.ic_menu_share, // Consider using a custom icon
+                    "Open Video",
+                    pendingOpenFileIntent
                 )
             )
             .setAutoCancel(true) // Dismiss notification when tapped (if no content intent set)
@@ -145,6 +141,30 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
             // Maybe log an error or inform the user in a different way.
             Log.w(TAG, "POST_NOTIFICATIONS permission not granted. Cannot show notification.")
         }
+    }
+
+    private fun createPendingIntentFor(intent: Intent, videoFile: File): PendingIntent {
+        val apkURI: Uri = FileProvider.getUriForFile(
+            appContext,
+            "${appContext.packageName}.fileprovider",
+            videoFile
+        )
+        intent.setDataAndType(
+            apkURI,
+            URLConnection.guessContentTypeFromName(videoFile.name)
+        )
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.putExtra(Intent.EXTRA_STREAM, apkURI)
+
+        val pendingShareIntentFlags =
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+
+        return PendingIntent.getActivity(
+            appContext,
+            0, // requestCode, consider making this unique if you have many such intents
+            intent,
+            pendingShareIntentFlags
+        )
     }
 
     companion object {

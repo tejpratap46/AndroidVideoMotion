@@ -4,19 +4,19 @@ import android.content.Context
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
-import com.tejpratapsingh.motionlib.utils.Easings
-import com.tejpratapsingh.motionlib.utils.Interpolators
-import com.tejpratapsingh.motionlib.utils.MotionInterpolator
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.animation.Easings
+import com.tejpratapsingh.motionlib.core.animation.Interpolators
+import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
+import com.tejpratapsingh.motionlib.core.motion.MotionView
+import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
 class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
     MotionView(context, startFrame, endFrame) {
 
-    private val typeWriterWriterTextView: WordBlinkTextView = WordBlinkTextView(
+    private val typeWriterWriterTextView: TypeWriterTextView = TypeWriterTextView(
         context = context,
-        text = "If you define a custom setter, it will be called every time you assign a value to the property, except its initialization. A custom setter looks like this:",
+        text = "Hello,\nWelcome to the future",
         startFrame = startFrame,
         endFrame = endFrame
     ).apply {
@@ -25,11 +25,6 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
         textView.textSize = 18f
         textView.gravity = Gravity.CENTER
     }
-
-//    val typeWriterTextView: TextView = TextView(context).apply {
-//        textSize = 48f
-//        gravity = Gravity.CENTER
-//    }
 
     init {
         typeWriterWriterTextView.layoutBy(

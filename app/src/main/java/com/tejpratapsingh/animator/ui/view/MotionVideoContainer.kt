@@ -11,7 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -124,7 +124,7 @@ class MotionVideoContainer(context: Context, motionVideoProducer: MotionVideoPro
 
             FileProvider.getUriForFile(
                 context,
-                context.getString(R.string.authority),
+                "${context.packageName}.fileprovider",
                 fileToShare
             )
         }

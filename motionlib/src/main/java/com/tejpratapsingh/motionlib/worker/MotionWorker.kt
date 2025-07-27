@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

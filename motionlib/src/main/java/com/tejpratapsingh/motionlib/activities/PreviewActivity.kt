@@ -6,7 +6,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
 
 abstract class PreviewActivity : ComponentActivity() {

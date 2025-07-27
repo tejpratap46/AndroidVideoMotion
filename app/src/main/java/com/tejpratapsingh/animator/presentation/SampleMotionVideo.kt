@@ -4,11 +4,12 @@ import android.content.Context
 import android.graphics.Color
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.animator.ui.view.ContourDevice
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
-import com.tejpratapsingh.motionlib.utils.MotionConfig
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val motionConfig = MotionConfig(
@@ -37,7 +38,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         setBackgroundColor(Color.WHITE)
     }
 
-    return MotionVideoProducer.with(applicationContext, motionConfig)
-        .addMotionViewToSequence(motionView)
-        .addMotionViewToSequence(motionView2)
+    return MotionVideoProducer.with(context = applicationContext, config = motionConfig, videoProducerAdapter = AndroidVideoProducerAdapter())
+        .addMotionViewToSequence(motionView = motionView)
+        .addMotionViewToSequence(motionView = motionView2)
 }

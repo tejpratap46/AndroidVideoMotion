@@ -8,7 +8,7 @@ import androidx.core.app.ActivityCompat
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.animator.worker.SampleMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 class MotionPreviewActivity : PreviewActivity() {
 

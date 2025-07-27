@@ -6,7 +6,7 @@ import android.widget.ImageButton
 import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
-import com.tejpratapsingh.motionlib.core.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

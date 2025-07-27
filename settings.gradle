@@ -1,3 +1,11 @@
+pluginManagement { // <--- Add this block
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal() // Good to have for other Gradle plugins
+    }
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -9,3 +17,5 @@ rootProject.name = "Animator"
 include ':app'
 include ':motionlib'
 include ':templates'
+include ':core'
+include ':jcodec-motion-ext'

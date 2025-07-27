@@ -5,10 +5,10 @@ import android.os.Build
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import com.tejpratapsingh.motionlib.core.animation.Easings
+import com.tejpratapsingh.motionlib.core.animation.Interpolators
+import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
-import com.tejpratapsingh.motionlib.utils.Easings
-import com.tejpratapsingh.motionlib.utils.Interpolators
-import com.tejpratapsingh.motionlib.utils.MotionInterpolator
 
 class WordBlinkTextView(
     context: Context,
