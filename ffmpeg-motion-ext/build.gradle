@@ -32,10 +32,10 @@ android {
 dependencies {
     implementation libs.androidx.core.ktx
 
-    implementation(files("libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
     implementation libs.smart.exception.java
 
     implementation project(path: ':core')
+    implementation project(path: ':ffmpeg-kit')
 
     testImplementation libs.junit
 }
