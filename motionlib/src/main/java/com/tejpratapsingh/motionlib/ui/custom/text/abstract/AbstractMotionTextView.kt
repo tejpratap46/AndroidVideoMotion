@@ -28,4 +28,4 @@ abstract class AbstractMotionTextView(
         )
         textView.text = text
     }
-    }
+}

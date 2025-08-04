@@ -1,9 +1,9 @@
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.Log
-import android.view.View
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -46,7 +46,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         }
     }
 
-    override fun forFrame(frame: Int): View {
+    override fun forFrame(frame: Int): IMotionView {
         super.forFrame(frame)
 
         val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(

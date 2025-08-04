@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.util.TypedValue
-import android.view.View
+import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -27,7 +27,7 @@ class WordBlinkTextView(
     private val wordArray = text.split(" ")
     private val wordCount: Int = wordArray.size
 
-    override fun forFrame(frame: Int): View {
+    override fun forFrame(frame: Int): IMotionView {
         super.forFrame(frame)
 
         val visibleWordCount: Int = MotionInterpolator.interpolateForRange(

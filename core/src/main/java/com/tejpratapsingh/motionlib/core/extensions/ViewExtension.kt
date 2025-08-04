@@ -5,7 +5,7 @@ import android.graphics.Canvas
 import android.view.View
 import androidx.core.graphics.createBitmap
 
-fun View.getViewBitmap(): Bitmap {
+fun View.toBitmap(): Bitmap {
     //Get the dimensions of the view so we can re-layout the view at its current size
     //and create a bitmap of the same size
     val width = this.width

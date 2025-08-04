@@ -9,7 +9,6 @@ import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
-import com.tejpratapsingh.motionlib.core.extensions.getViewBitmap
 import java.io.File
 import java.util.Locale
 

@@ -11,14 +11,14 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import java.io.File
 import java.io.IOException
 
-private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_MPEG4 // H.264
-private const val I_FRAME_INTERVAL = 5 // Keyframe interval in seconds
-private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
-
 class AndroidVideoGenerator {
 
     companion object {
         private const val TAG = "VideoGenerator"
+
+        private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_MPEG4 // H.264
+        private const val I_FRAME_INTERVAL = 5 // Keyframe interval in seconds
+        private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
     }
 
     @Throws(IOException::class)
@@ -111,13 +111,13 @@ class AndroidVideoGenerator {
             mediaCodec.signalEndOfInputStream()
 
             drainEncoder(
-                mediaCodec,
-                mediaMuxer,
-                bufferInfo,
-                videoTrackIndex,
-                muxerStarted,
-                motionConfig.fps,
-                presentationTimeUs
+                mediaCodec = mediaCodec,
+                mediaMuxer = mediaMuxer,
+                bufferInfo = bufferInfo,
+                videoTrackIndex = videoTrackIndex,
+                muxerStarted = muxerStarted,
+                fps = motionConfig.fps,
+                initialPresentationTimeUs = presentationTimeUs
             )
 
             Log.i(TAG, "Video generation complete: ${outputFile.absolutePath}")

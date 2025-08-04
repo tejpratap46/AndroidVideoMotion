@@ -3,6 +3,8 @@ package com.tejpratapsingh.motionlib.core.motion
 import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
+import android.view.ViewGroup
+import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
@@ -16,8 +18,6 @@ open class MotionVideoProducer private constructor(
     val videoProducerAdapter: VideoProducerAdapter,
     val motionComposerView: MotionComposerView
 ) : IMotionVideoProducer {
-    private val addedMotionViews = mutableListOf<MotionView>()
-
     var totalFrames: Int = 0
         private set
 
@@ -38,10 +38,7 @@ open class MotionVideoProducer private constructor(
         )
     }
 
-    override fun addMotionViewToSequence(motionView: MotionView): MotionVideoProducer {
-        if (motionView.endFrame < totalFrames) {
-            throw IllegalStateException("add to sequence only accepts motion views with end frame")
-        }
+    override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : IMotionView, T : ViewGroup {
         totalFrames = maxOf(totalFrames, motionView.endFrame)
         recursiveSetMotionConfig(motionView)
         motionComposerView.apply {
@@ -51,11 +48,10 @@ open class MotionVideoProducer private constructor(
                 parent.centerY()
             })
         }
-        addedMotionViews.add(motionView)
         return this
     }
 
-    private fun recursiveSetMotionConfig(motionView: MotionView) {
+    private fun <T> recursiveSetMotionConfig(motionView: T) where T : IMotionView, T : ViewGroup {
         for (viewIndex in 0 until motionView.childCount) { // Use 'until'
             val view: View? = motionView.getChildAt(viewIndex)
             if (view != null && view is MotionView) {
@@ -72,7 +68,9 @@ open class MotionVideoProducer private constructor(
             outputFile.delete()
         }
 
-        videoProducerAdapter.produceVideo(motionConfig, motionComposerView, totalFrames, outputFile, progressListener)
+        videoProducerAdapter.produceVideo(
+            motionConfig, motionComposerView, totalFrames, outputFile, progressListener
+        )
 
         outputFile
     }

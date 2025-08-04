@@ -10,8 +10,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/3d-filament-renderer" />
+            <option value="$PROJECT_DIR$/3d-opengl-renderer" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/ffmpeg-kit" />
             <option value="$PROJECT_DIR$/ffmpeg-motion-ext" />
             <option value="$PROJECT_DIR$/jcodec-motion-ext" />
             <option value="$PROJECT_DIR$/motionlib" />

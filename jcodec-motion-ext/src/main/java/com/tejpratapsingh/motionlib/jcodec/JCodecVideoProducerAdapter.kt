@@ -6,7 +6,6 @@ import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
-import com.tejpratapsingh.motionlib.core.extensions.getViewBitmap
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 

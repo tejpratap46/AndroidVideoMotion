@@ -2,25 +2,25 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.util.Log
-import android.view.View
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
 open class MotionView(
     context: Context,
-    val startFrame: Int,
-    val endFrame: Int
+    override val startFrame: Int,
+    override val endFrame: Int
 ) : ContourLayout(context), IMotionView {
     companion object {
         private const val TAG = "MotionView"
     }
 
     // object will be available at the time of processing video
-    lateinit var motionConfig: MotionConfig
+    override lateinit var motionConfig: MotionConfig
 
-    override fun forFrame(frame: Int): View {
+    override fun forFrame(frame: Int): IMotionView {
         if (frame < startFrame) {
             visibility = INVISIBLE
             return this
@@ -43,4 +43,6 @@ open class MotionView(
 
         return this
     }
+
+    override fun getViewBitmap() = this.toBitmap()
 }
