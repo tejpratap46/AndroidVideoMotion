@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
+import android.util.Log
 import android.view.Surface
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -29,7 +30,12 @@ class Filament3dView(
     private val modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
+    override var motionConfig: MotionConfig
 ) : FrameLayout(context), IMotionView {
+
+    companion object {
+        private const val TAG = "Filament3dView"
+    }
 
     private lateinit var engine: Engine
     private lateinit var swapChain: SwapChain
@@ -41,10 +47,6 @@ class Filament3dView(
     private lateinit var surfaceTexture: SurfaceTexture
     private lateinit var surface: Surface
 
-
-    // object will be available at the time of processing video
-    override lateinit var motionConfig: MotionConfig
-
     private val imageView = ImageView(context).apply {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     }
@@ -53,13 +55,14 @@ class Filament3dView(
         initializeFilament()
         loadModel()
         setupCamera()
+        imageView.setImageResource(android.R.drawable.btn_star) // Set a transparent background
         addView(imageView)
     }
 
     private fun initializeFilament() {
         Utils.init()
         surfaceTexture = SurfaceTexture(0)
-        surfaceTexture.setDefaultBufferSize(1024, 768)
+        surfaceTexture.setDefaultBufferSize(motionConfig.width, motionConfig.height)
         surface = Surface(surfaceTexture)
         engine = Engine.create()
         swapChain = engine.createSwapChain(surface, 0)
@@ -67,7 +70,7 @@ class Filament3dView(
         view = engine.createView()
         view.scene = scene
         renderer = engine.createRenderer()
-        view.viewport = Viewport(0, 0, 1024, 768)
+        view.viewport = Viewport(0, 0, motionConfig.width, motionConfig.height)
     }
 
     private fun loadModel() {
@@ -94,7 +97,10 @@ class Filament3dView(
     private fun setupCamera() {
         val cameraEntity = EntityManager.get().create()
         camera = engine.createCamera(cameraEntity)
-        camera.setProjection(45.0, 1024.0 / 768.0, 0.1, 1000.0, Camera.Fov.VERTICAL)
+        camera.setProjection(
+            45.0,
+            (motionConfig.width / motionConfig.height).toDouble(), 0.1, 1000.0, Camera.Fov.VERTICAL
+        )
         camera.lookAt(
             0.0, 0.0, 5.0, // eyeX, eyeY, eyeZ
             0.0, 0.0, 0.0, // centerX, centerY, centerZ
@@ -103,17 +109,8 @@ class Filament3dView(
         view.camera = camera
     }
 
-    private fun startRotationAndCapture() {
-        val angles = 0..360 step 10
-        for (angle in angles) {
-            rotateModel(angle.toFloat())
-            renderAndCapture { buffer, width, height ->
-                getModelBitmap(buffer)
-            }
-        }
-    }
-
     private fun rotateModel(angle: Float) {
+        Log.i(TAG, "rotateModel: $angle")
         val transformManager = engine.transformManager
         val instance = transformManager.getInstance(modelEntity)
         val matrix = FloatArray(16)
@@ -122,20 +119,7 @@ class Filament3dView(
         transformManager.setTransform(instance, matrix)
     }
 
-    fun getByteBuffer(): ByteBuffer {
-        val width = view.viewport.width
-        val height = view.viewport.height
-        val buffer = ByteBuffer.allocateDirect(width * height * 4)
-        renderer.readPixels(
-            0, 0, width, height, Texture.PixelBufferDescriptor(
-                buffer, Texture.Format.RGBA, Texture.Type.UBYTE
-            )
-        )
-        buffer.rewind()
-        return buffer
-    }
-
-    fun renderAndCapture(onCaptured: (ByteBuffer, Int, Int) -> Unit) {
+    fun renderAndCapture(): ByteBuffer {
         if (renderer.beginFrame(swapChain, 0L)) {
             renderer.render(view)
             val width = view.viewport.width
@@ -147,8 +131,11 @@ class Filament3dView(
                 )
             )
             buffer.rewind()
-            onCaptured(buffer, width, height)
             renderer.endFrame()
+            return buffer
+        } else {
+            Log.e(TAG, "Failed to begin frame rendering")
+            throw IllegalStateException("Failed to render frame")
         }
     }
 
@@ -175,14 +162,22 @@ class Filament3dView(
     }
 
     override fun forFrame(frame: Int): IMotionView {
+        Log.i(TAG, "forFrame: $frame")
         // Update the model or camera based on the frame if needed
         // For example, you could animate the model or camera position
         rotateModel(frame.toFloat())
-        renderAndCapture { buffer, width, height ->
-            imageView.setImageBitmap(getModelBitmap(buffer))
-        }
+        val buffer = renderAndCapture()
+        imageView.setImageBitmap(getModelBitmap(buffer))
         return this
     }
 
-    override fun getViewBitmap(): Bitmap = this.getModelBitmap(getByteBuffer())
+    override fun getViewBitmap(): Bitmap {
+        val buffer = renderAndCapture()
+        val bitmap = getModelBitmap(buffer)
+        return bitmap
+    }
+
+    fun destroy() {
+        cleanupFilament()
+    }
 }

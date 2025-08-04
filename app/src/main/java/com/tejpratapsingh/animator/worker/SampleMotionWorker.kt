@@ -129,7 +129,16 @@ class SampleMotionWorker(private val appContext: Context, parameters: WorkerPara
         updateNotification(completedNotificationId, completedNotification)
     }
 
+    @Volatile
+    private var lastNotificationUpdateTime = 0L
+
     private fun updateNotification(notificationId: Int, notification: Notification) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotificationUpdateTime < 500) {
+            return
+        }
+        lastNotificationUpdateTime = currentTime
+
         if (ActivityCompat.checkSelfPermission(
                 appContext,
                 Manifest.permission.POST_NOTIFICATIONS

@@ -32,9 +32,17 @@ class MotionOpenGlView(
     override fun forFrame(frame: Int): IMotionView {
         // Update the OpenGL renderer for the specified frame
         offscreenRenderer.setRotation(frame.toFloat() * 10F)
-        imageView.setImageBitmap(offscreenRenderer.renderOffscreen())
+        imageView.setImageBitmap(
+            offscreenRenderer.renderOffscreen(
+                width = motionConfig.width,
+                height = motionConfig.height
+            )
+        )
         return this
     }
 
-    override fun getViewBitmap(): Bitmap = offscreenRenderer.renderOffscreen()
+    override fun getViewBitmap(): Bitmap = offscreenRenderer.renderOffscreen(
+        width = motionConfig.width,
+        height = motionConfig.height
+    )
 }

@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -24,10 +25,11 @@ open class MotionComposerView(
     }
 
     override fun forFrame(frame: Int): IMotionView {
+        Log.i(TAG, "forFrame: $frame")
         for (i in 0..this.childCount) {
             val view = this.getChildAt(i)
 
-            if (view is MotionView) {
+            if (view is IMotionView) {
                 view.forFrame(frame)
             }
         }

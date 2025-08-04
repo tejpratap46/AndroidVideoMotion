@@ -28,6 +28,14 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 //        endFrame = 360
 //    )
 
+//    val motionView = Filament3dView(
+//        context = applicationContext,
+//        modelAssetPath = "model/jeep.glb",
+//        startFrame = 1,
+//        endFrame = 360,
+//        motionConfig = motionConfig
+//    )
+
     /*val motionView2: MotionView = GradientView(
         context = applicationContext,
         startFrame = motionView.endFrame + 1,

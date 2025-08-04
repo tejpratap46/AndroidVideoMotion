@@ -24,6 +24,7 @@ class AndroidVideoProducerAdapter: VideoProducerAdapter {
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?
     ): File {
+        Log.i(TAG, "produceVideo: starting")
         if (outputFile.exists()) {
             outputFile.delete()
         }
