@@ -6,7 +6,7 @@ import java.io.File
 interface VideoProducerAdapter {
     suspend fun produceVideo(
         motionConfig: MotionConfig,
-        motionComposerView: IMotionView,
+        motionComposerView: MotionView,
         totalFrames:Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?

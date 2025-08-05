@@ -2,8 +2,8 @@ package com.tejpratapsingh.motionlib.core.adapter
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.motion.AndroidVideoGenerator
@@ -15,11 +15,11 @@ class AndroidVideoProducerAdapter: VideoProducerAdapter {
         private const val TAG = "AndroidVideoProducerAda"
     }
 
-    val androidVideoGenerator = AndroidVideoGenerator()
+    private val androidVideoGenerator = AndroidVideoGenerator()
 
     override suspend fun produceVideo(
         motionConfig: MotionConfig,
-        motionComposerView: IMotionView,
+        motionComposerView: MotionView,
         totalFrames:Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?

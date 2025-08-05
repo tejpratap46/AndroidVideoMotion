@@ -4,15 +4,15 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 
 class MotionOpenGlView(
     context: Context,
     modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-) : FrameLayout(context), IMotionView {
+) : FrameLayout(context), MotionView {
 
     override lateinit var motionConfig: MotionConfig
 
@@ -29,7 +29,7 @@ class MotionOpenGlView(
         offscreenRenderer = OffscreenRenderer(model)
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         // Update the OpenGL renderer for the specified frame
         offscreenRenderer.setRotation(frame.toFloat() * 10F)
         imageView.setImageBitmap(

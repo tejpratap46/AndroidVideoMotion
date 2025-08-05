@@ -6,7 +6,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import com.tejpratapsingh.motionlib.core.IMotionView
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -25,7 +25,7 @@ class WordWriterTextView(
     private val wordArray = text.split(" ")
     private val wordCount: Int = wordArray.size
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
         val visibleWordCount: Int = MotionInterpolator.interpolateForRange(

@@ -2,8 +2,8 @@ package com.tejpratapsingh.motionlib.jcodec
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import org.jcodec.api.android.AndroidSequenceEncoder
@@ -17,7 +17,7 @@ class JCodecVideoProducerAdapter: VideoProducerAdapter {
 
     override suspend fun produceVideo(
         motionConfig: MotionConfig,
-        motionComposerView: IMotionView,
+        motionComposerView: MotionView,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?

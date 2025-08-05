@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
 import android.widget.TextView
-import com.tejpratapsingh.motionlib.core.motion.MotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 
 abstract class AbstractMotionTextView(
     context: Context,
@@ -10,7 +10,7 @@ abstract class AbstractMotionTextView(
     startFrame: Int,
     endFrame: Int
 ) :
-    MotionView(context, startFrame, endFrame) {
+    BaseMotionView(context, startFrame, endFrame) {
     val textView: TextView = TextView(context)
 
     init {

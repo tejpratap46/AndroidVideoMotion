@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.core
 
 import android.graphics.Bitmap
 
-interface IMotionView : OnMotionFrameListener {
+interface MotionView : OnMotionFrameListener {
     val startFrame: Int
     val endFrame: Int
     var motionConfig: MotionConfig
@@ -11,5 +11,5 @@ interface IMotionView : OnMotionFrameListener {
 }
 
 interface OnMotionFrameListener {
-    fun forFrame(frame: Int): IMotionView
+    fun forFrame(frame: Int): MotionView
 }

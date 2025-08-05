@@ -4,8 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
 import android.view.ViewGroup
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +38,7 @@ open class MotionVideoProducer private constructor(
         )
     }
 
-    override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : IMotionView, T : ViewGroup {
+    override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup {
         totalFrames = maxOf(totalFrames, motionView.endFrame)
         recursiveSetMotionConfig(motionView)
         motionComposerView.apply {
@@ -51,10 +51,10 @@ open class MotionVideoProducer private constructor(
         return this
     }
 
-    private fun <T> recursiveSetMotionConfig(motionView: T) where T : IMotionView, T : ViewGroup {
+    private fun <T> recursiveSetMotionConfig(motionView: T) where T : MotionView, T : ViewGroup {
         for (viewIndex in 0 until motionView.childCount) { // Use 'until'
             val view: View? = motionView.getChildAt(viewIndex)
-            if (view != null && view is MotionView) {
+            if (view != null && view is BaseMotionView) {
                 recursiveSetMotionConfig(motionView = view)
             }
         }

@@ -4,8 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.squareup.contour.ContourLayout
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
 open class MotionComposerView(
@@ -13,7 +13,7 @@ open class MotionComposerView(
     override val startFrame: Int = 0,
     override val endFrame: Int = 0
 ) :
-    ContourLayout(context), IMotionView {
+    ContourLayout(context), MotionView {
 
     companion object {
         private const val TAG = "MotionComposerView"
@@ -24,12 +24,12 @@ open class MotionComposerView(
         this.layout(0, 0, motionConfig.width, motionConfig.height)
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         Log.i(TAG, "forFrame: $frame")
         for (i in 0..this.childCount) {
             val view = this.getChildAt(i)
 
-            if (view is IMotionView) {
+            if (view is MotionView) {
                 view.forFrame(frame)
             }
         }

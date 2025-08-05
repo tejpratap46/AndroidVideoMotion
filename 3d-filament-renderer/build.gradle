@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id 'maven-publish'
 }
 
 android {
@@ -29,16 +30,22 @@ android {
     }
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+            }
+        }
+    }
+}
+
 dependencies {
 
     implementation libs.androidx.core.ktx
-    implementation libs.filament.android
-    implementation libs.filament.utils.android
-    implementation libs.gltfio.android
+    implementation libs.bundles.filament
 
     api project(path: ':motionlib')
 
     testImplementation libs.junit
-    androidTestImplementation libs.androidx.test.ext.junit
-    androidTestImplementation libs.androidx.test.espresso.core
 }

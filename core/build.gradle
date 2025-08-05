@@ -31,8 +31,7 @@ android {
 
 dependencies {
     implementation libs.androidx.core.ktx
-    implementation libs.ktor.client.core
-    implementation libs.ktor.client.cio
+    implementation libs.bundles.ktor
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit

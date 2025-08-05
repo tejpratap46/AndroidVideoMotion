@@ -5,16 +5,16 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Gravity
 import androidx.core.graphics.toColorInt
-import com.tejpratapsingh.motionlib.core.IMotionView
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.motion.MotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
 class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
-    MotionView(context, startFrame, endFrame) {
+    BaseMotionView(context, startFrame, endFrame) {
 
     private val typeWriterWriterTextView: TypeWriterTextView = TypeWriterTextView(
         context = context,
@@ -50,7 +50,7 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
         }
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
         val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(

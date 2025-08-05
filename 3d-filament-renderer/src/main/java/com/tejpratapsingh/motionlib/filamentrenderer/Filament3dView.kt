@@ -21,8 +21,8 @@ import com.google.android.filament.Viewport
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.Utils
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import java.nio.ByteBuffer
 
 class Filament3dView(
@@ -31,7 +31,7 @@ class Filament3dView(
     override val startFrame: Int,
     override val endFrame: Int,
     override var motionConfig: MotionConfig
-) : FrameLayout(context), IMotionView {
+) : FrameLayout(context), MotionView {
 
     companion object {
         private const val TAG = "Filament3dView"
@@ -161,7 +161,7 @@ class Filament3dView(
         surfaceTexture.release()
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         Log.i(TAG, "forFrame: $frame")
         // Update the model or camera based on the frame if needed
         // For example, you could animate the model or camera position

@@ -7,7 +7,7 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
-import com.tejpratapsingh.motionlib.core.IMotionView
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -77,7 +77,7 @@ class GradientView(
         gradientShader = null // Invalidate shader if size changes affect it
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
         currentFrame = frame
 

@@ -5,12 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.tejpratapsingh.motionlib.templates'
+    namespace 'com.tejpratapsingh.motionlib.tensorflow'
     compileSdk 36
 
     defaultConfig {
-        minSdk 25
-        targetSdk 36
+        minSdk 24
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -23,11 +22,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    aaptOptions {
+        noCompress 'tflite', 'lite', 'bin', 'json', 'pb', 'tflite-lite'
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 }
 
@@ -44,9 +46,7 @@ afterEvaluate {
 dependencies {
 
     implementation libs.androidx.core.ktx
-    implementation libs.androidx.appcompat
-
-    api project(path: ':motionlib')
+    implementation libs.tensorflow.lite
 
     testImplementation libs.junit
 }

@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
-import com.tejpratapsingh.motionlib.core.IMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import java.io.File
@@ -23,7 +23,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
     override suspend fun produceVideo(
         motionConfig: MotionConfig,
-        motionComposerView: IMotionView,
+        motionComposerView: MotionView,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?

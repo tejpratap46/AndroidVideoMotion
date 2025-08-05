@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id 'maven-publish'
 }
 
 android {
@@ -29,12 +30,21 @@ android {
     }
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+            }
+        }
+    }
+}
+
 dependencies {
     implementation libs.androidx.core.ktx
     implementation project(path: ':core')
 
-    implementation libs.jcodec
-    implementation libs.jcodec.android
+    implementation libs.bundles.jcodec
 
     testImplementation libs.junit
 }

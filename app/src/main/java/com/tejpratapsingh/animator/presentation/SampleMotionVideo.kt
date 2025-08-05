@@ -4,8 +4,8 @@ import RenaultCar
 import android.content.Context
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.motion.MotionView
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val motionConfig = MotionConfig(
@@ -15,7 +15,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val assetManager = applicationContext.assets
     val files = assetManager.list(RenaultCar.imageAssetSubFolder)
 
-    val motionView: MotionView = RenaultCar(
+    val motionView: BaseMotionView = RenaultCar(
         context = applicationContext,
         startFrame = 1,
         endFrame = files?.size ?: 1

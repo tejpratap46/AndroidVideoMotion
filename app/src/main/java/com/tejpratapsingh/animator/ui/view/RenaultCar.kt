@@ -3,26 +3,29 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
-import com.tejpratapsingh.motionlib.core.IMotionView
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
-import com.tejpratapsingh.motionlib.core.motion.MotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.tensorflow.CarBgRemover
 import java.io.IOException
 import java.io.InputStream
 
 class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
-    MotionView(context, startFrame, endFrame) {
+    BaseMotionView(context, startFrame, endFrame) {
 
     companion object {
         const val imageAssetSubFolder = "renault_kiger"
     }
 
-    val imageView: ImageView = ImageView(context).apply {
+    private val imageView: ImageView = ImageView(context).apply {
         scaleType = ImageView.ScaleType.CENTER_INSIDE
     }
 
-    val assetManager = context.assets
+    private val assetManager = context.assets
+
+    private val remover = CarBgRemover(context)
 
     init {
         imageView.layoutBy(
@@ -46,7 +49,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         }
     }
 
-    override fun forFrame(frame: Int): IMotionView {
+    override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
         val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(
@@ -66,7 +69,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         try {
             val inputStream: InputStream = assetManager.open(imageName)
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            imageView.setImageBitmap(bitmap)
+            imageView.setImageBitmap(remover.removeBackground(bitmap))
             inputStream.close()
         } catch (e: IOException) {
             Log.e("RenaultCar", "Error loading image from asset: $imageName", e)
