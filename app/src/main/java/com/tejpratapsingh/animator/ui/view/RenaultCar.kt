@@ -1,4 +1,5 @@
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.ImageView
@@ -8,7 +9,9 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
-import com.tejpratapsingh.motionlib.tensorflow.CarBgRemover
+import dev.eren.removebg.RemoveBg
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.io.InputStream
 
@@ -25,7 +28,10 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
 
     private val assetManager = context.assets
 
-    private val remover = CarBgRemover(context)
+    //    private val remover = CarBgRemover(context)
+    val remover = RemoveBg(context)
+
+//    val backgroundRemover = ImageAIProcessor.backgroundRemover
 
     init {
         imageView.layoutBy(
@@ -69,12 +75,21 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         try {
             val inputStream: InputStream = assetManager.open(imageName)
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            imageView.setImageBitmap(remover.removeBackground(bitmap))
+            runBlocking {
+                imageView.setImageBitmap(bitmap.removeBackground())
+//                imageView.setImageBitmap(backgroundRemover.removeBackgroundTiled(bitmap))
+            }
             inputStream.close()
         } catch (e: IOException) {
             Log.e("RenaultCar", "Error loading image from asset: $imageName", e)
         }
 
         return this
+    }
+
+    private suspend fun Bitmap.removeBackground(): Bitmap? {
+        // Collect the first value from the flow and assign it to outputImage.
+        // The coroutine will suspend until a value is emitted.
+        return remover.clearBackground(this).first()
     }
 }

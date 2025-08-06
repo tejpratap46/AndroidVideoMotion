@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.view.View
 import android.view.ViewGroup
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
@@ -27,13 +28,14 @@ open class MotionVideoProducer private constructor(
         fun with(
             context: Context,
             config: MotionConfig,
+            plugins: List<MotionPlugin> = emptyList(),
             videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter()
         ) = MotionVideoProducer(
             context = context,
             motionConfig = config,
             videoProducerAdapter = videoProducerAdapter,
             motionComposerView = MotionComposerView(
-                context = context, motionConfig = config
+                context = context, motionConfig = config, plugins = plugins
             )
         )
     }

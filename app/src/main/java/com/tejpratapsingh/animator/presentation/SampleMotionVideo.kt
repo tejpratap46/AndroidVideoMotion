@@ -3,7 +3,6 @@ package com.tejpratapsingh.animator.presentation
 import RenaultCar
 import android.content.Context
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
@@ -50,7 +49,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 
     return MotionVideoProducer.with(
         context = applicationContext,
-        config = motionConfig,
-        videoProducerAdapter = AndroidVideoProducerAdapter()
+        config = motionConfig
     ).addMotionViewToSequence(motionView = motionView)
 }
