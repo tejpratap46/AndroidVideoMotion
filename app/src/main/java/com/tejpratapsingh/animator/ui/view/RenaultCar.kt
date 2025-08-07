@@ -9,7 +9,7 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
-import dev.eren.removebg.RemoveBg
+import com.tejpratapsingh.motionlib.pytorch.removebg.RemoveBg
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.io.IOException

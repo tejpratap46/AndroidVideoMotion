@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/ffmpeg-motion-ext" />
             <option value="$PROJECT_DIR$/jcodec-motion-ext" />
             <option value="$PROJECT_DIR$/motionlib" />
+            <option value="$PROJECT_DIR$/pytorch-motion-ext" />
             <option value="$PROJECT_DIR$/templates" />
             <option value="$PROJECT_DIR$/tensorflow-motion-ext" />
           </set>

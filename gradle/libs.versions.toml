@@ -10,7 +10,7 @@ material_version = "1.12.0"
 lifecycle_runtime_ktx = "2.9.2"
 removebgVersion = "1.0.4"
 smartExceptionJavaVersion = "0.2.1"
-tensorflowLiteTaskVisionVersion = "0.4.4"
+tensorflowLiteTaskVisionVersion = "0.5.0"
 tensorflowLiteVersion = "2.17.0"
 work_version = "2.10.3"
 junit_version = "4.13.2"
@@ -18,6 +18,7 @@ androidx_test_ext_junit_version = "1.3.0"
 espresso_core_version = "3.7.0"
 agpVersion = "8.12.0"
 kotlinVersion = "2.2.0"
+pytorchAndroidTorchCisionLite = "2.1.0"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -45,6 +46,8 @@ tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "te
 tensorflow-lite-gpu-delegate-plugin = { module = "org.tensorflow:tensorflow-lite-gpu-delegate-plugin", version.ref = "tensorflowLiteTaskVisionVersion" }
 tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteTaskVisionVersion" }
 tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVisionVersion" }
+pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorchAndroidTorchCisionLite" }
+pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorchAndroidTorchCisionLite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

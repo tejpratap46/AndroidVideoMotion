@@ -54,13 +54,13 @@ open class MotionVideoProducer private constructor(
     }
 
     private fun <T> recursiveSetMotionConfig(motionView: T) where T : MotionView, T : ViewGroup {
+        motionView.motionConfig = this.motionConfig // Use instance motionConfig
         for (viewIndex in 0 until motionView.childCount) { // Use 'until'
             val view: View? = motionView.getChildAt(viewIndex)
             if (view != null && view is BaseMotionView) {
                 recursiveSetMotionConfig(motionView = view)
             }
         }
-        motionView.motionConfig = this.motionConfig // Use instance motionConfig
     }
 
     override suspend fun produceVideo(
