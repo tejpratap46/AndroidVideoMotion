@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionlib.pytorch.superres
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.scale
+import com.tejpratapsingh.motionlib.pytorch.common.ModelTypes
 import org.pytorch.IValue
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
@@ -17,9 +18,8 @@ class ImageUpscaler(context: Context) {
     private var module: Module
 
     companion object {
-        private const val MODEL_NAME = "ninasr_b0_2x.ptl"
+        private val MODEL_NAME = ModelTypes.NINASR.fileName
         private const val INPUT_SIZE = 224 // IMPORTANT: Verify this for ninasr_b0_2x.ptl
-        // SCALE_FACTOR is implicitly handled by the model if it's a "2x" model
     }
 
     init {

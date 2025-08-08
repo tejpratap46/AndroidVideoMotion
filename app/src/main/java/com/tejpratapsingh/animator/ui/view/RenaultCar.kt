@@ -8,7 +8,7 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
-import com.tejpratapsingh.motionlib.pytorch.ImageAIProcessor
+import com.tejpratapsingh.motionlib.tensorflow.TensorFlowImageProcessor
 import java.io.IOException
 import java.io.InputStream
 
@@ -25,7 +25,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
 
     private val assetManager = context.assets
 
-    val backgroundRemover = ImageAIProcessor.backgroundRemoverPlugin
+    val backgroundRemover = TensorFlowImageProcessor.backgroundRemovalPlugin
 
     init {
         imageView.layoutBy(

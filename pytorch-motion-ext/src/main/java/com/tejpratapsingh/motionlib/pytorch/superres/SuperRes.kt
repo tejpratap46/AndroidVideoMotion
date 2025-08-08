@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionlib.pytorch.superres
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.scale
+import com.tejpratapsingh.motionlib.pytorch.common.ModelTypes
 import org.pytorch.IValue
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
@@ -14,12 +15,11 @@ import java.io.IOException
 
 class SuperRes(context: Context) {
 
-    private lateinit var module: Module
+    private var module: Module
 
     companion object {
-        private const val MODEL_NAME = "ninasr_b0_2x.ptl"
+        private val MODEL_NAME = ModelTypes.NINASR.fileName
         private const val INPUT_SIZE = 224
-        private const val SCALE_FACTOR = 2
     }
 
     init {
