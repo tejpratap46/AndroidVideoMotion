@@ -5,27 +5,20 @@ import android.widget.TextView
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 
 abstract class AbstractMotionTextView(
-    context: Context,
-    text: String,
-    startFrame: Int,
-    endFrame: Int
-) :
-    BaseMotionView(context, startFrame, endFrame) {
+    context: Context, text: String, startFrame: Int, endFrame: Int
+) : BaseMotionView(context, startFrame, endFrame) {
     val textView: TextView = TextView(context)
 
     init {
-        textView.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                parent.top()
-            }.bottomTo {
-                parent.bottom()
-            }
-        )
+        textView.layoutBy(x = leftTo {
+            parent.left()
+        }.rightTo {
+            parent.right()
+        }, y = topTo {
+            parent.top()
+        }.bottomTo {
+            parent.bottom()
+        })
         textView.text = text
     }
 }
