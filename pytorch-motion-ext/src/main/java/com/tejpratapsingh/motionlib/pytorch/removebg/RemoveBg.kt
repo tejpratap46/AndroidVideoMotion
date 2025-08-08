@@ -8,13 +8,9 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
-import com.tejpratapsingh.motionlib.pytorch.removebg.common.ModelTypes
-import com.tejpratapsingh.motionlib.pytorch.removebg.utils.FileUtils.assetFilePath
-import com.tejpratapsingh.motionlib.pytorch.removebg.utils.NetUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import com.tejpratapsingh.motionlib.pytorch.common.ModelTypes
+import com.tejpratapsingh.motionlib.pytorch.utils.FileUtils.assetFilePath
+import com.tejpratapsingh.motionlib.pytorch.utils.NetUtils
 import org.pytorch.IValue
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
@@ -37,10 +33,10 @@ class RemoveBg(context: Context) : Remover<Bitmap> {
         maskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
     }
 
-    override fun clearBackground(image: Bitmap): Flow<Bitmap?> = flow {
+    override fun clearBackground(image: Bitmap): Bitmap? {
         val mutableImage = image.copy(Bitmap.Config.ARGB_8888, true)
-        emit(removeBackground(mutableImage))
-    }.flowOn(Dispatchers.IO)
+        return removeBackground(mutableImage)
+    }
 
     override fun getMaskedImage(input: Bitmap, mask: Bitmap): Bitmap {
         val result = createBitmap(mask.width, mask.height)

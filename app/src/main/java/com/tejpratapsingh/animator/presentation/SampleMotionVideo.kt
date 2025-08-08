@@ -49,6 +49,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 
     return MotionVideoProducer.with(
         context = applicationContext,
-        config = motionConfig
+        config = motionConfig,
     ).addMotionViewToSequence(motionView = motionView)
 }

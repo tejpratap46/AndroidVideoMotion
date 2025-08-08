@@ -1,4 +1,4 @@
-package com.tejpratapsingh.motionlib.pytorch.removebg.utils
+package com.tejpratapsingh.motionlib.pytorch.utils
 
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap

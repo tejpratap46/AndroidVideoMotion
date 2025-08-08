@@ -2,7 +2,7 @@ package com.tejpratapsingh.animator.app
 
 import android.app.Application
 import com.tejpratapsingh.animator.notification.NotificationFactory
-import com.tejpratapsingh.motionlib.tensorflow.ImageAIProcessor
+import com.tejpratapsingh.motionlib.pytorch.ImageAIProcessor
 
 class MyApplication : Application() {
     override fun onCreate() {

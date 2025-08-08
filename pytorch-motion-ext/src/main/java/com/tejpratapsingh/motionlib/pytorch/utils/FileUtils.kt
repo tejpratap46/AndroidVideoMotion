@@ -1,4 +1,4 @@
-package com.tejpratapsingh.motionlib.pytorch.removebg.utils
+package com.tejpratapsingh.motionlib.pytorch.utils
 
 import android.content.Context
 import java.io.File
