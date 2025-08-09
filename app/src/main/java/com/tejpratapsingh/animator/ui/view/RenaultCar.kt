@@ -8,7 +8,6 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
-import com.tejpratapsingh.motionlib.tensorflow.TensorFlowImageProcessor
 import java.io.IOException
 import java.io.InputStream
 
@@ -16,7 +15,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
     BaseMotionView(context, startFrame, endFrame) {
 
     companion object {
-        const val imageAssetSubFolder = "renault_kiger"
+        const val imageAssetSubFolder = "renault_kiger_bg"
     }
 
     private val imageView: ImageView = ImageView(context).apply {
@@ -25,7 +24,8 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
 
     private val assetManager = context.assets
 
-    val backgroundRemover = TensorFlowImageProcessor.backgroundRemovalPlugin
+    //    val backgroundRemover = TensorFlowImageProcessor.backgroundRemovalPlugin
+    //    val backgroundRemover = PyTorchImageProcessor.backgroundRemoverPlugin
 
     init {
         imageView.layoutBy(
@@ -64,12 +64,12 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         )
 
         // Determine which image to show based on the current frame
-        val imageName = "$imageAssetSubFolder/$frame.jpg"
+        val imageName = "$imageAssetSubFolder/$frame.png"
 
         try {
             val inputStream: InputStream = assetManager.open(imageName)
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            imageView.setImageBitmap(backgroundRemover.apply(bitmap))
+            imageView.setImageBitmap(bitmap)
 //                imageView.setImageBitmap(backgroundRemover.removeBackgroundTiled(bitmap))
             inputStream.close()
         } catch (e: IOException) {

@@ -1,4 +1,4 @@
-package com.tejpratapsingh.motionlib.ui.custom.video
+package com.tejpratapsingh.motionlib.utils
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -2,7 +2,6 @@ package com.tejpratapsingh.animator.app
 
 import android.app.Application
 import com.tejpratapsingh.animator.notification.NotificationFactory
-import com.tejpratapsingh.motionlib.pytorch.PyTorchImageProcessor
 import com.tejpratapsingh.motionlib.tensorflow.TensorFlowImageProcessor
 
 class MyApplication : Application() {
@@ -10,7 +9,7 @@ class MyApplication : Application() {
         super.onCreate()
         NotificationFactory.Companion.createNotificationChannels(this)
 
-        PyTorchImageProcessor.init(applicationContext)
+//        PyTorchImageProcessor.init(applicationContext)
         TensorFlowImageProcessor.init(applicationContext)
     }
 }
