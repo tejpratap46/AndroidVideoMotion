@@ -44,6 +44,6 @@ object TensorFlowImageProcessor {
     @Synchronized
     fun init(context: Context) {
         backgroundRemover = CarBgRemover(context)
-        superResolutionProcessor = SuperResolutionProcessor(context, "esrgan_int8.tflite")
+        superResolutionProcessor = SuperResolutionProcessor(context, "ESRGAN_gh.tflite")
     }
 }

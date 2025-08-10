@@ -1,24 +1,24 @@
 package com.tejpratapsingh.animator.presentation
 
+import RenaultCar
 import android.content.Context
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.extensions.getFileFromAsset
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.ffmpeg.video.FFMpegVideoFrameView
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val motionConfig = MotionConfig(
         width = 768, height = 1366, fps = 30
     )
 
-//    val assetManager = applicationContext.assets
-//    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
-//
-//    val motionView: BaseMotionView = RenaultCar(
-//        context = applicationContext,
-//        startFrame = 1,
-//        endFrame = files?.size ?: 1
-//    )
+    val assetManager = applicationContext.assets
+    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+
+    val motionView: BaseMotionView = RenaultCar(
+        context = applicationContext,
+        startFrame = 1,
+        endFrame = files?.size ?: 1
+    )
 
 //    val motionView = MotionOpenGlView(
 //        context = applicationContext,
@@ -36,14 +36,14 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 //        endFrame = 360
 //    )
 
-    val motionView = FFMpegVideoFrameView(
-        context = applicationContext,
-        videoFile = applicationContext.getFileFromAsset(
-            assetFilePath = "bg/172896-848187907_tiny.mp4"
-        ),
-        startFrame = 1,
-        endFrame = 360
-    )
+//    val motionView = FFMpegVideoFrameView(
+//        context = applicationContext,
+//        videoFile = applicationContext.getFileFromAsset(
+//            assetFilePath = "bg/172896-848187907_tiny.mp4"
+//        ),
+//        startFrame = 1,
+//        endFrame = 360
+//    )
 
 //    val motionView = Filament3dView(
 //        context = applicationContext,

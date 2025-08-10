@@ -24,6 +24,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
 
     private val assetManager = context.assets
 
+//    val superResolutionPlugin = TensorFlowImageProcessor.superResolutionPlugin
     //    val backgroundRemover = TensorFlowImageProcessor.backgroundRemovalPlugin
     //    val backgroundRemover = PyTorchImageProcessor.backgroundRemoverPlugin
 
@@ -70,7 +71,7 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
             val inputStream: InputStream = assetManager.open(imageName)
             val bitmap = BitmapFactory.decodeStream(inputStream)
             imageView.setImageBitmap(bitmap)
-//                imageView.setImageBitmap(backgroundRemover.removeBackgroundTiled(bitmap))
+//            imageView.setImageBitmap(superResolutionPlugin.apply(bitmap))
             inputStream.close()
         } catch (e: IOException) {
             Log.e("RenaultCar", "Error loading image from asset: $imageName", e)
