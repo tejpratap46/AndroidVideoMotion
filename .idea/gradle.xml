@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/ffmpeg-kit" />
             <option value="$PROJECT_DIR$/ffmpeg-motion-ext" />
+            <option value="$PROJECT_DIR$/ivi-demo" />
             <option value="$PROJECT_DIR$/jcodec-motion-ext" />
             <option value="$PROJECT_DIR$/motionlib" />
             <option value="$PROJECT_DIR$/pytorch-motion-ext" />

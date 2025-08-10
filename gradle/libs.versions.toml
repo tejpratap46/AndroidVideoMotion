@@ -20,6 +20,8 @@ espresso_core_version = "3.7.0"
 agpVersion = "8.12.0"
 kotlinVersion = "2.2.0"
 pytorchAndroidTorchCisionLite = "2.1.0"
+kotlinGradlePluginVersion = "2.2.0"
+activityVersion = "1.8.0"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -50,6 +52,8 @@ tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", v
 tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVisionVersion" }
 pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorchAndroidTorchCisionLite" }
 pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorchAndroidTorchCisionLite" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlinGradlePluginVersion" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activityVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
