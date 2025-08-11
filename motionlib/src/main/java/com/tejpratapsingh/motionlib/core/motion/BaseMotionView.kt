@@ -11,7 +11,8 @@ import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 open class BaseMotionView(
     context: Context,
     override val startFrame: Int,
-    override val endFrame: Int
+    override val endFrame: Int,
+    override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : ContourLayout(context), MotionView {
     companion object {
         private const val TAG = "MotionView"

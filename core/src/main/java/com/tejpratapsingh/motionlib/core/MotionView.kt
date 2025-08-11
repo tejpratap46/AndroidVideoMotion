@@ -7,9 +7,11 @@ interface MotionView : OnMotionFrameListener {
     val endFrame: Int
     var motionConfig: MotionConfig
 
+    val loop: Pair<Int, Int>
+
     fun getViewBitmap(): Bitmap
 }
 
-interface OnMotionFrameListener {
+fun interface OnMotionFrameListener {
     fun forFrame(frame: Int): MotionView
 }

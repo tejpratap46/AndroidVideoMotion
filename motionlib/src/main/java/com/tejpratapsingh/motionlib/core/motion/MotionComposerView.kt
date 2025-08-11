@@ -14,7 +14,8 @@ open class MotionComposerView(
     override var motionConfig: MotionConfig,
     override val startFrame: Int = 0,
     override val endFrame: Int = 0,
-    override val plugins: List<MotionPlugin>
+    override val plugins: List<MotionPlugin>,
+    override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : ContourLayout(context), MotionView, IComposerView {
 
     companion object {

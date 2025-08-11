@@ -13,12 +13,8 @@ import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 
 class TypeWriterTextView(
-    context: Context,
-    private val text: String,
-    startFrame: Int,
-    endFrame: Int
-) :
-    AbstractMotionTextView(context, text, startFrame, endFrame) {
+    context: Context, private val text: String, startFrame: Int, endFrame: Int
+) : AbstractMotionTextView(context, text, startFrame, endFrame) {
     private val TAG by lazy {
         "TypeWriterTextView"
     }

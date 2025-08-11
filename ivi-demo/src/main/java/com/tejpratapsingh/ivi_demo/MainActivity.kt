@@ -1,20 +1,49 @@
 package com.tejpratapsingh.ivi_demo
 
+import RenaultCar
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.tejpratapsingh.ivi_demo.extension.enableSwipeSeekReverse
+import com.tejpratapsingh.motionlib.activities.PreviewActivity
+import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : PreviewActivity() {
+
+    val video by lazy {
+        MotionVideoProducer.with(
+            context = applicationContext,
+            config = motionConfig,
+        ).addMotionViewToSequence(motionView = motionView)
+    }
+
+    val motionConfig = MotionConfig(
+        width = 768, height = 1366, fps = 30
+    )
+
+    val motionView: BaseMotionView by lazy {
+        RenaultCar(
+            context = applicationContext,
+            startFrame = 1,
+            endFrame = 72
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+
+        motionView.enableSwipeSeekReverse(
+            maxProgress = video.totalFrames,
+            initialProgress = { motionVideoPlayer.seekBar.progress },
+            onProgressChanged = { newProgress ->
+                motionVideoPlayer.seekBar.progress = newProgress
+                video.motionComposerView.forFrame(newProgress)
+            },
+            sensitivity = 5f
+        )
+    }
+
+    override fun getMotionVideo(): MotionVideoProducer {
+        return video
     }
 }

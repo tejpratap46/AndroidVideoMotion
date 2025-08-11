@@ -1,7 +1,7 @@
 package com.tejpratapsingh.motionlib.ui
 
 import android.content.Context
-import android.graphics.Color
+import android.os.Build
 import android.widget.ImageButton
 import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -29,6 +30,9 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
     private var isPlaying = false
 
     val seekBar: SeekBar = SeekBar(context).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            min = 1
+        } // Start from 1 to avoid confusion with frame 0
         max = motionVideoProducer.totalFrames
 
         setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -64,13 +68,11 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
 
     private val controlsLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.HORIZONTAL
-        setBackgroundColor(Color.RED) // Consider removing or styling this appropriately
         gravity = android.view.Gravity.CENTER_VERTICAL // Center items in controls
     }
 
     private val previewLayout: LinearLayoutCompat = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.VERTICAL
-        setBackgroundColor(Color.GREEN) // Consider removing or styling this appropriately
         gravity = android.view.Gravity.CENTER // Center preview
     }
 
@@ -132,6 +134,7 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        pausePlayback()
+        pausePlayback() // Ensure playback is stopped
+        scope.cancel() // Cancel the scope to clean up coroutines
     }
 }
