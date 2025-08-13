@@ -1,20 +1,26 @@
 package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
 abstract class AbstractMotionTextView(
-    context: Context, text: String, startFrame: Int, endFrame: Int, font: String? = null
+    context: Context,
+    text: String,
+    startFrame: Int,
+    endFrame: Int,
+    val textView: AppCompatTextView,
+    font: String? = null
 ) : BaseMotionView(context, startFrame, endFrame) {
-    val textView: TextView = TextView(context).apply {
-        if (font != null) {
-            typeface = getWebFont(font)
-        }
-    }
 
     init {
+        textView.apply {
+            if (font != null) {
+                typeface = getWebFont(font)
+            }
+        }
+
         textView.layoutBy(x = leftTo {
             parent.left()
         }.rightTo {

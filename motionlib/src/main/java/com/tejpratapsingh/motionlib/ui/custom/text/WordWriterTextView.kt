@@ -6,18 +6,21 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
+import com.tejpratapsingh.motionlib.ui.custom.CutoutTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 
 class WordWriterTextView(
     context: Context,
     private val text: String,
     startFrame: Int = 0,
-    endFrame: Int = -1
-) : AbstractMotionTextView(context, text, startFrame, endFrame) {
+    endFrame: Int = -1,
+    textView: AppCompatTextView = CutoutTextView(context)
+) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
     private val TAG by lazy {
         "WordWriterTextView"
     }
@@ -46,6 +49,7 @@ class WordWriterTextView(
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         textView.text = spannableString
+        textView.invalidate()
 
         return this
     }

@@ -12,7 +12,11 @@ import com.tejpratapsingh.motionlib.ffmpeg.utils.md5
 import java.io.File
 
 class FFMpegVideoFrameView(
-    context: Context, val videoFile: File, override val startFrame: Int, override val endFrame: Int,
+    context: Context,
+    val videoFile: File,
+    override val startFrame: Int,
+    override val endFrame: Int,
+    override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
 
     override lateinit var motionConfig: MotionConfig
@@ -23,9 +27,7 @@ class FFMpegVideoFrameView(
     }
 
     private val videoBitmaps = extractFramesFromVideo(
-        context = context,
-        videoFile = videoFile,
-        outputDirName = videoFile.name.md5()
+        context = context, videoFile = videoFile, outputDirName = videoFile.name.md5()
     ).let {
         loadBitmapsFromDirectory(context, it)
     }

@@ -30,7 +30,8 @@ class Filament3dView(
     private val modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-    override var motionConfig: MotionConfig
+    override var motionConfig: MotionConfig,
+    override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
 
     companion object {

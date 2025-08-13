@@ -1,9 +1,8 @@
 package com.tejpratapsingh.animator.presentation
 
-import RenaultCar
 import android.content.Context
+import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
@@ -11,13 +10,19 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         width = 768, height = 1366, fps = 30
     )
 
-    val assetManager = applicationContext.assets
-    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+//    val assetManager = applicationContext.assets
+//    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+//
+//    val motionView: BaseMotionView = RenaultCar(
+//        context = applicationContext,
+//        startFrame = 1,
+//        endFrame = files?.size ?: 1
+//    )
 
-    val motionView: BaseMotionView = RenaultCar(
+    val motionView = ContourDevice(
         context = applicationContext,
         startFrame = 1,
-        endFrame = files?.size ?: 1
+        endFrame = motionConfig.fps * 4
     )
 
 //    val motionView = MotionOpenGlView(
