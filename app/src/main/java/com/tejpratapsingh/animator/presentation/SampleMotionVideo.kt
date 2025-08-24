@@ -4,7 +4,12 @@ import android.content.Context
 import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import kotlinx.coroutines.runBlocking
+import java.io.File
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val motionConfig = MotionConfig(
@@ -21,12 +26,23 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 //    )
 
     val motionView = ContourDevice(
-        context = applicationContext,
-        startFrame = 1,
-        endFrame = motionConfig.fps * 4
+        context = applicationContext, startFrame = 1, endFrame = motionConfig.fps * 4
     )
 
-    val motionAudio = emptyList<MotionAudio>()
+    val httpClient = HttpClient(CIO)
+    val file = File(applicationContext.cacheDir, "audio.mp3")
+    runBlocking {
+        try {
+            httpClient.downloadFile(
+                file = file,
+                url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            )
+        } catch (e: Exception) {
+        }
+    }
+    val motionAudio = listOf(
+        MotionAudio(file)
+    )
 
 //    val motionView = MotionOpenGlView(
 //        context = applicationContext,
@@ -74,8 +90,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     }*/
 
     return MotionVideoProducer.with(
-        context = applicationContext,
-        config = motionConfig,
-        motionAudio = motionAudio
+        context = applicationContext, config = motionConfig, motionAudio = motionAudio
     ).addMotionViewToSequence(motionView = motionView)
 }

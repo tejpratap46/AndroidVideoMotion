@@ -203,6 +203,33 @@ class AndroidVideoGenerator {
         }
     }
 
+    /**
+     * Muxes multiple audio tracks into the video using the provided MediaMuxer.
+     *
+     * This function iterates through a list of [MotionAudio] objects, each representing
+     * an audio source to be included in the video. For each audio source, it:
+     * 1. Initializes a [MediaExtractor] to read the audio data from the specified file.
+     * 2. Finds the first audio track in the source file.
+     * 3. Adds this audio track to the [MediaMuxer].
+     * 4. Calculates the start, end, and insertion timestamps in microseconds based on
+     *    the frame numbers provided in the [MotionAudio] object and the video's FPS.
+     * 5. Seeks the extractor to the calculated start time.
+     * 6. Reads audio samples from the extractor, adjusts their presentation timestamps
+     *    according to the trimming and insertion points, and writes them to the muxer.
+     *    This process continues until the end of the specified segment or the end of the
+     *    audio stream is reached.
+     * 7. Releases the [MediaExtractor] for the current audio source.
+     *
+     * If an audio source file does not contain an audio track, it is skipped.
+     *
+     * @param mediaMuxer The [MediaMuxer] instance to which the audio tracks will be added.
+     *                   This muxer should already have the video track added and be started
+     *                   if video encoding has begun.
+     * @param audioSources A list of [MotionAudio] objects, each defining an audio file
+     *                     and the timing for its inclusion in the final video.
+     * @param fps The frames per second of the video, used to convert frame-based timings
+     *            in [MotionAudio] to microsecond-based timestamps for audio processing.
+     */
     private fun muxAudioTracks(mediaMuxer: MediaMuxer?, audioSources: List<MotionAudio>, fps: Int) {
         val bufferSize = 1 * 1024 * 1024
         val buffer = ByteBuffer.allocate(bufferSize)
