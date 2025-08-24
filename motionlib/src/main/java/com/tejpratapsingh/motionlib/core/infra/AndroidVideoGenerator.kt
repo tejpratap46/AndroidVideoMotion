@@ -4,13 +4,16 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
+import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.util.Log
 import androidx.core.graphics.scale
+import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
 
 class AndroidVideoGenerator {
 
@@ -24,15 +27,47 @@ class AndroidVideoGenerator {
 
     private var bitmapFiles: List<File>? = null
 
+    /**
+     * Generates a video from a list of bitmaps or a directory of image files.
+     *
+     * The function encodes the provided images into a video stream using MediaCodec
+     * and writes the output to the specified file using MediaMuxer. It also
+     * allows for adding multiple audio tracks to the video.
+     *
+     * At least one source of bitmaps (either `bitmaps` list or `inputDir`) must be provided.
+     * If both are provided, `inputDir` takes precedence if it's not null and contains valid images.
+     * If neither is provided, the function will log a warning and return without generating a video.
+     *
+     * The output video will be in MP4 format with H.264 video encoding.
+     *
+     * @param bitmaps A list of [Bitmap] objects to be included in the video.
+     *                Defaults to an empty list. If `inputDir` is also provided and valid,
+     *                this parameter will be ignored.
+     * @param inputDir A [File] object representing the directory containing image files
+     *                 (PNG, JPG, JPEG, WEBP). Images will be sorted numerically by their filenames.
+     *                 Defaults to null. If provided, this will be used as the source of frames.
+     * @param outputFile The [File] object where the generated video will be saved.
+     *                   If an error occurs during generation and this file exists, it will be deleted.
+     * @param motionConfig A [MotionConfig] object specifying video properties like
+     *                     width, height, and frames per second (fps).
+     * @param motionAudios A list of [MotionAudio] objects to be mixed into the video.
+     *                     Each [AudioSource] defines the audio file, start/end times for trimming,
+     *                     and the insertion point in the final video. Defaults to an empty list.
+     * @throws IOException If there is an error during file I/O operations (e.g., creating the output file).
+     * @throws RuntimeException If there is an unexpected error during the MediaCodec or MediaMuxer
+     *                          operations (e.g., format changes after muxer start, null buffers).
+     * @throws Exception For any other unhandled exceptions during the video generation process.
+     */
     @Throws(IOException::class)
     fun generateVideo(
-        bitmaps: List<Bitmap> = mutableListOf(),
+        bitmaps: List<Bitmap> = emptyList(),
         inputDir: File? = null,
         outputFile: File,
-        motionConfig: MotionConfig
+        motionConfig: MotionConfig,
+        motionAudios: List<MotionAudio> = emptyList()
     ) {
-        if (bitmaps.isEmpty()) {
-            Log.w(TAG, "Bitmap list is empty. Cannot generate video.")
+        if (bitmaps.isEmpty() && inputDir == null) {
+            Log.w(TAG, "No bitmaps provided. Cannot generate video.")
             return
         }
 
@@ -44,8 +79,7 @@ class AndroidVideoGenerator {
             val format =
                 MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.width, motionConfig.height)
             format.setInteger(
-                MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+                MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             )
             format.setInteger(
                 MediaFormat.KEY_BIT_RATE,
@@ -98,8 +132,10 @@ class AndroidVideoGenerator {
                         )
 
                         else -> {
-                            val encodedData = mediaCodec.getOutputBuffer(encoderStatus)
-                                ?: throw RuntimeException("encoderOutputBuffer $encoderStatus was null")
+                            val encodedData =
+                                mediaCodec.getOutputBuffer(encoderStatus) ?: throw RuntimeException(
+                                    "encoderOutputBuffer $encoderStatus was null"
+                                )
 
                             if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                                 bufferInfo.size = 0
@@ -139,6 +175,11 @@ class AndroidVideoGenerator {
                 initialPresentationTimeUs = presentationTimeUs
             )
 
+            // Add audio sources if any
+            if (motionAudios.isNotEmpty()) {
+                muxAudioTracks(mediaMuxer, motionAudios, motionConfig.fps)
+            }
+
             Log.i(TAG, "Video generation complete: ${outputFile.absolutePath}")
         } catch (e: Exception) {
             Log.e(TAG, "Error generating video", e)
@@ -159,6 +200,70 @@ class AndroidVideoGenerator {
             } catch (e: Exception) {
                 Log.e(TAG, "Error stopping/releasing MediaMuxer", e)
             }
+        }
+    }
+
+    private fun muxAudioTracks(mediaMuxer: MediaMuxer?, audioSources: List<MotionAudio>, fps: Int) {
+        val bufferSize = 1 * 1024 * 1024
+        val buffer = ByteBuffer.allocate(bufferSize)
+        val bufferInfo = MediaCodec.BufferInfo()
+
+        for (audio in audioSources) {
+            val extractor = MediaExtractor()
+            extractor.setDataSource(audio.file.absolutePath)
+
+            var audioTrackIndex = -1
+            var muxerAudioTrackIndex = -1
+
+            for (i in 0 until extractor.trackCount) {
+                val format = extractor.getTrackFormat(i)
+                val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
+                if (mime.startsWith("audio/")) {
+                    extractor.selectTrack(i)
+                    muxerAudioTrackIndex = mediaMuxer!!.addTrack(format)
+                    audioTrackIndex = i
+                    break
+                }
+            }
+
+            if (audioTrackIndex < 0 || muxerAudioTrackIndex < 0) {
+                extractor.release()
+                continue
+            }
+
+            // Convert frames → microseconds
+            val startUs = audio.startFrame * 1_000_000L / fps
+            val endUs = audio.endFrame * 1_000_000L / fps
+            val insertOffsetUs = audio.insertAtFrame * 1_000_000L / fps
+
+            extractor.seekTo(startUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
+
+            while (true) {
+                bufferInfo.offset = 0
+                bufferInfo.size = extractor.readSampleData(buffer, 0)
+                if (bufferInfo.size < 0) break
+
+                val sampleTimeUs = extractor.sampleTime
+                if (sampleTimeUs > endUs) break
+
+                bufferInfo.presentationTimeUs = (sampleTimeUs - startUs) + insertOffsetUs
+
+                // Map extractor flags → codec flags
+                val sampleFlags = extractor.sampleFlags
+                var codecFlags = 0
+                if (sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0) {
+                    codecFlags = codecFlags or MediaCodec.BUFFER_FLAG_KEY_FRAME
+                }
+                if (sampleFlags and MediaExtractor.SAMPLE_FLAG_PARTIAL_FRAME != 0) {
+                    codecFlags = codecFlags or MediaCodec.BUFFER_FLAG_PARTIAL_FRAME
+                }
+                bufferInfo.flags = codecFlags
+
+                mediaMuxer!!.writeSampleData(muxerAudioTrackIndex, buffer, bufferInfo)
+                extractor.advance()
+            }
+
+            extractor.release()
         }
     }
 
@@ -227,8 +332,7 @@ class AndroidVideoGenerator {
     }
 
     private fun getBitmapCount(
-        bitmaps: List<Bitmap> = mutableListOf(),
-        inputDir: File? = null
+        bitmaps: List<Bitmap> = mutableListOf(), inputDir: File? = null
     ): Int = if (inputDir != null) {
         initBitmapFiles(inputDir)
         bitmapFiles?.size ?: 0
@@ -237,9 +341,7 @@ class AndroidVideoGenerator {
     }
 
     private fun getBitmap(
-        bitmaps: List<Bitmap> = mutableListOf(),
-        inputDir: File? = null,
-        index: Int
+        bitmaps: List<Bitmap> = mutableListOf(), inputDir: File? = null, index: Int
     ): Bitmap? = if (inputDir != null) {
         initBitmapFiles(inputDir)
 
@@ -255,7 +357,6 @@ class AndroidVideoGenerator {
             bitmapFiles = inputDir.listFiles { file ->
                 file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
             }?.sortedBy { file ->
-                // Extract digits from filename, default to 0 if no digits found
                 file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
             }
         }

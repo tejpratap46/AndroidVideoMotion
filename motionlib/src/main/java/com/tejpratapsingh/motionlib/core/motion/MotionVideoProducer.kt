@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
 import android.view.ViewGroup
+import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -17,7 +18,8 @@ open class MotionVideoProducer private constructor(
     val context: Context,
     val motionConfig: MotionConfig,
     val videoProducerAdapter: VideoProducerAdapter,
-    val motionComposerView: MotionComposerView
+    val motionComposerView: MotionComposerView,
+    val motionAudio: List<MotionAudio> = emptyList()
 ) : IMotionVideoProducer {
     var totalFrames: Int = 0
         private set
@@ -29,14 +31,16 @@ open class MotionVideoProducer private constructor(
             context: Context,
             config: MotionConfig,
             plugins: List<MotionPlugin> = emptyList(),
-            videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter()
+            videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
+            motionAudio: List<MotionAudio> = emptyList()
         ) = MotionVideoProducer(
             context = context,
             motionConfig = config,
             videoProducerAdapter = videoProducerAdapter,
             motionComposerView = MotionComposerView(
                 context = context, motionConfig = config, plugins = plugins
-            )
+            ),
+            motionAudio = motionAudio
         )
     }
 
@@ -76,6 +80,7 @@ open class MotionVideoProducer private constructor(
             context = context,
             motionConfig = motionConfig,
             motionComposerView = motionComposerView,
+            motionAudios = motionAudio,
             totalFrames = totalFrames,
             outputFile = outputFile,
             progressListener = progressListener

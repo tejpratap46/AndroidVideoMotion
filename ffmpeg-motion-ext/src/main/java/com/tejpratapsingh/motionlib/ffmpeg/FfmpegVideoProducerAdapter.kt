@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
+import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
@@ -25,6 +26,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         context: Context,
         motionConfig: MotionConfig,
         motionComposerView: MotionView,
+        motionAudios: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?

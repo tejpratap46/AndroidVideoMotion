@@ -2,6 +2,7 @@ package com.tejpratapsingh.animator.presentation
 
 import android.content.Context
 import com.tejpratapsingh.animator.ui.view.ContourDevice
+import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
@@ -24,6 +25,8 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         startFrame = 1,
         endFrame = motionConfig.fps * 4
     )
+
+    val motionAudio = emptyList<MotionAudio>()
 
 //    val motionView = MotionOpenGlView(
 //        context = applicationContext,
@@ -73,5 +76,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     return MotionVideoProducer.with(
         context = applicationContext,
         config = motionConfig,
+        motionAudio = motionAudio
     ).addMotionViewToSequence(motionView = motionView)
 }
