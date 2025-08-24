@@ -1,5 +1,6 @@
 package com.tejpratapsingh.motionlib.jcodec
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -9,13 +10,14 @@ import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
-class JCodecVideoProducerAdapter: VideoProducerAdapter {
+class JCodecVideoProducerAdapter : VideoProducerAdapter {
 
     companion object {
         private const val TAG = "JCodecVideoProducerAdap"
     }
 
     override suspend fun produceVideo(
+        context: Context,
         motionConfig: MotionConfig,
         motionComposerView: MotionView,
         totalFrames: Int,

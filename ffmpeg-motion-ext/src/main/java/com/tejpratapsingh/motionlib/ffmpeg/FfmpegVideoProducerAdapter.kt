@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
+import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
 import java.io.File
 import java.util.Locale
 
@@ -18,28 +19,16 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         private const val TAG = "FfmpegVideoProducerAdap"
     }
 
-    lateinit var context: Context
     private val subDirName = "motion_frames"
 
     override suspend fun produceVideo(
+        context: Context,
         motionConfig: MotionConfig,
         motionComposerView: MotionView,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?
     ): File {
-
-        if (!::context.isInitialized) {
-            val errorMessage = "applicationContext not initialised"
-            Log.e(
-                TAG,
-                "produceVideo: $errorMessage",
-                IllegalStateException(errorMessage)
-            )
-            return outputFile // Or throw the exception
-        }
-
-
         if (outputFile.exists()) {
             outputFile.delete()
         }

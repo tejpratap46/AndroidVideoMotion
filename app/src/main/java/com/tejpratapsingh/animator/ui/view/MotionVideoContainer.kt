@@ -114,6 +114,7 @@ class MotionVideoContainer(context: Context, motionVideoProducer: MotionVideoPro
     ): Uri =
         withContext(Dispatchers.IO) {
             val fileToShare = motionVideoProducer.produceVideo(
+                context = context,
                 outputFile = File.createTempFile(
                     "out",
                     ".mp4",

@@ -6,9 +6,9 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.extensions.loadBitmapsFromDirectory
+import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.ffmpeg.utils.extractFramesFromVideo
-import com.tejpratapsingh.motionlib.ffmpeg.utils.loadBitmapsFromDirectory
-import com.tejpratapsingh.motionlib.ffmpeg.utils.md5
 import java.io.File
 
 class FFMpegVideoFrameView(
@@ -29,7 +29,7 @@ class FFMpegVideoFrameView(
     private val videoBitmaps = extractFramesFromVideo(
         context = context, videoFile = videoFile, outputDirName = videoFile.name.md5()
     ).let {
-        loadBitmapsFromDirectory(context, it)
+        context.loadBitmapsFromDirectory(it)
     }
 
     init {

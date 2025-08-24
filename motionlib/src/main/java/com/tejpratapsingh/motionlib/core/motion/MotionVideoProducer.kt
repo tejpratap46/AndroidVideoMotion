@@ -64,14 +64,21 @@ open class MotionVideoProducer private constructor(
     }
 
     override suspend fun produceVideo(
-        outputFile: File, progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
+        context: Context,
+        outputFile: File,
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
     ): File = withContext(Dispatchers.IO) { // Use Dispatchers.Default for CPU-bound work
         if (outputFile.exists()) {
             outputFile.delete()
         }
 
         videoProducerAdapter.produceVideo(
-            motionConfig, motionComposerView, totalFrames, outputFile, progressListener
+            context = context,
+            motionConfig = motionConfig,
+            motionComposerView = motionComposerView,
+            totalFrames = totalFrames,
+            outputFile = outputFile,
+            progressListener = progressListener
         )
 
         outputFile

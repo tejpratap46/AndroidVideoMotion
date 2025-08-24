@@ -1,6 +1,7 @@
-package com.tejpratapsingh.motionlib.core.motion
+package com.tejpratapsingh.motionlib.core.infra
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -21,9 +22,12 @@ class AndroidVideoGenerator {
         private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
     }
 
+    private var bitmapFiles: List<File>? = null
+
     @Throws(IOException::class)
     fun generateVideo(
-        bitmaps: List<Bitmap>,
+        bitmaps: List<Bitmap> = mutableListOf(),
+        inputDir: File? = null,
         outputFile: File,
         motionConfig: MotionConfig
     ) {
@@ -37,9 +41,16 @@ class AndroidVideoGenerator {
         var presentationTimeUs = 0L
 
         try {
-            val format = MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.width, motionConfig.height)
-            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            format.setInteger(MediaFormat.KEY_BIT_RATE, calculateBitRate(motionConfig.width, motionConfig.height, motionConfig.fps))
+            val format =
+                MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.width, motionConfig.height)
+            format.setInteger(
+                MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+            )
+            format.setInteger(
+                MediaFormat.KEY_BIT_RATE,
+                calculateBitRate(motionConfig.width, motionConfig.height, motionConfig.fps)
+            )
             format.setInteger(MediaFormat.KEY_FRAME_RATE, motionConfig.fps)
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
 
@@ -48,14 +59,17 @@ class AndroidVideoGenerator {
             val inputSurface = mediaCodec.createInputSurface()
             mediaCodec.start()
 
-            mediaMuxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            mediaMuxer =
+                MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
             var videoTrackIndex = -1
             var muxerStarted = false
 
             val bufferInfo = MediaCodec.BufferInfo()
 
-            for (bitmap in bitmaps) {
+            for (i in 0 until getBitmapCount(bitmaps, inputDir)) {
                 val canvas = inputSurface.lockCanvas(null)
+                val bitmap = getBitmap(bitmaps, inputDir, i) ?: continue
+
                 try {
                     val scaledBitmap = bitmap.scale(motionConfig.width, motionConfig.height)
                     canvas.drawBitmap(scaledBitmap, 0f, 0f, null)
@@ -77,7 +91,12 @@ class AndroidVideoGenerator {
                             mediaMuxer.start()
                             muxerStarted = true
                         }
-                        encoderStatus < 0 -> Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus")
+
+                        encoderStatus < 0 -> Log.w(
+                            TAG,
+                            "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus"
+                        )
+
                         else -> {
                             val encodedData = mediaCodec.getOutputBuffer(encoderStatus)
                                 ?: throw RuntimeException("encoderOutputBuffer $encoderStatus was null")
@@ -167,7 +186,12 @@ class AndroidVideoGenerator {
                     mediaMuxer.start()
                     localMuxerStarted = true
                 }
-                encoderStatus < 0 -> Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus")
+
+                encoderStatus < 0 -> Log.w(
+                    TAG,
+                    "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus"
+                )
+
                 else -> {
                     val encodedData = mediaCodec.getOutputBuffer(encoderStatus)
                         ?: throw RuntimeException("encoderOutputBuffer $encoderStatus was null (during drain)")
@@ -200,5 +224,40 @@ class AndroidVideoGenerator {
 
     private fun calculateBitRate(width: Int, height: Int, frameRate: Int): Int {
         return (width * height * frameRate * 0.25).toInt()
+    }
+
+    private fun getBitmapCount(
+        bitmaps: List<Bitmap> = mutableListOf(),
+        inputDir: File? = null
+    ): Int = if (inputDir != null) {
+        initBitmapFiles(inputDir)
+        bitmapFiles?.size ?: 0
+    } else {
+        bitmaps.size
+    }
+
+    private fun getBitmap(
+        bitmaps: List<Bitmap> = mutableListOf(),
+        inputDir: File? = null,
+        index: Int
+    ): Bitmap? = if (inputDir != null) {
+        initBitmapFiles(inputDir)
+
+        bitmapFiles?.getOrNull(index)?.let { file ->
+            BitmapFactory.decodeFile(file.absolutePath)
+        }
+    } else {
+        bitmaps.getOrNull(index)
+    }
+
+    private fun initBitmapFiles(inputDir: File) {
+        if (bitmapFiles == null) {
+            bitmapFiles = inputDir.listFiles { file ->
+                file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
+            }?.sortedBy { file ->
+                // Extract digits from filename, default to 0 if no digits found
+                file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
+            }
+        }
     }
 }

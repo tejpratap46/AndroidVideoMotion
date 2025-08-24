@@ -123,6 +123,7 @@ abstract class MotionWorker(
 
             // Assuming produceVideo handles its own exceptions or lets them propagate
             return@withContext motionVideoProducer.produceVideo(
+                context = applicationContext,
                 outputFile = outputFile,
                 progressListener = progressListener
             )
