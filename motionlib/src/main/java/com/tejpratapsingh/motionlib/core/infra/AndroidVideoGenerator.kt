@@ -1,5 +1,6 @@
 package com.tejpratapsingh.motionlib.core.infra
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaCodec
@@ -238,6 +239,7 @@ class AndroidVideoGenerator {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private fun muxAudioTracks(
         mediaMuxer: MediaMuxer,
         audioSources: List<MotionAudio>,
