@@ -1,10 +1,11 @@
 package com.tejpratapsingh.animator.presentation
 
+import RenaultCar
 import android.content.Context
-import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
+import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -16,32 +17,42 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         width = 768, height = 1366, fps = 30
     )
 
-//    val assetManager = applicationContext.assets
-//    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
-//
-//    val motionView: BaseMotionView = RenaultCar(
-//        context = applicationContext,
-//        startFrame = 1,
-//        endFrame = files?.size ?: 1
-//    )
+    val assetManager = applicationContext.assets
+    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
 
-    val motionView = ContourDevice(
-        context = applicationContext, startFrame = 1, endFrame = motionConfig.fps * 4
+    val motionView: BaseMotionView = RenaultCar(
+        context = applicationContext,
+        startFrame = 1,
+        endFrame = files?.size ?: 1
     )
 
-    val httpClient = HttpClient(CIO)
-    val file = File(applicationContext.cacheDir, "audio.mp3")
-    runBlocking {
-        try {
-            httpClient.downloadFile(
-                file = file,
-                url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-            )
-        } catch (e: Exception) {
+//    val motionView = ContourDevice(
+//        context = applicationContext, startFrame = 1, endFrame = motionConfig.fps * 4
+//    )
+
+    val file = File(applicationContext.cacheDir, "arijit.m4a")
+
+    if (!file.exists()) {
+        val httpClient = HttpClient(CIO)
+        runBlocking {
+            try {
+                httpClient.downloadFile(
+                    file = file,
+                    url = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3d/be/de/3dbedeeb-4ef4-0b43-d23e-ed7b3ec0c034/mzaf_3312428321786187211.plus.aac.p.m4a"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
+
     val motionAudio = listOf(
-        MotionAudio(file)
+        MotionAudio(
+            file = file,
+            delayFrame = motionView.startFrame,
+            startFrame = motionView.startFrame,
+            endFrame = motionView.endFrame
+        )
     )
 
 //    val motionView = MotionOpenGlView(
@@ -90,6 +101,8 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     }*/
 
     return MotionVideoProducer.with(
-        context = applicationContext, config = motionConfig, motionAudio = motionAudio
+        context = applicationContext,
+        config = motionConfig,
+        motionAudio = motionAudio,
     ).addMotionViewToSequence(motionView = motionView)
 }

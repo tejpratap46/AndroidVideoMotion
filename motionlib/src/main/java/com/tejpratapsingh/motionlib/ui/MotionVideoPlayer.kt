@@ -1,11 +1,13 @@
 package com.tejpratapsingh.motionlib.ui
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.os.Build
 import android.widget.ImageButton
 import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
+import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +30,8 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
     private val playbackDelayMs = 1000L / motionVideoProducer.motionConfig.fps
 
     private var isPlaying = false
+
+    private val activePlayers = mutableMapOf<MotionAudio, MediaPlayer>()
 
     val seekBar: SeekBar = SeekBar(context).apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -81,8 +85,7 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
         controlsLayout.addView(seekBar)
 
         val seekBarParams = LinearLayoutCompat.LayoutParams(
-            0,
-            LinearLayoutCompat.LayoutParams.WRAP_CONTENT
+            0, LinearLayoutCompat.LayoutParams.WRAP_CONTENT
         ).apply {
             weight = 1f
         }
@@ -90,14 +93,59 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
 
         controlsLayout.layoutBy(
             x = leftTo { parent.left() }.rightTo { parent.right() },
-            y = bottomTo { parent.bottom() }
-        )
+            y = bottomTo { parent.bottom() })
 
         previewLayout.addView(motionVideoProducer.motionComposerView)
         previewLayout.layoutBy(
             x = leftTo { parent.left() }.rightTo { parent.right() },
-            y = topTo { parent.top() }.bottomTo { controlsLayout.top() }
-        )
+            y = topTo { parent.top() }.bottomTo { controlsLayout.top() })
+    }
+
+    private fun startAudioIfNeeded(frame: Int, motionAudios: List<MotionAudio>) {
+        motionAudios.forEach { audio ->
+            val shouldPlay = frame in audio.delayFrame..audio.endFrame
+            val player = activePlayers[audio]
+
+            if (shouldPlay) {
+                if (player == null) {
+                    // First time: create player
+                    val mediaPlayer = android.media.MediaPlayer().apply {
+                        setDataSource(audio.file.absolutePath)
+                        prepare()
+                        start()
+                    }
+                    activePlayers[audio] = mediaPlayer
+                } else if (!player.isPlaying) {
+                    // Resume instead of restarting
+                    player.start()
+                }
+            } else {
+                // Outside of valid range → stop & release
+                if (player != null) {
+                    if (player.isPlaying) player.pause()
+                    player.release()
+                    activePlayers.remove(audio)
+                }
+            }
+        }
+    }
+
+    private fun pauseAllAudio() {
+        activePlayers.values.forEach { player ->
+            if (player.isPlaying) {
+                player.pause()
+            }
+        }
+    }
+
+    private fun stopAllAudio() {
+        activePlayers.values.forEach { player ->
+            if (player.isPlaying) {
+                player.stop()
+            }
+            player.release()
+        }
+        activePlayers.clear()
     }
 
     private fun startPlayback() {
@@ -114,27 +162,37 @@ class MotionVideoPlayer(context: Context, private val motionVideoProducer: Motio
                     currentProgress++
                     seekBar.progress = currentProgress
                     motionVideoProducer.motionComposerView.forFrame(currentProgress)
+
+                    // 🔊 Check if we should play audio
+                    startAudioIfNeeded(
+                        frame = currentProgress,
+                        motionAudios = motionVideoProducer.motionAudio // you need to expose this
+                    )
+
                     delay(playbackDelayMs)
                 } else {
-                    seekBar.progress = 0 // Optional: reset to beginning
+                    seekBar.progress = 0
                     motionVideoProducer.motionComposerView.forFrame(0)
+                    stopAllAudio()
                 }
             }
         }
     }
 
     private fun pausePlayback() {
-        if (!isPlaying && playbackJob == null) return // Already paused or never started
+        if (!isPlaying && playbackJob == null) return
 
         isPlaying = false
         playPauseButton.setImageResource(android.R.drawable.ic_media_play)
-        playbackJob?.cancel() // Cancel the running coroutine
+        playbackJob?.cancel()
         playbackJob = null
+        pauseAllAudio() // ✅ pause, not release
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        pausePlayback() // Ensure playback is stopped
-        scope.cancel() // Cancel the scope to clean up coroutines
+        pausePlayback()
+        scope.cancel()
+        stopAllAudio()
     }
 }

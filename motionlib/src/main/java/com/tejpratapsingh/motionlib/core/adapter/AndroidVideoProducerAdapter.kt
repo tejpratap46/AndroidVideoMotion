@@ -27,7 +27,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         context: Context,
         motionConfig: MotionConfig,
         motionComposerView: MotionView,
-        motionAudios: List<MotionAudio>,
+        motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?
@@ -66,6 +66,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
 
         androidVideoGenerator.generateVideo(
             inputDir = subDir,
+            motionAudio = motionAudio,
             outputFile = outputFile,
             motionConfig = motionConfig
         )

@@ -27,12 +27,13 @@ open class MotionVideoProducer private constructor(
     companion object {
         private const val TAG = "MotionVideo"
 
+        @JvmStatic
         fun with(
             context: Context,
             config: MotionConfig,
             plugins: List<MotionPlugin> = emptyList(),
+            motionAudio: List<MotionAudio> = emptyList(),
             videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
-            motionAudio: List<MotionAudio> = emptyList()
         ) = MotionVideoProducer(
             context = context,
             motionConfig = config,
@@ -80,7 +81,7 @@ open class MotionVideoProducer private constructor(
             context = context,
             motionConfig = motionConfig,
             motionComposerView = motionComposerView,
-            motionAudios = motionAudio,
+            motionAudio = motionAudio,
             totalFrames = totalFrames,
             outputFile = outputFile,
             progressListener = progressListener

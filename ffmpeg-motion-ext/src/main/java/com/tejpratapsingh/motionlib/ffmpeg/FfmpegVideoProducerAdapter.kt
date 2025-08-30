@@ -26,7 +26,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         context: Context,
         motionConfig: MotionConfig,
         motionComposerView: MotionView,
-        motionAudios: List<MotionAudio>,
+        motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
         progressListener: ((Int, Bitmap) -> Unit)?
@@ -73,7 +73,16 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         // -c:v libx264: Video codec (H.264)
         // -pix_fmt yuv420p: Pixel format, good for compatibility
         // -r: Output framerate (often the same as input, but can be different)
-        val query = "-y -framerate ${motionConfig.fps} -start_number 1 -i \"$inputPattern\" -c:v libx264 -pix_fmt yuv420p -r ${motionConfig.fps} \"${outputFile.path}\""
+//        val query = "-y -framerate ${motionConfig.fps} -start_number 1 -i \"$inputPattern\" -c:v libx264 -pix_fmt yuv420p -r ${motionConfig.fps} \"${outputFile.path}\""
+
+        val query = buildFfmpegCommand(
+            inputPattern = inputPattern,
+            fps = motionConfig.fps,
+            outputFile = outputFile,
+            audioTracks = motionAudio,
+            startNumber = 1,
+            mixAudio = true // Change to false if you want separate audio tracks
+        ).joinToString(" ")
 
         Log.d(TAG, "Executing FFmpeg query: $query")
         val session = FFmpegKit.execute(query)
@@ -96,5 +105,91 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         }
 
         return outputFile
+    }
+
+    fun buildFfmpegCommand(
+        inputPattern: String,     // e.g. "/sdcard/frames/frame_%d.png"
+        fps: Int,
+        outputFile: File,
+        audioTracks: List<MotionAudio>,
+        startNumber: Int = 1,
+        mixAudio: Boolean = true  // true = mix tracks, false = keep separate
+    ): List<String> {
+        val command = mutableListOf<String>()
+
+        // Base video input (image sequence)
+        command.addAll(
+            listOf(
+                "-y",
+                "-framerate", fps.toString(),
+                "-start_number", startNumber.toString(),
+                "-i", inputPattern
+            )
+        )
+
+        // Add audio inputs
+        audioTracks.forEach { track ->
+            command.addAll(listOf("-i", track.file.absolutePath))
+        }
+
+        if (mixAudio && audioTracks.isNotEmpty()) {
+            // Build filter_complex for trimming & mixing
+            val filterParts = mutableListOf<String>()
+            audioTracks.forEachIndexed { index, track ->
+                val startSec = track.startFrame / fps
+                val endSec = track.endFrame / fps
+                val delayMs = (track.delayFrame / fps * 1000)
+
+                val label = "a${index + 1}"
+                filterParts.add(
+                    "[${index + 1}:a]atrim=start=${startSec}:end=${endSec}," +
+                            "asetpts=PTS-STARTPTS," +
+                            "adelay=${delayMs}|${delayMs}[$label]"
+                )
+            }
+
+            val labels = audioTracks.mapIndexed { index, _ -> "[a${index + 1}]" }
+            filterParts.add("${labels.joinToString("")}amix=inputs=${audioTracks.size}:normalize=0[outa]")
+
+            command.addAll(listOf("-filter_complex", filterParts.joinToString(";")))
+
+            // Map video + mixed audio
+            command.addAll(
+                listOf(
+                    "-map",
+                    "0:v",
+                    "-map",
+                    "[outa]",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-r",
+                    fps.toString(),
+                    "-shortest",
+                    outputFile.absolutePath
+                )
+            )
+        } else {
+            // Keep tracks separate, no filter_complex
+            command.addAll(
+                listOf("-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", fps.toString())
+            )
+
+            // Map video and each audio
+            command.add("-map")
+            command.add("0:v")
+            audioTracks.forEachIndexed { index, _ ->
+                command.addAll(listOf("-map", "${index + 1}:a"))
+            }
+
+            command.addAll(listOf("-shortest", outputFile.absolutePath))
+        }
+
+        return command
+    }
+
+    fun frameToSeconds(frame: Int, fps: Int): Double {
+        return frame.toDouble() / fps.toDouble()
     }
 }

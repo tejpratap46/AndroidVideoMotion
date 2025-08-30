@@ -64,7 +64,7 @@ class AndroidVideoGenerator {
         inputDir: File? = null,
         outputFile: File,
         motionConfig: MotionConfig,
-        motionAudios: List<MotionAudio> = emptyList()
+        motionAudio: List<MotionAudio> = emptyList()
     ) {
         if (bitmaps.isEmpty() && inputDir == null) {
             Log.w(TAG, "No bitmaps provided. Cannot generate video.")
@@ -74,6 +74,7 @@ class AndroidVideoGenerator {
         var mediaCodec: MediaCodec? = null
         var mediaMuxer: MediaMuxer? = null
         var presentationTimeUs = 0L
+        var muxerStarted = false
 
         try {
             val format =
@@ -93,13 +94,30 @@ class AndroidVideoGenerator {
             val inputSurface = mediaCodec.createInputSurface()
             mediaCodec.start()
 
+            // Collect audio track formats beforehand (use original formats; no re-encode here)
+            val audioTrackFormats = mutableListOf<MediaFormat>()
+            for (audio in motionAudio) {
+                val extractor = MediaExtractor()
+                extractor.setDataSource(audio.file.absolutePath)
+                for (i in 0 until extractor.trackCount) {
+                    val fmt = extractor.getTrackFormat(i)
+                    val mime = fmt.getString(MediaFormat.KEY_MIME) ?: ""
+                    if (mime.startsWith("audio/")) {
+                        audioTrackFormats.add(fmt)
+                        break
+                    }
+                }
+                extractor.release()
+            }
+
             mediaMuxer =
                 MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
             var videoTrackIndex = -1
-            var muxerStarted = false
+            val muxerAudioTrackIndices = mutableListOf<Int>()
 
             val bufferInfo = MediaCodec.BufferInfo()
 
+            // Encode frames
             for (i in 0 until getBitmapCount(bitmaps, inputDir)) {
                 val canvas = inputSurface.lockCanvas(null)
                 val bitmap = getBitmap(bitmaps, inputDir, i) ?: continue
@@ -114,22 +132,32 @@ class AndroidVideoGenerator {
                     inputSurface.unlockCanvasAndPost(canvas)
                 }
 
+                // Drain available encoder output so we can catch INFO_OUTPUT_FORMAT_CHANGED early
                 while (true) {
                     val encoderStatus = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC)
                     when {
                         encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> break
+
                         encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                             if (muxerStarted) throw RuntimeException("format changed after muxer start")
                             val newFormat = mediaCodec.outputFormat
                             videoTrackIndex = mediaMuxer.addTrack(newFormat)
+
+                            // Add audio tracks BEFORE starting the muxer
+                            for (fmt in audioTrackFormats) {
+                                muxerAudioTrackIndices.add(mediaMuxer.addTrack(fmt))
+                            }
+
                             mediaMuxer.start()
                             muxerStarted = true
                         }
 
-                        encoderStatus < 0 -> Log.w(
-                            TAG,
-                            "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus"
-                        )
+                        encoderStatus < 0 -> {
+                            Log.w(
+                                TAG,
+                                "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus"
+                            )
+                        }
 
                         else -> {
                             val encodedData =
@@ -138,6 +166,7 @@ class AndroidVideoGenerator {
                                 )
 
                             if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                                // Codec config data; ignore
                                 bufferInfo.size = 0
                             }
 
@@ -163,6 +192,7 @@ class AndroidVideoGenerator {
                 }
             }
 
+            // Signal end of input and make sure we drain until EOS
             mediaCodec.signalEndOfInputStream()
 
             drainEncoder(
@@ -172,12 +202,15 @@ class AndroidVideoGenerator {
                 videoTrackIndex = videoTrackIndex,
                 muxerStarted = muxerStarted,
                 fps = motionConfig.fps,
-                initialPresentationTimeUs = presentationTimeUs
+                initialPresentationTimeUs = presentationTimeUs,
+                audioTrackFormats = audioTrackFormats,
+                muxerAudioTrackIndices = muxerAudioTrackIndices
             )
 
-            // Add audio sources if any
-            if (motionAudios.isNotEmpty()) {
-                muxAudioTracks(mediaMuxer, motionAudios, motionConfig.fps)
+            // Now copy audio samples into the muxer (timeline aligned by frames -> microseconds)
+            if (motionAudio.isNotEmpty() && muxerAudioTrackIndices.isNotEmpty()) {
+                Log.d(TAG, "generateVideo: adding audio")
+                muxAudioTracks(mediaMuxer, motionAudio, motionConfig.fps, muxerAudioTrackIndices)
             }
 
             Log.i(TAG, "Video generation complete: ${outputFile.absolutePath}")
@@ -195,7 +228,9 @@ class AndroidVideoGenerator {
                 Log.e(TAG, "Error stopping/releasing MediaCodec", e)
             }
             try {
-                mediaMuxer?.stop()
+                if (muxerStarted) {
+                    mediaMuxer?.stop()
+                }
                 mediaMuxer?.release()
             } catch (e: Exception) {
                 Log.e(TAG, "Error stopping/releasing MediaMuxer", e)
@@ -203,65 +238,42 @@ class AndroidVideoGenerator {
         }
     }
 
-    /**
-     * Muxes multiple audio tracks into the video using the provided MediaMuxer.
-     *
-     * This function iterates through a list of [MotionAudio] objects, each representing
-     * an audio source to be included in the video. For each audio source, it:
-     * 1. Initializes a [MediaExtractor] to read the audio data from the specified file.
-     * 2. Finds the first audio track in the source file.
-     * 3. Adds this audio track to the [MediaMuxer].
-     * 4. Calculates the start, end, and insertion timestamps in microseconds based on
-     *    the frame numbers provided in the [MotionAudio] object and the video's FPS.
-     * 5. Seeks the extractor to the calculated start time.
-     * 6. Reads audio samples from the extractor, adjusts their presentation timestamps
-     *    according to the trimming and insertion points, and writes them to the muxer.
-     *    This process continues until the end of the specified segment or the end of the
-     *    audio stream is reached.
-     * 7. Releases the [MediaExtractor] for the current audio source.
-     *
-     * If an audio source file does not contain an audio track, it is skipped.
-     *
-     * @param mediaMuxer The [MediaMuxer] instance to which the audio tracks will be added.
-     *                   This muxer should already have the video track added and be started
-     *                   if video encoding has begun.
-     * @param audioSources A list of [MotionAudio] objects, each defining an audio file
-     *                     and the timing for its inclusion in the final video.
-     * @param fps The frames per second of the video, used to convert frame-based timings
-     *            in [MotionAudio] to microsecond-based timestamps for audio processing.
-     */
-    private fun muxAudioTracks(mediaMuxer: MediaMuxer?, audioSources: List<MotionAudio>, fps: Int) {
+    private fun muxAudioTracks(
+        mediaMuxer: MediaMuxer,
+        audioSources: List<MotionAudio>,
+        fps: Int,
+        audioTrackIndices: List<Int>
+    ) {
+        Log.d(TAG, "muxAudioTracks: adding audio")
         val bufferSize = 1 * 1024 * 1024
         val buffer = ByteBuffer.allocate(bufferSize)
         val bufferInfo = MediaCodec.BufferInfo()
 
-        for (audio in audioSources) {
+        for ((sourceIndex, audio) in audioSources.withIndex()) {
             val extractor = MediaExtractor()
             extractor.setDataSource(audio.file.absolutePath)
 
             var audioTrackIndex = -1
-            var muxerAudioTrackIndex = -1
-
             for (i in 0 until extractor.trackCount) {
                 val format = extractor.getTrackFormat(i)
                 val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
                 if (mime.startsWith("audio/")) {
                     extractor.selectTrack(i)
-                    muxerAudioTrackIndex = mediaMuxer!!.addTrack(format)
                     audioTrackIndex = i
                     break
                 }
             }
 
-            if (audioTrackIndex < 0 || muxerAudioTrackIndex < 0) {
+            if (audioTrackIndex < 0) {
                 extractor.release()
                 continue
             }
 
-            // Convert frames → microseconds
+            val muxerAudioTrackIndex = audioTrackIndices[sourceIndex]
+
             val startUs = audio.startFrame * 1_000_000L / fps
             val endUs = audio.endFrame * 1_000_000L / fps
-            val insertOffsetUs = audio.insertAtFrame * 1_000_000L / fps
+            val insertOffsetUs = audio.delayFrame * 1_000_000L / fps
 
             extractor.seekTo(startUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
 
@@ -273,20 +285,13 @@ class AndroidVideoGenerator {
                 val sampleTimeUs = extractor.sampleTime
                 if (sampleTimeUs > endUs) break
 
+                // Keep original extractor flags; they are already in muxer-friendly form
+                bufferInfo.flags = extractor.sampleFlags
+
+                // Shift timeline into final video timeline window
                 bufferInfo.presentationTimeUs = (sampleTimeUs - startUs) + insertOffsetUs
 
-                // Map extractor flags → codec flags
-                val sampleFlags = extractor.sampleFlags
-                var codecFlags = 0
-                if (sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0) {
-                    codecFlags = codecFlags or MediaCodec.BUFFER_FLAG_KEY_FRAME
-                }
-                if (sampleFlags and MediaExtractor.SAMPLE_FLAG_PARTIAL_FRAME != 0) {
-                    codecFlags = codecFlags or MediaCodec.BUFFER_FLAG_PARTIAL_FRAME
-                }
-                bufferInfo.flags = codecFlags
-
-                mediaMuxer!!.writeSampleData(muxerAudioTrackIndex, buffer, bufferInfo)
+                mediaMuxer.writeSampleData(muxerAudioTrackIndex, buffer, bufferInfo)
                 extractor.advance()
             }
 
@@ -301,7 +306,9 @@ class AndroidVideoGenerator {
         videoTrackIndex: Int,
         muxerStarted: Boolean,
         fps: Int,
-        initialPresentationTimeUs: Long
+        initialPresentationTimeUs: Long,
+        audioTrackFormats: List<MediaFormat>,
+        muxerAudioTrackIndices: MutableList<Int>
     ) {
         var localMuxerStarted = muxerStarted
         var localVideoTrackIndex = videoTrackIndex
@@ -311,10 +318,18 @@ class AndroidVideoGenerator {
             val encoderStatus = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC)
             when {
                 encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> break
+
                 encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                    // This can happen if no encoded output was dequeued earlier.
                     if (localMuxerStarted) throw RuntimeException("format changed after muxer start (during drain)")
                     val newFormat = mediaCodec.outputFormat
                     localVideoTrackIndex = mediaMuxer!!.addTrack(newFormat)
+
+                    // IMPORTANT: add audio tracks BEFORE starting the muxer
+                    for (fmt in audioTrackFormats) {
+                        muxerAudioTrackIndices.add(mediaMuxer.addTrack(fmt))
+                    }
+
                     mediaMuxer.start()
                     localMuxerStarted = true
                 }
