@@ -25,14 +25,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-    aaptOptions {
-        noCompress 'tflite', 'lite', 'bin', 'json', 'pb', 'tflite-lite'
-    }
     kotlinOptions {
         jvmTarget = '11'
     }
     buildFeatures {
         mlModelBinding true
+    }
+    androidResources {
+        noCompress 'tflite', 'lite', 'bin', 'json', 'pb', 'tflite-lite'
     }
 }
 

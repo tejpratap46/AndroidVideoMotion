@@ -61,10 +61,12 @@ class Interpolators(val easing: Easings) : Interpolator {
                 val o = t - 1.5 / 2.75
                 (7.5625 * o * o + 0.75).toFloat()
             }
+
             t < 2.5 / 2.75 -> {
                 val o = t - 2.25 / 2.75
                 (7.5625 * o * o + 0.9375).toFloat()
             }
+
             else -> {
                 val o = t - 2.625 / 2.75
                 (7.5625 * o * o + 0.984375).toFloat()

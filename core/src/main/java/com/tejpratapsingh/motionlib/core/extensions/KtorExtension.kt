@@ -45,7 +45,10 @@ suspend fun HttpClient.downloadFile(
                 file
             } catch (e: IOException) {
                 // Catch specific IOExceptions during file writing
-                throw DownloadException("Failed to write downloaded file to ${file.path}: ${e.message}", e)
+                throw DownloadException(
+                    "Failed to write downloaded file to ${file.path}: ${e.message}",
+                    e
+                )
             }
         }
     } catch (e: DownloadException) {
@@ -53,6 +56,9 @@ suspend fun HttpClient.downloadFile(
         throw e
     } catch (e: Exception) {
         // Catch other potential exceptions (e.g., Ktor client exceptions)
-        throw DownloadException("An unexpected error occurred during download from $url: ${e.message}", e)
+        throw DownloadException(
+            "An unexpected error occurred during download from $url: ${e.message}",
+            e
+        )
     }
 }

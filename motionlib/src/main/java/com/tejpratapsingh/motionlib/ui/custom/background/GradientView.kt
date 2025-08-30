@@ -40,7 +40,8 @@ class GradientView(
     }
     private var currentFrame: Int = 0
 
-    private val interpolator: Interpolators = Interpolators(Easings.LINEAR) // Assuming Interpolators handles this well
+    private val interpolator: Interpolators =
+        Interpolators(Easings.LINEAR) // Assuming Interpolators handles this well
     private var frameRange = Pair(first = startFrame, second = endFrame)
 
     // Option 1: Fixed value range (if this is always the case)
@@ -115,6 +116,7 @@ class GradientView(
                     null, // Positions: null means evenly distributed
                     Shader.TileMode.CLAMP
                 )
+
                 Orientation.VERTICAL -> LinearGradient(
                     0f,
                     0f,
@@ -124,6 +126,7 @@ class GradientView(
                     null,
                     Shader.TileMode.CLAMP
                 )
+
                 Orientation.HORIZONTAL -> LinearGradient(
                     0f,
                     0f,
