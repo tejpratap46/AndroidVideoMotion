@@ -11,13 +11,13 @@ abstract class AbstractMotionTextView(
     startFrame: Int,
     endFrame: Int,
     val textView: AppCompatTextView,
-    font: String? = null
+    fontUrl: String? = null
 ) : BaseMotionView(context, startFrame, endFrame) {
 
     init {
         textView.apply {
-            if (font != null) {
-                typeface = getWebFont(font)
+            if (fontUrl != null) {
+                typeface = getWebFont(fontUrl)
             }
         }
 

@@ -21,7 +21,7 @@ class FFMpegVideoFrameView(
 
     override lateinit var motionConfig: MotionConfig
 
-    private val imageView = ImageView(context).apply {
+    val imageView = ImageView(context).apply {
         scaleType = ImageView.ScaleType.CENTER_CROP
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     }

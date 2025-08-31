@@ -14,7 +14,6 @@ class VideoFrameView(
     context: Context, videoUri: Uri, startFrame: Int, endFrame: Int
 ) : BaseMotionView(context, startFrame, endFrame) {
 
-
     val fps = getVideoFpsWithRetriever(context, videoUri) ?: 30F
     val videoBitmaps = extractAllVideoFrames(
         context = context, videoUri = videoUri, frameIntervalUs = (1_000_000 / fps).roundToLong()

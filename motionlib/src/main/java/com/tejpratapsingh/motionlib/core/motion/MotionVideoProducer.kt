@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-open class MotionVideoProducer private constructor(
+open class MotionVideoProducer(
     val context: Context,
     val motionConfig: MotionConfig,
     val videoProducerAdapter: VideoProducerAdapter,
