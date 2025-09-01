@@ -1,3 +1,20 @@
 <resources>
-    <string name="app_name">LyricsMaker</string>
+    <string name="app_name">Lyrics Maker</string>
+    <string name="search_lyrics">Search Lyrics</string>
+    <string name="search_any_song_or_artist">Search Any Song or Artist</string>
+    <string name="search">Search</string>
+
+    <string name="notification_channel_rendering_progress_name">Rendering Progress</string>
+    <string name="notification_channel_rendering_progress_description">Shows the progress of
+            video rendering.
+        </string>
+    <string name="notification_channel_rendering_completed_name">Rendering Completed</string>
+    <string name="notification_channel_rendering_completed_description">Notifies when video
+            rendering is finished.
+        </string>
+
+    <string name="notification_render_progress_title">Rendering In Progress</string>
+    <string name="notification_render_progress_text_starting">Starting Render</string>
+    <string name="notification_render_complete_title">Rendering Finished</string>
+    <string name="notification_render_complete_text">Video Rendering finished</string>
 </resources>

@@ -1,0 +1,183 @@
+package com.tejpratapsingh.lyricsmaker.presentation.worker
+
+import android.Manifest
+import android.R
+import android.app.Notification
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
+import androidx.work.Data
+import androidx.work.ForegroundInfo
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
+import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.worker.MotionWorker
+import java.io.File
+import java.net.URLConnection
+import java.util.Locale
+import java.util.UUID
+
+class LyricsMotionWorker(private val appContext: Context, parameters: WorkerParameters) :
+    MotionWorker(appContext, parameters) {
+
+    private val notificationManager = NotificationManagerCompat.from(appContext)
+
+    private val progressNotificationBuilder: NotificationCompat.Builder by lazy {
+        NotificationFactory.getRenderProgressNotification(appContext)
+    }
+
+    private val completedNotificationBuilder: NotificationCompat.Builder by lazy {
+        NotificationFactory.getRenderCompleteNotification(appContext)
+    }
+
+    private fun createForegroundInfo(
+        progressNotificationId: Int, notification: Notification
+    ): ForegroundInfo {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            ForegroundInfo(
+                progressNotificationId,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+            )
+        } else {
+            ForegroundInfo(progressNotificationId, notification)
+        }
+    }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        // Create the notification for the foreground service
+        val notification =
+            progressNotificationBuilder.setContentTitle("Rendering Video...") // Initial title
+                .setProgress(0, 0, true) // Indeterminate progress initially
+                .setOngoing(true).build()
+        return createForegroundInfo(progressNotificationId, notification)
+    }
+
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer {
+        return getLyricsVideoProducer(
+            appContext, LyricsResponse.fromJson(inputData.getString(LYRICS)!!)
+        )
+    }
+
+    override fun onProgress(totalFrames: Int, currentProgress: Int, bitmap: Bitmap) {
+        Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
+
+        val percentage = (currentProgress.toDouble() / totalFrames) * 100
+        val progressText = String.format(
+            Locale.getDefault(), "%d/%d frames completed", currentProgress, totalFrames
+        )
+        val contentText = String.format(Locale.getDefault(), "%.0f%%", percentage)
+
+        val notification =
+            progressNotificationBuilder.setProgress(totalFrames, currentProgress, false)
+                .setSubText(progressText).setContentText(contentText).build()
+
+        updateNotification(progressNotificationId, notification)
+
+        // If you need to update the foreground notification specifically (often handled by the initial setForegroundAsync)
+        setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
+    }
+
+    override fun onCompleted(videoFile: File) {
+        Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
+
+        // Cancel the progress notification
+        notificationManager.cancel(progressNotificationId)
+
+        val intentShareFile = Intent(Intent.ACTION_SEND)
+        val pendingShareIntent = createPendingIntentFor(intentShareFile, videoFile)
+        val intentOpenFile = Intent(Intent.ACTION_VIEW)
+        val pendingOpenFileIntent = createPendingIntentFor(intentOpenFile, videoFile)
+
+        val completedNotification = completedNotificationBuilder.setContentTitle("Render Complete")
+            .setContentText("Video ready: ${videoFile.name}").addAction(
+                NotificationCompat.Action(
+                    R.drawable.ic_menu_share, // Consider using a custom icon
+                    "Share Video", pendingShareIntent
+                )
+            ).addAction(
+                NotificationCompat.Action(
+                    R.drawable.ic_media_play, // Consider using a custom icon
+                    "Open Video", pendingOpenFileIntent
+                )
+            ).setAutoCancel(true) // Dismiss notification when tapped (if no content intent set)
+            .build()
+
+        updateNotification(completedNotificationId, completedNotification)
+    }
+
+    @Volatile
+    private var lastNotificationUpdateTime = 0L
+
+    private fun updateNotification(notificationId: Int, notification: Notification) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotificationUpdateTime < 500) {
+            return
+        }
+        lastNotificationUpdateTime = currentTime
+
+        if (ActivityCompat.checkSelfPermission(
+                appContext, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationManager.notify(notificationId, notification)
+        } else {
+            // Handle the case where permission is not granted.
+            // Maybe log an error or inform the user in a different way.
+            Log.w(TAG, "POST_NOTIFICATIONS permission not granted. Cannot show notification.")
+        }
+    }
+
+    private fun createPendingIntentFor(intent: Intent, videoFile: File): PendingIntent {
+        val apkURI: Uri = FileProvider.getUriForFile(
+            appContext, "${appContext.packageName}.fileprovider", videoFile
+        )
+        intent.setDataAndType(
+            apkURI, URLConnection.guessContentTypeFromName(videoFile.name)
+        )
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.putExtra(Intent.EXTRA_STREAM, apkURI)
+
+        val pendingShareIntentFlags =
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+
+        return PendingIntent.getActivity(
+            appContext, 0, // requestCode, consider making this unique if you have many such intents
+            intent, pendingShareIntentFlags
+        )
+    }
+
+    companion object {
+        private const val TAG = "SampleMotionWorker"
+
+        private const val LYRICS = "lyrics"
+
+        fun startWork(context: Context, lyrics: LyricsResponse): UUID {
+            val inputData = Data.Builder().putString(LYRICS, lyrics.toJson()).build()
+
+            val workRequest =
+                OneTimeWorkRequestBuilder<LyricsMotionWorker>().setInputData(inputData).build()
+
+            WorkManager.getInstance(context).enqueue(workRequest)
+            return workRequest.id
+        }
+
+        fun cancelAllWork(context: Context) {
+            WorkManager.getInstance(context).cancelAllWork()
+        }
+    }
+}

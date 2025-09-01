@@ -21,11 +21,13 @@ kotlinVersion = "2.2.10"
 pytorchAndroidTorchCisionLite = "2.1.0"
 kotlinGradlePluginVersion = "2.2.0"
 activityVersion = "1.10.1"
+gson = "2.13.1"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx_version" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat_version" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle_runtime_ktx" }
 contour = { module = "app.cash.contour:contour", version.ref = "contourVersion" }
 filament-android = { module = "com.google.android.filament:filament-android", version.ref = "filamentAndroidVersion" }
 filament-utils-android = { module = "com.google.android.filament:filament-utils-android", version.ref = "filamentAndroidVersion" }
@@ -53,12 +55,14 @@ pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.re
 pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorchAndroidTorchCisionLite" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activityVersion" }
 wordfind = { module = "com.github.word-view:WordFind", version.ref = "wordfindVersion" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
 android-library = { id = "com.android.library", version.ref = "agpVersion" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinVersion" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinVersion" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlinVersion" }
 
 [bundles]
 androidx = [

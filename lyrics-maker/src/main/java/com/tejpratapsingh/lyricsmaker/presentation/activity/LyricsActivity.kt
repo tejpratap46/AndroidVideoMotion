@@ -1,46 +1,49 @@
 package com.tejpratapsingh.lyricsmaker.presentation.activity
 
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import com.tejpratapsingh.lyricsmaker.data.api.client.LrcLibClient
-import com.tejpratapsingh.lyricsmaker.data.api.model.SearchQuery
+import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import kotlinx.coroutines.runBlocking
 
 class LyricsActivity : PreviewActivity() {
 
     companion object {
         private const val TAG = "LyricsActivity"
+
+        private const val LYRICS = "lyrics"
+
+        fun start(context: Context, lyrics: LyricsResponse) {
+            context.startActivity(
+                Intent(context, LyricsActivity::class.java).also {
+                    it.putExtra(LYRICS, lyrics)
+                })
+        }
+    }
+
+    private val lyrics by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(LYRICS, LyricsResponse::class.java)
+        } else {
+            intent.getParcelableExtra(LYRICS)
+        }
     }
 
     private val video by lazy {
-        runBlocking {
-            val client = LrcLibClient()
-            val lyric = client.searchLyrics(
-                SearchQuery(
-                    "saiyaara - tanishk bagchi"
-                )
-            )
-            lyric.firstOrNull()?.syncedLyrics?.let { lrc ->
-                Log.i(TAG, "onCreate: Lyrics")
-                Log.i(TAG, "onCreate: $lrc")
-
-                getLyricsVideoProducer(applicationContext, "Saiyaara", lrc)
-            }
-        }
+        getLyricsVideoProducer(applicationContext, lyrics!!)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        LyricsMotionWorker.startWork(applicationContext, lyrics!!)
     }
 
     override fun getMotionVideo(): MotionVideoProducer {
-        return video ?: getLyricsVideoProducer(
-            applicationContext,
-            "Saiyaara",
-            "[00:00.00] Not Found"
-        )
+        return video
     }
 }
