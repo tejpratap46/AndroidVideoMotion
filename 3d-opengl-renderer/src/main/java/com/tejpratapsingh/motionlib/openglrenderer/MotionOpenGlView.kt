@@ -27,10 +27,10 @@ class MotionOpenGlView(
         context = context,
         assetFileName = modelAssetPath,
         width = if (::motionConfig.isInitialized) {
-            motionConfig.width
+            motionConfig.aspectRatio.width
         } else 500,
         height = if (::motionConfig.isInitialized) {
-            motionConfig.height
+            motionConfig.aspectRatio.height
         } else 500,
         objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f)
     )
@@ -48,8 +48,8 @@ class MotionOpenGlView(
         offscreenRenderer.setRotation(rotationY = frame.toFloat() * 10F)
 //        imageView.setImageBitmap(
 //            offscreenRenderer.renderOffscreen(
-//                width = motionConfig.width,
-//                height = motionConfig.height
+//                width = motionConfig.aspectRatio.width,
+//                height = motionConfig.aspectRatio.height
 //            )
 //        )
         return this

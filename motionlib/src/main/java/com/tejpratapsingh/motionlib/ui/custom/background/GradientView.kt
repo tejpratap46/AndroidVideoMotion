@@ -58,10 +58,10 @@ class GradientView(
         // If the view *is* the size of motionConfig, then using width/height
         // directly in onDraw/onSizeChanged is also good.
         contourWidthOf {
-            motionConfig.width.toXInt()
+            motionConfig.aspectRatio.width.toXInt()
         }
         contourHeightOf {
-            motionConfig.height.toYInt()
+            motionConfig.aspectRatio.height.toYInt()
         }
     }
 

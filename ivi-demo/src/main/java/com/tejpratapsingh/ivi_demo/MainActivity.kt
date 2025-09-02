@@ -5,6 +5,7 @@ import android.os.Bundle
 import com.tejpratapsingh.ivi_demo.extension.enableSwipeSeekReverse
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
@@ -18,7 +19,7 @@ class MainActivity : PreviewActivity() {
     }
 
     val motionConfig = MotionConfig(
-        width = 768, height = 1366, fps = 30
+        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 30
     )
 
     val motionView: BaseMotionView by lazy {

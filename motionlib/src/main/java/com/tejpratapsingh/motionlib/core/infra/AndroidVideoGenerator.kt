@@ -79,13 +79,13 @@ class AndroidVideoGenerator {
 
         try {
             val format =
-                MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.width, motionConfig.height)
+                MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
             format.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             )
             format.setInteger(
                 MediaFormat.KEY_BIT_RATE,
-                calculateBitRate(motionConfig.width, motionConfig.height, motionConfig.fps)
+                calculateBitRate(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height, motionConfig.fps)
             )
             format.setInteger(MediaFormat.KEY_FRAME_RATE, motionConfig.fps)
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
@@ -124,7 +124,7 @@ class AndroidVideoGenerator {
                 val bitmap = getBitmap(bitmaps, inputDir, i) ?: continue
 
                 try {
-                    val scaledBitmap = bitmap.scale(motionConfig.width, motionConfig.height)
+                    val scaledBitmap = bitmap.scale(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
                     canvas.drawBitmap(scaledBitmap, 0f, 0f, null)
                     if (scaledBitmap != bitmap) {
                         scaledBitmap.recycle()

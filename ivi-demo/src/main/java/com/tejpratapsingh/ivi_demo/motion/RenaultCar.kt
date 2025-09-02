@@ -56,10 +56,10 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         })
 
         contourHeightOf {
-            motionConfig.height.toYInt()
+            motionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.width.toXInt()
+            motionConfig.aspectRatio.width.toXInt()
         }
     }
 

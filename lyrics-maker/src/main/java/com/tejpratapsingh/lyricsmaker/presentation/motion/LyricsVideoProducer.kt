@@ -6,6 +6,7 @@ import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
 import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
@@ -19,7 +20,7 @@ fun getLyricsVideoProducer(
     Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.getLyrics()}")
 
     val motionConfig = MotionConfig(
-        width = 768, height = 1366, fps = 24
+        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24
     )
 
     val motionView: BaseMotionView = LyricsContainer(

@@ -59,10 +59,10 @@ class LyricsContainer(
         })
 
         contourHeightOf {
-            motionConfig.height.toYInt()
+            motionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.width.toXInt()
+            motionConfig.aspectRatio.width.toXInt()
         }
     }
 

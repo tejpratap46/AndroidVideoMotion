@@ -30,10 +30,10 @@ class VideoFrameView(
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
         contourHeightOf {
-            motionConfig.height.toYInt()
+            motionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.width.toXInt()
+            motionConfig.aspectRatio.width.toXInt()
         }
     }
 

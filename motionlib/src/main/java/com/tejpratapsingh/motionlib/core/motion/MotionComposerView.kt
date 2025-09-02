@@ -24,7 +24,7 @@ open class MotionComposerView(
     }
 
     init {
-        this.layout(0, 0, motionConfig.width, motionConfig.height)
+        this.layout(0, 0, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
     }
 
     override fun forFrame(frame: Int): MotionView {
