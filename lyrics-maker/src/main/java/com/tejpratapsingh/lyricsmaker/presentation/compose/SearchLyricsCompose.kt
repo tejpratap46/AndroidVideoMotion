@@ -16,6 +16,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,6 +44,7 @@ fun SearchScreen(
     var query by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val lyrics by viewModel.lyricsList.collectAsState(emptyList())
+    var sliderPosition by remember { mutableStateOf(0f..Float.MAX_VALUE) }
 
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -102,8 +104,8 @@ fun SearchScreen(
                                 context = context,
                                 lyrics = lyrics[item],
                                 trimLyrics = TrimLyrics(
-                                    start = 1000,
-                                    end = 1500,
+                                    start = sliderPosition.start.toInt(),
+                                    end = sliderPosition.endInclusive.toInt(),
                                     unit = TrimUnit.FRAME
                                 )
                             )
@@ -143,6 +145,28 @@ fun SearchScreen(
                             end = 16.dp,
                             bottom = 16.dp
                         )
+                    )
+
+                    Text(
+                        text = "Select Range",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    RangeSlider(
+                        value = sliderPosition,
+                        onValueChange = { sliderPosition = it },
+                        valueRange = 0f..((lyrics[item].duration ?: 0f) * 24f),
+                        steps = 100, // optional, adds tick marks between values
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Selected: ${sliderPosition.start.toInt()} - ${sliderPosition.endInclusive.toInt()}",
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }

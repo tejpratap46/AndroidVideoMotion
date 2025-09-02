@@ -25,8 +25,8 @@ data class TrimLyrics(val start: Int, val end: Int, val unit: TrimUnit) : Parcel
 
     fun getEndFrame(fps: Int): Int {
         return when (unit) {
-            TrimUnit.FRAME -> end
-            TrimUnit.MILLI_SECOND -> (end / (1000.0 / fps)).toInt()
+            TrimUnit.FRAME -> end - start
+            TrimUnit.MILLI_SECOND -> (end / (1000.0 / fps)).toInt() - (start / (1000.0 / fps)).toInt()
         }
     }
 

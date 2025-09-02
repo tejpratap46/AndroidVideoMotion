@@ -32,7 +32,7 @@ class LrcHelper(
 
         return parsedResult.map {
             val frame =
-                ((it.time / (1000.0 / fps)).toInt() + offsetFrames).coerceAtLeast(0) // avoid negative frames
+                ((it.time / (1000.0 / fps)).toInt() - offsetFrames).coerceAtLeast(0) // avoid negative frames
             SyncedLyricFrame(
                 frame = frame, text = it.text
             )

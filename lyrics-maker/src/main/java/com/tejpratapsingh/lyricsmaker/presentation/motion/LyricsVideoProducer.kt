@@ -28,7 +28,7 @@ fun getLyricsVideoProducer(
         startFrame = 1,
         endFrame = min(
             motionConfig.fps * (lyrics.duration?.toInt() ?: 10),
-            trimLyrics.getEndFrame(motionConfig.fps)
+            trimLyrics.getEndFrame(motionConfig.fps) - trimLyrics.start
         ),
         songName = lyrics.trackName,
         lyrics = lyrics.getLyrics(),
