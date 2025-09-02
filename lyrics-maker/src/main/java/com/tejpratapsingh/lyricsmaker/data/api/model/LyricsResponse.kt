@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import java.util.Locale
 
 @Serializable
 @Parcelize
@@ -23,6 +24,13 @@ data class LyricsResponse(
         } else {
             syncedLyrics
         }
+    }
+
+    fun getReadableDuration(): String {
+        val totalSeconds = (duration ?: 0f).toInt()
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format(Locale.getDefault(), "%02d min and %02d sec", minutes, seconds)
     }
 
     fun toJson(): String {

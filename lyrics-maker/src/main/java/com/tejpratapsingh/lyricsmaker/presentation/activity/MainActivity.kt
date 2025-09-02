@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.tejpratapsingh.lyricsmaker.databinding.ActivityMainBinding
+import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
+import com.tejpratapsingh.lyricsmaker.domain.TrimUnit
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import kotlinx.coroutines.launch
@@ -50,13 +52,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        lyricsViewModel.lyricsList.observe(this) {
-            binding.btnSearch.isEnabled = true
-            it.firstOrNull()?.let { lyricsResponse ->
-                LyricsActivity.start(
-                    this@MainActivity,
-                    lyricsResponse
-                )
+        lifecycleScope.launch {
+            lyricsViewModel.lyricsList.collect {
+                binding.btnSearch.isEnabled = true
+                it.firstOrNull()?.let { lyricsResponse ->
+                    LyricsActivity.start(
+                        this@MainActivity,
+                        lyricsResponse,
+                        trimLyrics = TrimLyrics(
+                            start = 1000,
+                            end = 1500,
+                            unit = TrimUnit.MILLI_SECOND
+                        )
+                    )
+                }
             }
         }
     }

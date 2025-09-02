@@ -51,7 +51,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
 
             try {
                 context.saveBitmapToCacheFolder(
-                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%03d.png", i)
+                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%05d.png", i)
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving frame $i: ${e.message}", e)

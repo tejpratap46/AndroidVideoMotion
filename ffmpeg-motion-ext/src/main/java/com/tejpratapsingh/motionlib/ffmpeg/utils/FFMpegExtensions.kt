@@ -12,7 +12,7 @@ fun extractFramesFromVideo(
     if (!outputDir.exists()) outputDir.mkdirs()
 
     // Output path pattern for frames: frame_0001.png, frame_0002.png, ...
-    val outputPattern = File(outputDir, "frame_%03d.png").absolutePath
+    val outputPattern = File(outputDir, "frame_%05d.png").absolutePath
 
     // FFmpeg command: extract every frame
     val cmd = "-i \"${videoFile.absolutePath}\" \"$outputPattern\""

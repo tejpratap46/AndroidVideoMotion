@@ -22,6 +22,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
+import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
@@ -69,7 +70,9 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
 
     override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         return getLyricsVideoProducer(
-            appContext, LyricsResponse.fromJson(inputData.getString(LYRICS)!!)
+            applicationContext = appContext,
+            lyrics = LyricsResponse.fromJson(inputData.getString(LYRICS)!!),
+            trimLyrics = TrimLyrics.fromJson(inputData.getString(TRIM_LYRICS)!!)
         )
     }
 
@@ -165,9 +168,13 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
         private const val TAG = "SampleMotionWorker"
 
         private const val LYRICS = "lyrics"
+        private const val TRIM_LYRICS = "trimLyrics"
 
-        fun startWork(context: Context, lyrics: LyricsResponse): UUID {
-            val inputData = Data.Builder().putString(LYRICS, lyrics.toJson()).build()
+        fun startWork(context: Context, lyrics: LyricsResponse, trimLyrics: TrimLyrics): UUID {
+            val inputData = Data.Builder()
+                .putString(LYRICS, lyrics.toJson())
+                .putString(TRIM_LYRICS, trimLyrics.toJson())
+                .build()
 
             val workRequest =
                 OneTimeWorkRequestBuilder<LyricsMotionWorker>().setInputData(inputData).build()

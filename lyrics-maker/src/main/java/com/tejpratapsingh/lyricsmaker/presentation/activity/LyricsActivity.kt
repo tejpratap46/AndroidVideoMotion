@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
+import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
@@ -16,11 +17,13 @@ class LyricsActivity : PreviewActivity() {
         private const val TAG = "LyricsActivity"
 
         private const val LYRICS = "lyrics"
+        private const val TRIM = "trimLyrics"
 
-        fun start(context: Context, lyrics: LyricsResponse) {
+        fun start(context: Context, lyrics: LyricsResponse, trimLyrics: TrimLyrics) {
             context.startActivity(
                 Intent(context, LyricsActivity::class.java).also {
                     it.putExtra(LYRICS, lyrics)
+                    it.putExtra(TRIM, trimLyrics)
                 })
         }
     }
@@ -33,14 +36,30 @@ class LyricsActivity : PreviewActivity() {
         }
     }
 
+    private val trimLyrics by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(TRIM, TrimLyrics::class.java)
+        } else {
+            intent.getParcelableExtra(TRIM)
+        }
+    }
+
     private val video by lazy {
-        getLyricsVideoProducer(applicationContext, lyrics!!)
+        getLyricsVideoProducer(
+            applicationContext = applicationContext,
+            lyrics = lyrics!!,
+            trimLyrics = trimLyrics!!
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        LyricsMotionWorker.startWork(applicationContext, lyrics!!)
+        LyricsMotionWorker.startWork(
+            context = applicationContext,
+            lyrics = lyrics!!,
+            trimLyrics = trimLyrics!!
+        )
     }
 
     override fun getMotionVideo(): MotionVideoProducer {

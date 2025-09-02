@@ -50,7 +50,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
             // It's good practice to handle potential IOExceptions when saving files
             try {
                 context.saveBitmapToCacheFolder(
-                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%03d.png", i)
+                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%05d.png", i)
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving frame $i: ${e.message}", e)
@@ -63,7 +63,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
             }
         }
 
-        val inputPattern = "${subDir.path}/%03d.png"
+        val inputPattern = "${subDir.path}/%05d.png"
 
         // -y: Overwrite output files without asking
         // -framerate: Input framerate for the image sequence

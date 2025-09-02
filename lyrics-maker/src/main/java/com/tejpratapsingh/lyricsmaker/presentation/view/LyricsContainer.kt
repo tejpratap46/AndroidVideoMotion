@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.Gravity
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -12,7 +13,12 @@ import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 
 class LyricsContainer(
-    context: Context, songName: String, lyrics: String, startFrame: Int, endFrame: Int
+    context: Context,
+    songName: String,
+    lyrics: String,
+    startFrame: Int,
+    endFrame: Int,
+    trimLyrics: TrimLyrics
 ) : BaseMotionView(context, startFrame, endFrame) {
 
     private val songNameTextView: SongNameTextView = SongNameTextView(
@@ -23,7 +29,11 @@ class LyricsContainer(
     }
 
     private val lyricsTextView: LyricsTextView = LyricsTextView(
-        context = context, lyrics = lyrics, startFrame = startFrame, endFrame = endFrame
+        context = context,
+        lyrics = lyrics,
+        trimLyrics = trimLyrics,
+        startFrame = startFrame,
+        endFrame = endFrame
     ).apply {
         textView.textSize = 18f
         textView.gravity = Gravity.CENTER
