@@ -1,6 +1,5 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,7 +44,12 @@ fun SearchScreen(
     var query by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val lyrics by viewModel.lyricsList.collectAsState(emptyList())
-    var sliderPosition by remember { mutableStateOf(0f..Float.MAX_VALUE) }
+    val lyricsRanges = remember { mutableStateOf(List(lyrics.size) { 0f..Float.MAX_VALUE }) }
+
+    // Update ranges list size if lyrics size changes
+    if (lyricsRanges.value.size != lyrics.size) {
+        lyricsRanges.value = List(lyrics.size) { 0f..Float.MAX_VALUE }
+    }
 
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -95,79 +100,92 @@ fun SearchScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             items(lyrics.size) { item ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable {
-                            LyricsActivity.start(
-                                context = context,
-                                lyrics = lyrics[item],
-                                trimLyrics = TrimLyrics(
-                                    start = sliderPosition.start.toInt(),
-                                    end = sliderPosition.endInclusive.toInt(),
-                                    unit = TrimUnit.FRAME
-                                )
+                Column {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(
+                            text = "${lyrics[item].trackName} - ${lyrics[item].artistName}",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                top = 16.dp,
+                                end = 16.dp,
+                                bottom = 2.dp
                             )
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Text(
-                        text = "${lyrics[item].trackName} - ${lyrics[item].artistName}",
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(
-                            start = 16.dp,
-                            top = 16.dp,
-                            end = 16.dp,
-                            bottom = 2.dp
                         )
-                    )
-                    Text(
-                        text = "Duration: ${lyrics[item].getReadableDuration()}",
-                        maxLines = 2,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(
-                            start = 16.dp,
-                            top = 2.dp,
-                            end = 16.dp,
-                            bottom = 2.dp
+                        Text(
+                            text = "Duration: ${lyrics[item].getReadableDuration()}",
+                            maxLines = 2,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                top = 2.dp,
+                                end = 16.dp,
+                                bottom = 2.dp
+                            )
                         )
-                    )
-                    Text(
-                        text = lyrics[item].getLyrics(),
-                        maxLines = 2,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(
-                            start = 16.dp,
-                            top = 2.dp,
-                            end = 16.dp,
-                            bottom = 16.dp
+                        Text(
+                            text = lyrics[item].getLyrics(),
+                            maxLines = 2,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                top = 2.dp,
+                                end = 16.dp,
+                                bottom = 16.dp
+                            )
                         )
-                    )
 
-                    Text(
-                        text = "Select Range",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                        Text(
+                            text = "Select Range",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     RangeSlider(
-                        value = sliderPosition,
-                        onValueChange = { sliderPosition = it },
+                        value = lyricsRanges.value[item],
+                        onValueChange = { range ->
+                            lyricsRanges.value =
+                                lyricsRanges.value.toMutableList().also { it[item] = range }
+                        },
                         valueRange = 0f..((lyrics[item].duration ?: 0f) * 24f),
-                        steps = 100, // optional, adds tick marks between values
+                        steps = 100,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Selected: ${sliderPosition.start.toInt()} - ${sliderPosition.endInclusive.toInt()}",
+                        text = "Selected: ${lyricsRanges.value[item].start.toInt()} - ${lyricsRanges.value[item].endInclusive.toInt()}",
                         style = MaterialTheme.typography.bodyMedium
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            LyricsActivity.start(
+                                context = context,
+                                lyrics = lyrics[item],
+                                trimLyrics = TrimLyrics(
+                                    start = lyricsRanges.value[item].start.toInt(),
+                                    end = lyricsRanges.value[item].endInclusive.toInt(),
+                                    unit = TrimUnit.FRAME
+                                )
+                            )
+                        },
+                        modifier = Modifier.align(CenterHorizontally)
+                    ) {
+                        Text(text = "Create Video")
+                    }
                 }
             }
         }
