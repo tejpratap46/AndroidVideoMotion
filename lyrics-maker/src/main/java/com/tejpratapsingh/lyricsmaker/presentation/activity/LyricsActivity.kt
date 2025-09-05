@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
-import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
@@ -16,50 +16,65 @@ class LyricsActivity : PreviewActivity() {
     companion object {
         private const val TAG = "LyricsActivity"
 
+        private const val SONG = "song"
         private const val LYRICS = "lyrics"
-        private const val TRIM = "trimLyrics"
 
-        fun start(context: Context, lyrics: LyricsResponse, trimLyrics: TrimLyrics) {
+        fun start(context: Context, song: String, lyrics: ArrayList<SyncedLyricFrame>) {
             context.startActivity(
                 Intent(context, LyricsActivity::class.java).also {
-                    it.putExtra(LYRICS, lyrics)
-                    it.putExtra(TRIM, trimLyrics)
+                    it.putExtra(SONG, song)
+                    it.putParcelableArrayListExtra(LYRICS, lyrics)
                 })
         }
     }
 
-    private val lyrics by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(LYRICS, LyricsResponse::class.java)
-        } else {
-            intent.getParcelableExtra(LYRICS)
-        }
-    }
+    private val song: String
+        get() = intent.getStringExtra(SONG) ?: ""
 
-    private val trimLyrics by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(TRIM, TrimLyrics::class.java)
+    private val lyrics: List<SyncedLyricFrame>
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra(LYRICS, SyncedLyricFrame::class.java)?.toList()
+                ?: emptyList()
         } else {
-            intent.getParcelableExtra(TRIM)
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayListExtra(LYRICS) ?: emptyList()
         }
-    }
 
     private val video by lazy {
         getLyricsVideoProducer(
             applicationContext = applicationContext,
-            lyrics = lyrics!!,
-            trimLyrics = trimLyrics!!
+            song = song,
+            lyrics = lyrics,
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        LyricsMotionWorker.startWork(
-            context = applicationContext,
-            lyrics = lyrics!!,
-            trimLyrics = trimLyrics!!
-        )
+        val start = lyrics.minBy { it.frame }.frame
+        val end = lyrics.maxBy { it.frame }.frame
+
+        MaterialAlertDialogBuilder(this).setTitle("Lyrics")
+            .setMessage(
+                """
+                Rendering video for \"$song\" with ${lyrics.size} lines of lyrics.
+                Start Frame: $start
+                End Frame: $end
+                Duration: ${(end - start)} frames
+            """.trimIndent()
+            )
+            .setPositiveButton("OK") { dialog, _ ->
+                LyricsMotionWorker.startWork(
+                    context = applicationContext,
+                    song = song,
+                    lyrics = lyrics,
+                )
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     override fun getMotionVideo(): MotionVideoProducer {

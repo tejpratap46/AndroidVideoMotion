@@ -1,32 +1,21 @@
 package com.tejpratapsingh.lyricsmaker.data.lrc
 
-import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
-import com.tejpratapsingh.lyricsmaker.domain.TrimUnit
-
-class LrcHelper(
-    private val parser: LrcParser = LrcParser()
-) {
-
+object LrcHelper {
     fun getSyncedLyrics(
-        lrcContent: String, fps: Int, trimLyrics: TrimLyrics
+        lrcContent: String, fps: Int
     ): List<SyncedLyricFrame> {
-        return when (trimLyrics.unit) {
-            TrimUnit.FRAME -> getSyncedLyricsWithFrameOffset(lrcContent, fps, trimLyrics.start)
-            TrimUnit.MILLI_SECOND -> getSyncedLyricsWithMsOffset(
-                lrcContent,
-                fps,
-                trimLyrics.start.toLong()
-            )
-        }
+        return getSyncedLyricsWithFrameOffset(lrcContent, fps)
     }
 
     /**
      * Parses the raw LRC string into synced lyric frames.
      * @param fps Frames per second of video
      * @param offsetFrames Offset to shift all lyrics (can be negative)
+     * @param parser Custom parser if needed
      */
     fun getSyncedLyricsWithFrameOffset(
-        lrcContent: String, fps: Int, offsetFrames: Int = 0
+        lrcContent: String, fps: Int, offsetFrames: Int = 0,
+        parser: LrcParser = LrcParser(),
     ): List<SyncedLyricFrame> {
         val parsedResult = parser.parse(lrcContent)
 

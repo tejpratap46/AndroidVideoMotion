@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.tejpratapsingh.lyricsmaker.presentation.compose.SearchScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.AppNavHost
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.AnimatorTheme
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
@@ -25,7 +25,7 @@ class SearchActivity : ComponentActivity() {
         setContent {
             AnimatorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SearchScreen(
+                    AppNavHost(
                         viewModel = lyricsViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )

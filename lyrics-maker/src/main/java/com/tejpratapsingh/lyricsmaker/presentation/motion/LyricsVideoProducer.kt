@@ -2,22 +2,19 @@ package com.tejpratapsingh.lyricsmaker.presentation.motion
 
 import android.content.Context
 import android.util.Log
-import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
-import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
+import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
-import kotlin.math.min
 
 fun getLyricsVideoProducer(
-    applicationContext: Context, lyrics: LyricsResponse, trimLyrics: TrimLyrics
+    applicationContext: Context, song: String, lyrics: List<SyncedLyricFrame>
 ): MotionVideoProducer {
 
-    Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.trackName}")
-    Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.getLyrics()}")
+    Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.size}")
 
     val motionConfig = MotionConfig(
         aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24
@@ -25,14 +22,10 @@ fun getLyricsVideoProducer(
 
     val motionView: BaseMotionView = LyricsContainer(
         context = applicationContext,
-        startFrame = 1,
-        endFrame = min(
-            motionConfig.fps * (lyrics.duration?.toInt() ?: 10),
-            trimLyrics.getEndFrame(motionConfig.fps) - trimLyrics.start
-        ),
-        songName = lyrics.trackName,
-        lyrics = lyrics.getLyrics(),
-        trimLyrics = trimLyrics
+        startFrame = lyrics.first().frame,
+        endFrame = lyrics.last().frame,
+        songName = song,
+        lyrics = lyrics
     )
 
     return MotionVideoProducer.with(

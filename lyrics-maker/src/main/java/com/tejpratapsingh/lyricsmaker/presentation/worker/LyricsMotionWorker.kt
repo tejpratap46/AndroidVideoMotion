@@ -21,12 +21,12 @@ import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
-import com.tejpratapsingh.lyricsmaker.domain.TrimLyrics
+import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.URLConnection
 import java.util.Locale
@@ -71,8 +71,8 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
     override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         return getLyricsVideoProducer(
             applicationContext = appContext,
-            lyrics = LyricsResponse.fromJson(inputData.getString(LYRICS)!!),
-            trimLyrics = TrimLyrics.fromJson(inputData.getString(TRIM_LYRICS)!!)
+            song = inputData.getString(SONG) ?: "Unknown Song",
+            lyrics = Json.decodeFromString(inputData.getString(LYRICS)!!),
         )
     }
 
@@ -167,13 +167,13 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
     companion object {
         private const val TAG = "SampleMotionWorker"
 
+        private const val SONG = "song"
         private const val LYRICS = "lyrics"
-        private const val TRIM_LYRICS = "trimLyrics"
 
-        fun startWork(context: Context, lyrics: LyricsResponse, trimLyrics: TrimLyrics): UUID {
+        fun startWork(context: Context, song: String, lyrics: List<SyncedLyricFrame>): UUID {
             val inputData = Data.Builder()
-                .putString(LYRICS, lyrics.toJson())
-                .putString(TRIM_LYRICS, trimLyrics.toJson())
+                .putString(SONG, song)
+                .putString(LYRICS, Json.encodeToString(lyrics))
                 .build()
 
             val workRequest =
