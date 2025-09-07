@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlin.math.max
 import kotlin.math.min
 
@@ -135,6 +136,13 @@ fun SyncedLyricsSelector(
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             modifier = Modifier.weight(1f)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        // Time in seconds
+                        Text(
+                            "[${line.frame / MotionConfig.fps} sec]",
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.width(64.dp)
                         )
                     }
                 }

@@ -9,6 +9,7 @@ import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 class LyricsActivity : PreviewActivity() {
@@ -60,7 +61,7 @@ class LyricsActivity : PreviewActivity() {
                 Rendering video for \"$song\" with ${lyrics.size} lines of lyrics.
                 Start Frame: $start
                 End Frame: $end
-                Duration: ${(end - start)} frames
+                Duration: ${(end - start)} frames (${(end - start) / MotionConfig.fps} seconds)
             """.trimIndent()
             )
             .setPositiveButton("OK") { dialog, _ ->

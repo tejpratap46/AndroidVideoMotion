@@ -40,7 +40,7 @@ fun AppNavHost(viewModel: LyricsViewModel, modifier: Modifier) {
                 onFinalize = {
                     LyricsActivity.start(
                         context = navController.context,
-                        song = viewModel.selectedLyricResponse.trackName,
+                        song = viewModel.selectedSongName,
                         lyrics = viewModel.selectedLyrics.ensureArrayList(),
                     )
                 }

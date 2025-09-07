@@ -31,6 +31,8 @@ open class LyricsViewModel : ViewModel() {
         artistName = "",
     )
 
+    val selectedSongName: String
+        get() = "${selectedLyricResponse.trackName} - ${selectedLyricResponse.artistName}"
 
     val lyrics: List<SyncedLyricFrame>
         get() = LrcHelper.getSyncedLyrics(

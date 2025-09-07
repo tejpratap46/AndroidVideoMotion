@@ -17,7 +17,6 @@
         <activity
             android:name=".presentation.activity.SearchActivity"
             android:exported="true"
-            android:label="@string/title_activity_search"
             android:theme="@style/Theme.Animator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,10 +27,6 @@
 
         <activity
             android:name=".presentation.activity.LyricsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".presentation.activity.MainActivity"
             android:exported="false" />
 
         <provider

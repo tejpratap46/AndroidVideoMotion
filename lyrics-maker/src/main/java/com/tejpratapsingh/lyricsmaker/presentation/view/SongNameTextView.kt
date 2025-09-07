@@ -14,8 +14,11 @@ class SongNameTextView(
     fontUrl: String? = null
 ) : AbstractMotionTextView(context, songName, startFrame, endFrame, textView, fontUrl) {
 
-    override fun forFrame(frame: Int): MotionView {
+    init {
         textView.text = songName
+    }
+
+    override fun forFrame(frame: Int): MotionView {
         return this
     }
 }
