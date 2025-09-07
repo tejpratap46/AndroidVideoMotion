@@ -48,20 +48,6 @@ class LyricsContainer(
         }
     }
 
-//    private val rotatingMotionView: RotatingMotionView = RotatingMotionView(
-//        context = context,
-//        startFrame = startFrame,
-//        endFrame = endFrame,
-//        view = albumArtImageView
-//    ).apply {
-//        contourHeightOf {
-//            motionConfig.aspectRatio.height.toYInt()
-//        }
-//        contourWidthOf {
-//            motionConfig.aspectRatio.width.toXInt()
-//        }
-//    }
-
     private val lyricsTextView: LyricsTextView = LyricsTextView(
         context = context,
         lyrics = lyrics,
@@ -74,18 +60,6 @@ class LyricsContainer(
     }
 
     init {
-//        bgVideoView.layoutBy(
-//            x = leftTo {
-//                parent.left()
-//            }.rightTo {
-//                parent.right()
-//            }, y = topTo {
-//                parent.top()
-//            }.bottomTo {
-//                parent.bottom()
-//            }
-//        )
-
         albumArtImageView.layoutBy(
             x = leftTo {
                 parent.left()
