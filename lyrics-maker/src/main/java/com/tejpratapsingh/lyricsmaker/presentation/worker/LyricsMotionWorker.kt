@@ -23,6 +23,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker

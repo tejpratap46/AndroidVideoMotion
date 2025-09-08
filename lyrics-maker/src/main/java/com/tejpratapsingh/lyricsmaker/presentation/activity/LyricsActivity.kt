@@ -7,6 +7,7 @@ import android.os.Bundle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -60,7 +61,7 @@ class LyricsActivity : PreviewActivity() {
                 """
                 Rendering video for \"$song\" with ${lyrics.size} lines of lyrics.
                 Start Frame: $start
-                End Frame: $end
+                End Frame: ${getMotionVideo().totalFrames}
                 Duration: ${(end - start)} frames (${(end - start) / MotionConfig.fps} seconds)
             """.trimIndent()
             )
@@ -72,7 +73,7 @@ class LyricsActivity : PreviewActivity() {
                 )
             }
             .setNegativeButton("Cancel") { dialog, _ ->
-                finish()
+                dialog.dismiss()
             }
             .setCancelable(false)
             .show()
