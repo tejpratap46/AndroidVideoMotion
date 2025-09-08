@@ -9,6 +9,7 @@ import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.lyricsmaker.data.api.client.AlbumArtFetcher
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -91,10 +92,10 @@ class LyricsContainer(
         })
 
         contourHeightOf {
-            motionConfig.aspectRatio.height.toYInt()
+            MotionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.aspectRatio.width.toXInt()
+            MotionConfig.aspectRatio.width.toXInt()
         }
     }
 

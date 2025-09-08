@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
@@ -18,9 +17,6 @@ open class BaseMotionView(
     companion object {
         private const val TAG = "MotionView"
     }
-
-    // object will be available at the time of processing video
-    override lateinit var motionConfig: MotionConfig
 
     @CallSuper
     override fun forFrame(frame: Int): MotionView {

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Gravity
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -43,10 +44,10 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
         )
 
         contourHeightOf {
-            motionConfig.aspectRatio.height.toYInt()
+            MotionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.aspectRatio.width.toXInt()
+            MotionConfig.aspectRatio.width.toXInt()
         }
     }
 

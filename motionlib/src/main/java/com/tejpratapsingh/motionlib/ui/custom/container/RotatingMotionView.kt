@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.container
 
 import android.content.Context
 import android.view.View
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 
 class RotatingMotionView(
@@ -29,7 +30,7 @@ class RotatingMotionView(
     override fun forFrame(frame: Int): BaseMotionView {
         super.forFrame(frame)
         val totalFrames = endFrame - startFrame + 1
-        val durationSeconds = totalFrames / motionConfig.fps.toFloat()
+        val durationSeconds = totalFrames / MotionConfig.fps.toFloat()
         val totalRotation = degreePerSecond * durationSeconds
         val rotationPerFrame = totalRotation / totalFrames
         val currentRotation = (frame - startFrame) * rotationPerFrame

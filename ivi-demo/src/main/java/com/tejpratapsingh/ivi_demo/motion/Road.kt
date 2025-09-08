@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.ImageView
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import java.io.IOException
@@ -35,10 +36,10 @@ class Road(context: Context, startFrame: Int, endFrame: Int) :
         })
 
         contourHeightOf {
-            motionConfig.aspectRatio.height.toYInt()
+            MotionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.aspectRatio.width.toXInt()
+            MotionConfig.aspectRatio.width.toXInt()
         }
     }
 

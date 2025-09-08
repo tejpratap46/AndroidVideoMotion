@@ -7,6 +7,7 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -58,10 +59,10 @@ class GradientView(
         // If the view *is* the size of motionConfig, then using width/height
         // directly in onDraw/onSizeChanged is also good.
         contourWidthOf {
-            motionConfig.aspectRatio.width.toXInt()
+            MotionConfig.aspectRatio.width.toXInt()
         }
         contourHeightOf {
-            motionConfig.aspectRatio.height.toYInt()
+            MotionConfig.aspectRatio.height.toYInt()
         }
     }
 

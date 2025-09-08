@@ -3,6 +3,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -56,10 +57,10 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
         })
 
         contourHeightOf {
-            motionConfig.aspectRatio.height.toYInt()
+            MotionConfig.aspectRatio.height.toYInt()
         }
         contourWidthOf {
-            motionConfig.aspectRatio.width.toXInt()
+            MotionConfig.aspectRatio.width.toXInt()
         }
     }
 

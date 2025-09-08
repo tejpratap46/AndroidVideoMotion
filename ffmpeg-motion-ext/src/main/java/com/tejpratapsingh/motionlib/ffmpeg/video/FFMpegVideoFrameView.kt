@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.loadBitmapsFromDirectory
 import com.tejpratapsingh.motionlib.core.extensions.md5
@@ -18,8 +17,6 @@ class FFMpegVideoFrameView(
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
-
-    override lateinit var motionConfig: MotionConfig
 
     val imageView = ImageView(context).apply {
         scaleType = ImageView.ScaleType.CENTER_CROP

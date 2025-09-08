@@ -2,12 +2,13 @@ package com.tejpratapsingh.lyricsmaker.data.api.client
 import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsQuery
 import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.data.api.model.SearchQuery
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class LrcLibClient(

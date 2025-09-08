@@ -30,7 +30,6 @@ class Filament3dView(
     private val modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-    override var motionConfig: MotionConfig,
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
 
@@ -63,7 +62,10 @@ class Filament3dView(
     private fun initializeFilament() {
         Utils.init()
         surfaceTexture = SurfaceTexture(0)
-        surfaceTexture.setDefaultBufferSize(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
+        surfaceTexture.setDefaultBufferSize(
+            MotionConfig.aspectRatio.width,
+            MotionConfig.aspectRatio.height
+        )
         surface = Surface(surfaceTexture)
         engine = Engine.create()
         swapChain = engine.createSwapChain(surface, 0)
@@ -71,7 +73,8 @@ class Filament3dView(
         view = engine.createView()
         view.scene = scene
         renderer = engine.createRenderer()
-        view.viewport = Viewport(0, 0, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
+        view.viewport =
+            Viewport(0, 0, MotionConfig.aspectRatio.width, MotionConfig.aspectRatio.height)
     }
 
     private fun loadModel() {
@@ -100,7 +103,10 @@ class Filament3dView(
         camera = engine.createCamera(cameraEntity)
         camera.setProjection(
             45.0,
-            (motionConfig.aspectRatio.width / motionConfig.aspectRatio.height).toDouble(), 0.1, 1000.0, Camera.Fov.VERTICAL
+            (MotionConfig.aspectRatio.width / MotionConfig.aspectRatio.height).toDouble(),
+            0.1,
+            1000.0,
+            Camera.Fov.VERTICAL
         )
         camera.lookAt(
             0.0, 0.0, 5.0, // eyeX, eyeY, eyeZ

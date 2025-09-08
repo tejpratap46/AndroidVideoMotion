@@ -11,7 +11,6 @@ import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
 open class MotionComposerView(
     context: Context,
-    override var motionConfig: MotionConfig,
     override val startFrame: Int = 0,
     override val endFrame: Int = 0,
     override val plugins: List<MotionPlugin>,
@@ -24,7 +23,7 @@ open class MotionComposerView(
     }
 
     init {
-        this.layout(0, 0, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
+        this.layout(0, 0, MotionConfig.aspectRatio.width, MotionConfig.aspectRatio.height)
     }
 
     override fun forFrame(frame: Int): MotionView {

@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.view.View
 import android.view.ViewGroup
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -39,15 +38,18 @@ open class MotionVideoProducer(
             motionConfig = config,
             videoProducerAdapter = videoProducerAdapter,
             motionComposerView = MotionComposerView(
-                context = context, motionConfig = config, plugins = plugins
+                context = context, plugins = plugins
             ),
             motionAudio = motionAudio
-        )
+        ).also {
+            MotionConfig.aspectRatio = config.aspectRatio
+            MotionConfig.fps = config.fps
+            MotionConfig.outputQuality = config.outputQuality
+        }
     }
 
     override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup {
         totalFrames = maxOf(totalFrames, motionView.endFrame)
-        recursiveSetMotionConfig(motionView)
         motionComposerView.apply {
             motionView.layoutBy(x = centerHorizontallyTo {
                 parent.centerX()
@@ -56,16 +58,6 @@ open class MotionVideoProducer(
             })
         }
         return this
-    }
-
-    private fun <T> recursiveSetMotionConfig(motionView: T) where T : MotionView, T : ViewGroup {
-        motionView.motionConfig = this.motionConfig // Use instance motionConfig
-        for (viewIndex in 0 until motionView.childCount) { // Use 'until'
-            val view: View? = motionView.getChildAt(viewIndex)
-            if (view != null && view is BaseMotionView) {
-                recursiveSetMotionConfig(motionView = view)
-            }
-        }
     }
 
     override suspend fun produceVideo(

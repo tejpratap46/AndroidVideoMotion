@@ -15,8 +15,6 @@ class MotionOpenGlView(
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
 
-    override lateinit var motionConfig: MotionConfig
-
     private val imageView = ImageView(context).apply {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     }
@@ -26,12 +24,8 @@ class MotionOpenGlView(
     val offscreenRenderer = Object3DToBitmapRenderer(
         context = context,
         assetFileName = modelAssetPath,
-        width = if (::motionConfig.isInitialized) {
-            motionConfig.aspectRatio.width
-        } else 500,
-        height = if (::motionConfig.isInitialized) {
-            motionConfig.aspectRatio.height
-        } else 500,
+        width = MotionConfig.aspectRatio.width,
+        height = MotionConfig.aspectRatio.height,
         objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f)
     )
 

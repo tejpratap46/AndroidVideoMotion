@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 interface MotionView : OnMotionFrameListener {
     val startFrame: Int
     val endFrame: Int
-    var motionConfig: MotionConfig
 
     val loop: Pair<Int, Int>
 
