@@ -24,6 +24,7 @@ class LyricsTextView(
 ) {
 
     override fun forFrame(frame: Int): MotionView {
+        super.forFrame(frame)
 
         val currentLyric = LrcHelper.getCurrentLyric(lyrics = lyrics, currentFrame = frame)
         textView.text = currentLyric?.text ?: ""

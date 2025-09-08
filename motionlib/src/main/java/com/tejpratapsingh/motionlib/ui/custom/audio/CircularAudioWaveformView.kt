@@ -44,6 +44,7 @@ class CircularAudioWaveformView(
     }
 
     override fun forFrame(frame: Int): MotionView {
+        super.forFrame(frame)
         currentFrame = frame.coerceIn(startFrame, endFrame)
         invalidate()
         return this

@@ -40,6 +40,7 @@ class VideoFrameView(
     private lateinit var currentFrameBitmap: Bitmap
 
     override fun forFrame(frame: Int): MotionView {
+        super.forFrame(frame)
         currentFrameBitmap = videoBitmaps.getOrNull(frame - startFrame) ?: videoBitmaps.last()
         imageView.setImageBitmap(
             currentFrameBitmap

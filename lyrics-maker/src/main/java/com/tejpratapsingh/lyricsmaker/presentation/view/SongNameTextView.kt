@@ -19,6 +19,7 @@ class SongNameTextView(
     }
 
     override fun forFrame(frame: Int): MotionView {
+        super.forFrame(frame)
         return this
     }
 }

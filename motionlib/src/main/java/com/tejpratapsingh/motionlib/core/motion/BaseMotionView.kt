@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -21,6 +22,7 @@ open class BaseMotionView(
     // object will be available at the time of processing video
     override lateinit var motionConfig: MotionConfig
 
+    @CallSuper
     override fun forFrame(frame: Int): MotionView {
         if (frame < startFrame) {
             visibility = INVISIBLE

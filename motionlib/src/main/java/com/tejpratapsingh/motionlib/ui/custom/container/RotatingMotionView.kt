@@ -27,6 +27,7 @@ class RotatingMotionView(
     }
 
     override fun forFrame(frame: Int): BaseMotionView {
+        super.forFrame(frame)
         val totalFrames = endFrame - startFrame + 1
         val durationSeconds = totalFrames / motionConfig.fps.toFloat()
         val totalRotation = degreePerSecond * durationSeconds
