@@ -1,6 +1,7 @@
 package com.tejpratapsingh.ivi_demo
 
 import RenaultCar
+import android.os.Build
 import android.os.Bundle
 import com.tejpratapsingh.ivi_demo.extension.enableSwipeSeekReverse
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
@@ -19,7 +20,7 @@ class MainActivity : PreviewActivity() {
     }
 
     val motionConfig = MotionConfig(
-        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 30
+        aspectRatio = VideoAspectRatio.Ratio16x9_480, fps = 30
     )
 
     val motionView: BaseMotionView by lazy {
@@ -32,6 +33,9 @@ class MainActivity : PreviewActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            motionVideoPlayer.seekBar.min = 1
+        }
 
         motionView.enableSwipeSeekReverse(
             maxProgress = video.totalFrames,
