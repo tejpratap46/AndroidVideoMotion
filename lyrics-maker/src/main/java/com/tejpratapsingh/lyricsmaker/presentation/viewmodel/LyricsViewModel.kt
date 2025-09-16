@@ -6,23 +6,28 @@ import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.data.api.model.SearchQuery
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.motion.metadataextractor.SocialMeta
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 open class LyricsViewModel : ViewModel() {
 
+    val socialMeta = MutableStateFlow<SocialMeta?>(null)
+    val query = MutableStateFlow("")
+    val isLoading = MutableStateFlow(false)
     private val _lyricsList = MutableStateFlow<List<LyricsResponse>>(emptyList())
     val lyricsList: Flow<List<LyricsResponse>> = _lyricsList
 
     private val client = LrcLibClient()
 
-    suspend fun fetchLyrics(query: String) {
-        // This should ideally be done in a coroutine scope
-        val results = client.searchLyrics(SearchQuery(query)).filter {
+    suspend fun fetchLyrics() {
+        isLoading.value = true
+        val results = client.searchLyrics(SearchQuery(query.value)).filter {
             it.syncedLyrics != null
         }
         _lyricsList.emit(results)
+        isLoading.value = false
     }
 
     var selectedLyricResponse: LyricsResponse = LyricsResponse(

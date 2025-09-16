@@ -6,14 +6,14 @@ import android.net.Uri
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.extractAllVideoFrames
 import com.tejpratapsingh.motionlib.utils.getVideoFpsWithRetriever
 import kotlin.math.roundToLong
 
 class VideoFrameView(
     context: Context, videoUri: Uri, startFrame: Int, endFrame: Int
-) : BaseMotionView(context, startFrame, endFrame) {
+) : BaseContourMotionView(context, startFrame, endFrame) {
 
     val fps = getVideoFpsWithRetriever(context, videoUri) ?: 30F
     val videoBitmaps = extractAllVideoFrames(

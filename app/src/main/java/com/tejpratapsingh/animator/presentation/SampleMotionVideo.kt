@@ -6,7 +6,7 @@ import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -21,7 +21,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val assetManager = applicationContext.assets
     val files = assetManager.list(RenaultCar.imageAssetSubFolder)
 
-    val motionView: BaseMotionView = RenaultCar(
+    val motionView: BaseContourMotionView = RenaultCar(
         context = applicationContext,
         startFrame = 1,
         endFrame = files?.size ?: 1

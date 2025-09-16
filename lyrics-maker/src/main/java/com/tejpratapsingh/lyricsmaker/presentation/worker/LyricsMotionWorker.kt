@@ -73,6 +73,7 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
             applicationContext = appContext,
             song = inputData.getString(SONG) ?: "Unknown Song",
             lyrics = Json.decodeFromString(inputData.getString(LYRICS)!!),
+            image = inputData.getString(IMAGE),
         )
     }
 
@@ -169,11 +170,18 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
 
         private const val SONG = "song"
         private const val LYRICS = "lyrics"
+        private const val IMAGE = "image"
 
-        fun startWork(context: Context, song: String, lyrics: List<SyncedLyricFrame>): UUID {
+        fun startWork(
+            context: Context,
+            song: String,
+            lyrics: List<SyncedLyricFrame>,
+            image: String? = null
+        ): UUID {
             val inputData = Data.Builder()
                 .putString(SONG, song)
                 .putString(LYRICS, Json.encodeToString(lyrics))
+                .putString(IMAGE, image)
                 .build()
 
             val workRequest =

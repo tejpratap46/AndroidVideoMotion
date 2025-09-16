@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.tejpratapsingh.lyricsmaker.presentation.compose.AppNavHost
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.AnimatorTheme
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
+import com.tejpratapsingh.motion.metadataextractor.ShareReceiverActivity
+import kotlinx.coroutines.launch
 
 class SearchActivity : ComponentActivity() {
 
@@ -46,6 +49,14 @@ class SearchActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
+            }
+        }
+
+        ShareReceiverActivity.readMetadataFromIntent(intent)?.let {
+            lyricsViewModel.socialMeta.value = it
+            lifecycleScope.launch {
+                lyricsViewModel.query.value = it.title ?: it.description ?: ""
+                lyricsViewModel.fetchLyrics()
             }
         }
     }

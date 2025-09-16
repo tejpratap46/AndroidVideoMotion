@@ -4,14 +4,17 @@ import android.content.Context
 import android.util.Log
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
+import com.tejpratapsingh.motion.metadataextractor.SocialMeta
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 
 fun getLyricsVideoProducer(
-    applicationContext: Context, song: String, lyrics: List<SyncedLyricFrame>
+    applicationContext: Context,
+    song: String,
+    lyrics: List<SyncedLyricFrame>,
+    image: String? = null
 ): MotionVideoProducer {
 
     Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.size}")
@@ -20,12 +23,13 @@ fun getLyricsVideoProducer(
         aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24
     )
 
-    val motionView: BaseMotionView = LyricsContainer(
+    val motionView = LyricsContainer(
         context = applicationContext,
         startFrame = lyrics.first().frame,
         endFrame = lyrics.last().frame,
         songName = song,
-        lyrics = lyrics
+        lyrics = lyrics,
+        image = image
     )
 
     return MotionVideoProducer.with(

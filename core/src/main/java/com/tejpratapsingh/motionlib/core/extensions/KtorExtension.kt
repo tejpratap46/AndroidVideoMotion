@@ -1,6 +1,10 @@
 package com.tejpratapsingh.motionlib.core.extensions
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.request
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
@@ -60,5 +64,15 @@ suspend fun HttpClient.downloadFile(
             "An unexpected error occurred during download from $url: ${e.message}",
             e
         )
+    }
+}
+
+suspend fun HttpClient.fetchBitmap(url: String): Bitmap? {
+    return try {
+        val bytes: ByteArray = get(url).body()
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }

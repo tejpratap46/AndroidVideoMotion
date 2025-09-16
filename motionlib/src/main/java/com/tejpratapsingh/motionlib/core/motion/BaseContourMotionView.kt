@@ -8,7 +8,7 @@ import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
-open class BaseMotionView(
+open class BaseContourMotionView(
     context: Context,
     override val startFrame: Int,
     override val endFrame: Int,

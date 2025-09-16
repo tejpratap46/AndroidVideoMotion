@@ -11,11 +11,11 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
 class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
-    BaseMotionView(context, startFrame, endFrame) {
+    BaseContourMotionView(context, startFrame, endFrame) {
 
     private val typeWriterWriterTextView: TypeWriterTextView = TypeWriterTextView(
         context = context,

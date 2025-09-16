@@ -8,12 +8,12 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import java.io.IOException
 import java.io.InputStream
 
 class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
-    BaseMotionView(context, startFrame, endFrame) {
+    BaseContourMotionView(context, startFrame, endFrame) {
 
     companion object {
         const val imageAssetSubFolder = "renault_kiger_bg"

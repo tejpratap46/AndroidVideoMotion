@@ -18,4 +18,5 @@
     <string name="notification_render_complete_title">Rendering Finished</string>
     <string name="notification_render_complete_text">Video Rendering finished</string>
     <string name="title_activity_search">SearchActivity</string>
+    <string name="back">Lyrics Backdrop</string>
 </resources>

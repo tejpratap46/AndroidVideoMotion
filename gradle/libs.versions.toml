@@ -3,11 +3,13 @@ constraintlayoutVersion = "2.2.1"
 contourVersion = "1.1.0"
 filamentAndroidVersion = "1.57.1"
 jcodecVersion = "0.2.5"
+jsoupVersion = "1.21.2"
 ktorClientCoreVersion = "3.2.3"
 ktx_version = "1.17.0"
 appcompat_version = "1.7.1"
 material_version = "1.12.0"
 lifecycle_runtime_ktx = "2.9.3"
+picassoVersion = "2.71828"
 smartExceptionJavaVersion = "0.2.1"
 tensorflowLiteTaskVisionVersion = "0.5.0"
 tensorflowLiteVersion = "2.17.0"
@@ -42,6 +44,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 
 jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodecVersion" }
 jcodec-android = { module = "org.jcodec:jcodec-android", version.ref = "jcodecVersion" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoupVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit_version" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx_test_ext_junit_version" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso_core_version" }
@@ -49,6 +52,7 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClien
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientCoreVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCoreVersion" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCoreVersion" }
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picassoVersion" }
 smart-exception-java = { module = "com.arthenica:smart-exception-java", version.ref = "smartExceptionJavaVersion" }
 tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLiteVersion" }
 tensorflow-lite-gpu-delegate-plugin = { module = "org.tensorflow:tensorflow-lite-gpu-delegate-plugin", version.ref = "tensorflowLiteTaskVisionVersion" }

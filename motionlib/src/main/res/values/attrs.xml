@@ -1,0 +1,8 @@
+<resources>
+    <declare-styleable name="BaseFrameMotionView">
+        <attr name="startFrame" format="integer" />
+        <attr name="endFrame" format="integer" />
+        <attr name="loopStart" format="integer" />
+        <attr name="loopEnd" format="integer" />
+    </declare-styleable>
+</resources>

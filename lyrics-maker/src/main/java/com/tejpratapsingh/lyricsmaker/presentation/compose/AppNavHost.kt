@@ -42,6 +42,7 @@ fun AppNavHost(viewModel: LyricsViewModel, modifier: Modifier) {
                         context = navController.context,
                         song = viewModel.selectedSongName,
                         lyrics = viewModel.selectedLyrics.ensureArrayList(),
+                        socialMeta = viewModel.socialMeta.value
                     )
                 }
             )

@@ -6,12 +6,12 @@ import android.util.Log
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import java.io.IOException
 import java.io.InputStream
 
 class Road(context: Context, startFrame: Int, endFrame: Int) :
-    BaseMotionView(context, startFrame, endFrame) {
+    BaseContourMotionView(context, startFrame, endFrame) {
 
     companion object {
         private const val TAG = "Road"

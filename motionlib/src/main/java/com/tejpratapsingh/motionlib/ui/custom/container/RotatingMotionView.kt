@@ -3,7 +3,7 @@ package com.tejpratapsingh.motionlib.ui.custom.container
 import android.content.Context
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 
 class RotatingMotionView(
     context: Context,
@@ -11,7 +11,7 @@ class RotatingMotionView(
     endFrame: Int,
     view: View,
     private val degreePerSecond: Float = 6f
-) : BaseMotionView(context, startFrame, endFrame) {
+) : BaseContourMotionView(context, startFrame, endFrame) {
 
     init {
         view.layoutBy(
@@ -27,7 +27,7 @@ class RotatingMotionView(
         )
     }
 
-    override fun forFrame(frame: Int): BaseMotionView {
+    override fun forFrame(frame: Int): BaseContourMotionView {
         super.forFrame(frame)
         val totalFrames = endFrame - startFrame + 1
         val durationSeconds = totalFrames / MotionConfig.fps.toFloat()

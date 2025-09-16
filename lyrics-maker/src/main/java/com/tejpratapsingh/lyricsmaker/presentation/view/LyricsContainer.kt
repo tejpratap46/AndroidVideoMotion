@@ -4,98 +4,90 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.Log
-import android.view.Gravity
 import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.client.AlbumArtFetcher
+import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
+import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
 
 class LyricsContainer(
     context: Context,
     songName: String,
-    lyrics: List<SyncedLyricFrame>,
     startFrame: Int,
     endFrame: Int,
-) : BaseMotionView(context, startFrame, endFrame) {
+    val lyrics: List<SyncedLyricFrame>,
+    image: String? = null
+) : BaseFrameMotionView(context) {
 
     companion object {
         private const val TAG = "LyricsContainer"
     }
 
-    private val songNameTextView: SongNameTextView = SongNameTextView(
-        context = context, songName = songName, startFrame = startFrame, endFrame = endFrame
-    ).apply {
-        textView.textSize = 24f
-        textView.gravity = Gravity.CENTER
-    }
-
-    private val albumArtImageView: ImageView = ImageView(context).apply {
-        alpha = 0.5f
-        runBlocking {
-            AlbumArtFetcher.fetchAlbumArtUrl(songName.split(" - ")[0], songName.split(" - ")[1])
-                ?.let { url ->
-                    Log.i(TAG, "cover art found: $url")
-                    setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
-                }
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }
-    }
-
-    private val lyricsTextView: LyricsTextView = LyricsTextView(
-        context = context,
-        lyrics = lyrics,
-        startFrame = startFrame,
-        endFrame = endFrame,
-        fontUrl = "https://www.fontmirror.com/app_public/files/t/1/Poppins-Regular_684471b5ff3c204b8d3b3da3bd4e082d.ttf"
-    ).apply {
-        textView.textSize = 18f
-        textView.gravity = Gravity.CENTER
-    }
+    private val tvSongName: TextView
+    private val ivAlbumArt: ImageView
+    private val tvLyricsLine1: TextView
+    private val tvLyricsLine2: TextView
+    private val progress: ProgressBar
+    private val fakeChartView: FakeAudioChartView
 
     init {
-        albumArtImageView.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            }, y = topTo {
-                parent.bottom()
-            }.bottomTo {
-                parent.top()
-            }
-        )
+        super.startFrame = startFrame
+        super.endFrame = endFrame
 
-        songNameTextView.layoutBy(x = leftTo {
-            parent.left()
-        }.rightTo {
-            parent.right()
-        }, y = topTo {
-            parent.top()
-        })
+        val view = inflate(getContext(), R.layout.lyrics_container, this)
+        ivAlbumArt = view.findViewById(R.id.iv_back)
+        tvSongName = view.findViewById(R.id.tv_song_name)
+        tvLyricsLine1 = view.findViewById(R.id.tv_lyrics_line1)
+        tvLyricsLine2 = view.findViewById(R.id.tv_lyrics_line2)
+        progress = view.findViewById(R.id.pb_progress)
+        fakeChartView = view.findViewById(R.id.fake_chart_view)
 
-        lyricsTextView.layoutBy(x = leftTo {
-            parent.left()
-        }.rightTo {
-            parent.right()
-        }, y = topTo {
-            songNameTextView.bottom()
-        }.bottomTo {
-            parent.bottom()
-        })
 
-        contourHeightOf {
-            MotionConfig.aspectRatio.height.toYInt()
+        tvSongName.text = songName
+
+        progress.progress = startFrame
+        progress.max = endFrame
+
+        fakeChartView.apply {
+            bars = 5
+            barWidthPx = 10f
+            speedFactor = 0.6f
         }
-        contourWidthOf {
-            MotionConfig.aspectRatio.width.toXInt()
+
+        ivAlbumArt.apply {
+            runBlocking {
+                if (image != null) {
+                    val client = HttpClient(CIO)
+                    Log.i(TAG, "Using image from social meta: $image")
+                    setImageBitmap(client.fetchBitmap(image))
+                    client.close()
+                    return@runBlocking
+                } else {
+                    Log.i(TAG, "Fetching from musicbrainz")
+                    AlbumArtFetcher.fetchAlbumArtUrl(
+                        songName.split(" - ")[0],
+                        songName.split(" - ")[1]
+                    )
+                        ?.let { url ->
+                            Log.i(TAG, "cover art found: $url")
+                            setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
+                            AlbumArtFetcher.close()
+                        }
+                }
+            }
         }
     }
 
@@ -111,17 +103,22 @@ class LyricsContainer(
 
         setBackgroundColor(Color.BLACK)
 
-        songNameTextView.textView.setTextColor(
-            MotionInterpolator.getComplementaryColor(
-                backgroundColor
-            )
-        )
+        MotionInterpolator.getComplementaryColor(
+            backgroundColor
+        ).also {
+            tvSongName.setTextColor(it)
+            tvLyricsLine1.setTextColor(it)
+            tvLyricsLine2.setTextColor(it)
+        }
 
-        lyricsTextView.textView.setTextColor(
-            MotionInterpolator.getComplementaryColor(
-                backgroundColor
-            )
-        )
+        fakeChartView.setFrame(frame)
+
+        val currentLyric = LrcHelper.getCurrentLyric(lyrics = lyrics, currentFrame = frame)
+        val nextLyric = LrcHelper.getNextLyric(lyrics = lyrics, currentFrame = frame)
+        tvLyricsLine1.text = currentLyric?.text ?: ""
+        tvLyricsLine2.text = nextLyric?.text ?: ""
+
+        progress.progress = frame
 
         return this
     }

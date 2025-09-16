@@ -7,7 +7,7 @@ import com.tejpratapsingh.ivi_demo.extension.enableSwipeSeekReverse
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 class MainActivity : PreviewActivity() {
@@ -23,7 +23,7 @@ class MainActivity : PreviewActivity() {
         aspectRatio = VideoAspectRatio.Ratio16x9_480, fps = 30
     )
 
-    val motionView: BaseMotionView by lazy {
+    val motionView: BaseContourMotionView by lazy {
         RenaultCar(
             context = applicationContext,
             startFrame = 1,

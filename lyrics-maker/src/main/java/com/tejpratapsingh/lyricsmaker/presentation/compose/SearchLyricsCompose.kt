@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,8 +41,8 @@ fun SearchScreen(
     onLyricsSelected: (LyricsResponse) -> Unit = {}
 ) {
     val context = LocalContext.current
-    var query by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    val query = viewModel.query.collectAsState()
+    val isLoading = viewModel.isLoading.collectAsState()
     val lyrics by viewModel.lyricsList.collectAsState(emptyList())
     val lyricsRanges = remember { mutableStateOf(List(lyrics.size) { 0f..Float.MAX_VALUE }) }
     val recentSearches = remember { mutableStateOf(RecentSearchHelper.getSearches(context)) }
@@ -69,12 +68,12 @@ fun SearchScreen(
                 .padding(16.dp)
         )
         OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
+            value = query.value,
+            onValueChange = { viewModel.query.tryEmit(it) },
             label = { Text("Search") },
             singleLine = true,
             trailingIcon = {
-                if (isLoading) {
+                if (isLoading.value) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp
@@ -85,13 +84,12 @@ fun SearchScreen(
             keyboardActions = KeyboardActions(
                 onSearch = {
                     coroutineScope.launch {
-                        if (query.isNotBlank()) {
+                        val searchQuery = query.value.trim()
+                        if (searchQuery.isNotBlank()) {
                             keyboardController?.hide()
-                            isLoading = true
-                            RecentSearchHelper.saveSearch(context, query)
+                            RecentSearchHelper.saveSearch(context, searchQuery)
                             recentSearches.value = RecentSearchHelper.getSearches(context)
-                            viewModel.fetchLyrics(query)
-                            isLoading = false
+                            viewModel.fetchLyrics()
                         }
                     }
                 }
@@ -109,12 +107,10 @@ fun SearchScreen(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clickable {
-                                query = recentSearches.value[idx]
+                                viewModel.query.tryEmit(recentSearches.value[idx])
                                 coroutineScope.launch {
                                     keyboardController?.hide()
-                                    isLoading = true
-                                    viewModel.fetchLyrics(query)
-                                    isLoading = false
+                                    viewModel.fetchLyrics()
                                 }
                             },
                         colors = CardDefaults.cardColors(

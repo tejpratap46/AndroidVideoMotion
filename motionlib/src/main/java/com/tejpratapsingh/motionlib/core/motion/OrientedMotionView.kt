@@ -6,4 +6,4 @@ open class OrientedMotionView(
     context: Context,
     startFrame: Int,
     endFrame: Int
-) : BaseMotionView(context, startFrame, endFrame)
+) : BaseContourMotionView(context, startFrame, endFrame)

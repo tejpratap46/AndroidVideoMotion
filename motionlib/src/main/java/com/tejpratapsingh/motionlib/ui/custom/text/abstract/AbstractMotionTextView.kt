@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
 import androidx.appcompat.widget.AppCompatTextView
-import com.tejpratapsingh.motionlib.core.motion.BaseMotionView
+import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
 abstract class AbstractMotionTextView(
@@ -12,7 +12,7 @@ abstract class AbstractMotionTextView(
     endFrame: Int,
     val textView: AppCompatTextView,
     fontUrl: String? = null
-) : BaseMotionView(context, startFrame, endFrame) {
+) : BaseContourMotionView(context, startFrame, endFrame) {
 
     init {
         textView.apply {
