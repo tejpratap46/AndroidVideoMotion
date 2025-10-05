@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
@@ -12,7 +13,8 @@ open class BaseContourMotionView(
     context: Context,
     override val startFrame: Int,
     override val endFrame: Int,
-    override val loop: Pair<Int, Int> = Pair(0, 0)
+    override val loop: Pair<Int, Int> = Pair(0, 0),
+    override val effects: List<MotionEffect> = emptyList()
 ) : ContourLayout(context), MotionView {
     companion object {
         private const val TAG = "MotionView"

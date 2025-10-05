@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
@@ -17,9 +18,10 @@ open class MotionComposerView(
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : ContourLayout(context), MotionView, IComposerView {
 
+    override val effects: List<MotionEffect> = emptyList()
+
     companion object {
         private const val TAG = "MotionComposerView"
-
     }
 
     init {
@@ -37,6 +39,12 @@ open class MotionComposerView(
         }
 
         return this
+    }
+
+    fun runEffects(view: MotionView, frame: Int) {
+        return view.effects.forEach { effect ->
+            effect.forFrame(frame)
+        }
     }
 
     override fun getViewBitmap(): Bitmap {

@@ -8,9 +8,7 @@ interface MotionView : OnMotionFrameListener {
 
     val loop: Pair<Int, Int>
 
-    fun getViewBitmap(): Bitmap
-}
+    val effects: List<MotionEffect>
 
-fun interface OnMotionFrameListener {
-    fun forFrame(frame: Int): MotionView
+    fun getViewBitmap(): Bitmap
 }

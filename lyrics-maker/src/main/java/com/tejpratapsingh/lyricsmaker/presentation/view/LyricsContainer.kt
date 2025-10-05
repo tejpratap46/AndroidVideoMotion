@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.Log
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -12,6 +13,7 @@ import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.client.AlbumArtFetcher
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -36,18 +38,21 @@ class LyricsContainer(
         private const val TAG = "LyricsContainer"
     }
 
+    private val cvLyrics: ViewGroup
     private val tvSongName: TextView
     private val ivAlbumArt: ImageView
     private val tvLyricsLine1: TextView
     private val tvLyricsLine2: TextView
     private val progress: ProgressBar
     private val fakeChartView: FakeAudioChartView
+    override val effects: List<MotionEffect> = emptyList()
 
     init {
         super.startFrame = startFrame
         super.endFrame = endFrame
 
         val view = inflate(getContext(), R.layout.lyrics_container, this)
+        cvLyrics = view.findViewById(R.id.cv_lyrics)
         ivAlbumArt = view.findViewById(R.id.iv_back)
         tvSongName = view.findViewById(R.id.tv_song_name)
         tvLyricsLine1 = view.findViewById(R.id.tv_lyrics_line1)
@@ -55,16 +60,15 @@ class LyricsContainer(
         progress = view.findViewById(R.id.pb_progress)
         fakeChartView = view.findViewById(R.id.fake_chart_view)
 
-
         tvSongName.text = songName
 
         progress.progress = startFrame
         progress.max = endFrame
 
         fakeChartView.apply {
-            bars = 5
+            bars = 8
             barWidthPx = 10f
-            speedFactor = 0.6f
+            speedFactor = 0.3f
         }
 
         ivAlbumArt.apply {

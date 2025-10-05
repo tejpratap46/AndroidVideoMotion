@@ -22,6 +22,7 @@ import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.Utils
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import java.nio.ByteBuffer
 
@@ -32,6 +33,8 @@ class Filament3dView(
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
+
+    override val effects: List<MotionEffect> = emptyList()
 
     companion object {
         private const val TAG = "Filament3dView"

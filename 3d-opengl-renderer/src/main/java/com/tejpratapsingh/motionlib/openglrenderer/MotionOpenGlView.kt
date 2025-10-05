@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 
 class MotionOpenGlView(
@@ -14,6 +15,8 @@ class MotionOpenGlView(
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0)
 ) : FrameLayout(context), MotionView {
+
+    override val effects: List<MotionEffect> = emptyList()
 
     private val imageView = ImageView(context).apply {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)

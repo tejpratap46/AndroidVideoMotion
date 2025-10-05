@@ -105,13 +105,13 @@ class Interpolators(val easing: Easings) : Interpolator {
     private fun elasticOut(t: Float): Float {
         if (t == 0f || t == 1f) return t
         val pi2 = Math.PI * 2
-        val s = .3 / pi2 * Math.asin(1.0)
+        val s = .3 / pi2 * asin(1.0)
         return (2.0.pow((-10 * t).toDouble()) * sin((t - s) * pi2 / .3) + 1).toFloat()
     }
 
     private fun elasticInOut(t: Float): Float {
         val pi2 = Math.PI * 2
-        val s = .45 / pi2 * Math.asin(1.0)
+        val s = .45 / pi2 * asin(1.0)
         var o = t * 2f
         return if (o < 1) {
             o -= 1f

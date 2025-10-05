@@ -8,10 +8,11 @@ import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 
-open class BaseFrameMotionView @JvmOverloads constructor(
+abstract class BaseFrameMotionView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
