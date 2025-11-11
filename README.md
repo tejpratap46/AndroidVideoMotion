@@ -2,7 +2,7 @@
 
 Motion Videos natively in Android
 
-[![](https://jitpack.io/v/tejpratap46/AndroidVideoMotion.svg)](https://jitpack.io/#tejpratap46/AndroidVideoMotion)
+[![](https://jitpack.io/v/tejpratap46/AndroidVideoMotion.svg)](https://jitpack.io/#tejpratap46/AndroidVideoMotion) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tejpratap46/AndroidVideoMotion)
 
 view [app](./app) module for example use case.
 
