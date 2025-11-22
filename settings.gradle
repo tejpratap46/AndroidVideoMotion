@@ -14,19 +14,20 @@ dependencyResolutionManagement {
         maven { url 'https://jitpack.io' }
     }
 }
-rootProject.name = "Animator"
-include ':app'
-include ':motionlib'
-include ':templates'
-include ':core'
-include ':jcodec-motion-ext'
-include ':ffmpeg-motion-ext'
-include ':ffmpeg-kit'
-include ':3d-filament-renderer'
-include ':3d-opengl-renderer'
-include ':tensorflow-motion-ext'
-include ':pytorch-motion-ext'
-include ':ivi-demo'
-include ':lyrics-maker'
-include ':sdui'
-include ':metadata-extractor'
+
+rootProject.name = "AndroidMotionVideo"
+include ':modules:app'
+include ':modules:motionlib'
+include ':modules:templates'
+include ':modules:core'
+include ':modules:jcodec-motion-ext'
+include ':modules:ffmpeg-motion-ext'
+include ':modules:ffmpeg-kit'
+include ':modules:3d-filament-renderer'
+include ':modules:3d-opengl-renderer'
+include ':modules:tensorflow-motion-ext'
+include ':modules:pytorch-motion-ext'
+include ':modules:ivi-demo'
+include ':modules:lyrics-maker'
+include ':modules:sdui'
+include ':modules:metadata-extractor'
