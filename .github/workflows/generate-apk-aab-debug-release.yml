@@ -54,7 +54,7 @@ jobs:
         id: find-apks
         run: |
           # find APK(s) for this module (search under module build outputs)
-          APKS=( $(find . -path "./${{ matrix.module }}/build/outputs/apk" -type f -name '*.apk' -print) )
+          APKS=( $(find . -path "./modules/${{ matrix.module }}/build/outputs/apk" -type f -name '*.apk' -print) )
           if [ ${#APKS[@]} -eq 0 ]; then
             echo "No APKs found for module '${{ matrix.module }}'."
             # exit non-zero if you want the job to fail instead:
