@@ -78,5 +78,5 @@ jobs:
           name: ${{ matrix.module }}-apk
           # upload all apk files found under the module build outputs
           path: |
-            ${{ matrix.module }}/build/outputs/apk/**/*.apk
-            ${{ matrix.module }}/build/outputs/**/**/*.apk
+            modules/${{ matrix.module }}/build/outputs/apk/**/*.apk
+            modules/${{ matrix.module }}/build/outputs/**/**/*.apk
