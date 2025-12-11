@@ -48,7 +48,7 @@ jobs:
       - name: Build APK for module ${{ matrix.module }}
         # Using assembleRelease so you get APKs in build/outputs; if you prefer debug builds (always unsigned),
         # change to :${{ matrix.module }}:assembleDebug
-        run: ./gradlew :${{ matrix.module }}:assembleRelease --no-daemon -Porg.gradle.jvmargs=-Xmx3g
+        run: ./gradlew :${{ matrix.module }}:assembleDebug --no-daemon -Porg.gradle.jvmargs=-Xmx3g
 
       - name: Collect produced APKs
         id: find-apks
