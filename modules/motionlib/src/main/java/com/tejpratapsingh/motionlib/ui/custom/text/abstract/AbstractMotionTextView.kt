@@ -11,9 +11,8 @@ abstract class AbstractMotionTextView(
     startFrame: Int,
     endFrame: Int,
     val textView: AppCompatTextView,
-    fontUrl: String? = null
+    fontUrl: String? = null,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
-
     init {
         textView.apply {
             if (fontUrl != null) {
@@ -21,15 +20,20 @@ abstract class AbstractMotionTextView(
             }
         }
 
-        textView.layoutBy(x = leftTo {
-            parent.left()
-        }.rightTo {
-            parent.right()
-        }, y = topTo {
-            parent.top()
-        }.bottomTo {
-            parent.bottom()
-        })
+        textView.layoutBy(
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                }.bottomTo {
+                    parent.bottom()
+                },
+        )
         textView.text = text
     }
 }

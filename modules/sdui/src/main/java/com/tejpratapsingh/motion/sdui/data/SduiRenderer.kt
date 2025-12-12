@@ -15,7 +15,7 @@ import com.tejpratapsingh.motion.sdui.presentation.TextFactory
 
 class SduiRenderer(
     val actionHandler: ActionHandler = DefaultActionHandler(),
-    val imageLoader: ImageLoader? = null
+    val imageLoader: ImageLoader? = null,
 ) {
     private val gson = Gson()
     private val factories: MutableMap<String, ViewFactory> = mutableMapOf()
@@ -26,17 +26,26 @@ class SduiRenderer(
         register("image", ImageFactory())
     }
 
-    fun register(type: String, factory: ViewFactory) {
+    fun register(
+        type: String,
+        factory: ViewFactory,
+    ) {
         factories[type] = factory
     }
 
-    fun createView(context: Context, json: JsonObject): View {
+    fun createView(
+        context: Context,
+        json: JsonObject,
+    ): View {
         val type = json.get("type")?.asString ?: error("Missing type")
         val factory = factories[type] ?: throw IllegalArgumentException("No factory for type $type")
         return factory.create(context, json, this)
     }
 
-    fun renderInto(container: ViewGroup, json: String) {
+    fun renderInto(
+        container: ViewGroup,
+        json: String,
+    ) {
         val rootJson = gson.fromJson(json, JsonObject::class.java)
         val view = createView(container.context, rootJson)
         container.addView(view)

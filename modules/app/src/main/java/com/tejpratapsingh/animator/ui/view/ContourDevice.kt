@@ -14,33 +14,38 @@ import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
-class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
-    BaseContourMotionView(context, startFrame, endFrame) {
+class ContourDevice(
+    context: Context,
+    startFrame: Int,
+    endFrame: Int,
+) : BaseContourMotionView(context, startFrame, endFrame) {
+    private val typeWriterWriterTextView: TypeWriterTextView =
+        TypeWriterTextView(
+            context = context,
+            text = "Hello,\nWelcome to the future",
+            startFrame = startFrame,
+            endFrame = endFrame,
+        ).apply {
+            setBackgroundColor(Color.WHITE)
 
-    private val typeWriterWriterTextView: TypeWriterTextView = TypeWriterTextView(
-        context = context,
-        text = "Hello,\nWelcome to the future",
-        startFrame = startFrame,
-        endFrame = endFrame
-    ).apply {
-        setBackgroundColor(Color.WHITE)
-
-        textView.textSize = 18f
-        textView.gravity = Gravity.CENTER
-    }
+            textView.textSize = 18f
+            textView.gravity = Gravity.CENTER
+        }
 
     init {
         typeWriterWriterTextView.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                parent.top()
-            }.bottomTo {
-                parent.bottom()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                }.bottomTo {
+                    parent.bottom()
+                },
         )
 
         contourHeightOf {
@@ -54,21 +59,22 @@ class ContourDevice(context: Context, startFrame: Int, endFrame: Int) :
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(
-            Interpolators(Easings.LINEAR),
-            frame,
-            Pair(startFrame, endFrame),
-            Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt())
-        )
+        val backgroundColor: Int =
+            MotionInterpolator.interpolateColorForRange(
+                Interpolators(Easings.LINEAR),
+                frame,
+                Pair(startFrame, endFrame),
+                Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt()),
+            )
 
         typeWriterWriterTextView.setBackgroundColor(
-            backgroundColor
+            backgroundColor,
         )
 
         typeWriterWriterTextView.textView.setTextColor(
             MotionInterpolator.getComplementaryColor(
-                backgroundColor
-            )
+                backgroundColor,
+            ),
         )
 
         return this

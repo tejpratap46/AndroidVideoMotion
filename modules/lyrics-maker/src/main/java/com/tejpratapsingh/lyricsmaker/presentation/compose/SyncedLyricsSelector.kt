@@ -38,9 +38,13 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlin.math.max
 import kotlin.math.min
 
-data class RangeSelection(val start: Int, val end: Int) {
+data class RangeSelection(
+    val start: Int,
+    val end: Int,
+) {
     val minIndex get() = min(start, end)
     val maxIndex get() = max(start, end)
+
     fun contains(index: Int) = index in minIndex..maxIndex
 }
 
@@ -49,29 +53,29 @@ fun SyncedLyricsSelector(
     viewModel: LyricsViewModel,
     modifier: Modifier = Modifier,
     onSelectionChanged: (List<SyncedLyricFrame>) -> Unit = {},
-    onFinalize: (List<SyncedLyricFrame>) -> Unit = {}
+    onFinalize: (List<SyncedLyricFrame>) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val haptics = LocalHapticFeedback.current
     var selection by remember { mutableStateOf<RangeSelection?>(null) }
 
     Column(modifier = modifier.fillMaxSize()) {
-
         // Selection summary bar
         if (selection != null) {
             val selected = viewModel.lyrics.subList(selection!!.minIndex, selection!!.maxIndex + 1)
             Surface(tonalElevation = 2.dp) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         "Selected ${selected.size} line(s)",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Row {
                         TextButton(onClick = { onFinalize(selected) }) {
@@ -95,39 +99,41 @@ fun SyncedLyricsSelector(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(vertical = 8.dp),
             ) {
                 itemsIndexed(viewModel.lyrics) { index, line ->
                     val isSelected = selection?.contains(index) == true
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                            )
-                            .combinedClickable(
-                                onClick = {
-                                    if (selection != null) {
-                                        selection = selection!!.copy(end = index)
-                                    }
-                                },
-                                onLongClick = {
-                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    selection = RangeSelection(index, index)
-                                }
-                            )
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                    },
+                                ).combinedClickable(
+                                    onClick = {
+                                        if (selection != null) {
+                                            selection = selection!!.copy(end = index)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        selection = RangeSelection(index, index)
+                                    },
+                                ).padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         // Frame number
                         Text(
                             "[${line.frame}]",
                             style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.width(64.dp)
+                            modifier = Modifier.width(64.dp),
                         )
                         Spacer(Modifier.width(8.dp))
                         // Lyric text
@@ -135,14 +141,14 @@ fun SyncedLyricsSelector(
                             text = line.text.ifEmpty { "…" },
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         Spacer(Modifier.width(8.dp))
                         // Time in seconds
                         Text(
                             "[${line.frame / MotionConfig.fps} sec]",
                             style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.width(64.dp)
+                            modifier = Modifier.width(64.dp),
                         )
                     }
                 }

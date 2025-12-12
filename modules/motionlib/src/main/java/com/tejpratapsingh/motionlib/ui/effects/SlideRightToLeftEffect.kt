@@ -10,7 +10,7 @@ import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 class SlideRightToLeftEffect(
     override val motionView: MotionView,
     override val startFrame: Int,
-    override val endFrame: Int
+    override val endFrame: Int,
 ) : MotionEffect {
     private val TAG by lazy {
         "SlideRightToLeftEffect"
@@ -22,12 +22,13 @@ class SlideRightToLeftEffect(
 
         val view = motionView as View
 
-        val progress = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(0f, 1f)
-        )
+        val progress =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(0f, 1f),
+            )
 
         val width = view.width.toFloat()
 

@@ -8,7 +8,7 @@ import org.tensorflow.lite.support.common.FileUtil
 
 class SuperResolutionProcessor(
     context: Context,
-    modelFile: String
+    modelFile: String,
 ) {
     private val interpreter: Interpreter
 
@@ -29,13 +29,14 @@ class SuperResolutionProcessor(
         val outputHeight = inputHeight * 2
 
         // Create output buffer shape: [1, height*2, width*2, 3]
-        val outputBuffer = Array(1) {
-            Array(outputHeight) {
-                Array(outputWidth) {
-                    FloatArray(3)
+        val outputBuffer =
+            Array(1) {
+                Array(outputHeight) {
+                    Array(outputWidth) {
+                        FloatArray(3)
+                    }
                 }
             }
-        }
 
         // Resize input tensor before running, if model allows dynamic input
         interpreter.resizeInput(0, intArrayOf(1, inputHeight, inputWidth, 3))

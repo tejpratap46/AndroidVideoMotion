@@ -8,13 +8,18 @@ object RecentSearchHelper {
     private const val PREF_NAME = "recent_searches"
     private const val KEY_SEARCHES = "searches"
 
-    fun saveSearch(context: Context, query: String) {
+    fun saveSearch(
+        context: Context,
+        query: String,
+    ) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val searches = getSearches(context).toMutableList()
         searches.remove(query)
         searches.add(0, query)
-        if (searches.size > 10) if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            searches.removeLast()
+        if (searches.size > 10) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                searches.removeLast()
+            }
         }
         prefs.edit { putStringSet(KEY_SEARCHES, searches.toSet()) }
     }

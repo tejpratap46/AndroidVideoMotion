@@ -31,9 +31,9 @@ class Filament3dView(
     private val modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-    override val loop: Pair<Int, Int> = Pair(0, 0)
-) : FrameLayout(context), MotionView {
-
+    override val loop: Pair<Int, Int> = Pair(0, 0),
+) : FrameLayout(context),
+    MotionView {
     override val effects: List<MotionEffect> = emptyList()
 
     companion object {
@@ -50,9 +50,10 @@ class Filament3dView(
     private lateinit var surfaceTexture: SurfaceTexture
     private lateinit var surface: Surface
 
-    private val imageView = ImageView(context).apply {
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    }
+    private val imageView =
+        ImageView(context).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        }
 
     init {
         initializeFilament()
@@ -67,7 +68,7 @@ class Filament3dView(
         surfaceTexture = SurfaceTexture(0)
         surfaceTexture.setDefaultBufferSize(
             MotionConfig.aspectRatio.width,
-            MotionConfig.aspectRatio.height
+            MotionConfig.aspectRatio.height,
         )
         surface = Surface(surfaceTexture)
         engine = Engine.create()
@@ -109,12 +110,18 @@ class Filament3dView(
             (MotionConfig.aspectRatio.width / MotionConfig.aspectRatio.height).toDouble(),
             0.1,
             1000.0,
-            Camera.Fov.VERTICAL
+            Camera.Fov.VERTICAL,
         )
         camera.lookAt(
-            0.0, 0.0, 5.0, // eyeX, eyeY, eyeZ
-            0.0, 0.0, 0.0, // centerX, centerY, centerZ
-            0.0, 1.0, 0.0  // upX, upY, upZ
+            0.0,
+            0.0,
+            5.0, // eyeX, eyeY, eyeZ
+            0.0,
+            0.0,
+            0.0, // centerX, centerY, centerZ
+            0.0,
+            1.0,
+            0.0, // upX, upY, upZ
         )
         view.camera = camera
     }
@@ -136,9 +143,15 @@ class Filament3dView(
             val height = view.viewport.height
             val buffer = ByteBuffer.allocateDirect(width * height * 4)
             renderer.readPixels(
-                0, 0, width, height, Texture.PixelBufferDescriptor(
-                    buffer, Texture.Format.RGBA, Texture.Type.UBYTE
-                )
+                0,
+                0,
+                width,
+                height,
+                Texture.PixelBufferDescriptor(
+                    buffer,
+                    Texture.Format.RGBA,
+                    Texture.Type.UBYTE,
+                ),
             )
             buffer.rewind()
             renderer.endFrame()

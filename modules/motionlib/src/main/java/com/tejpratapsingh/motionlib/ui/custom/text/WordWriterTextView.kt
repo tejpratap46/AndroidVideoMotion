@@ -19,7 +19,7 @@ class WordWriterTextView(
     private val text: String,
     startFrame: Int = 0,
     endFrame: Int = -1,
-    textView: AppCompatTextView = CutoutTextView(context)
+    textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
     private val TAG by lazy {
         "WordWriterTextView"
@@ -31,12 +31,14 @@ class WordWriterTextView(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val visibleWordCount: Int = MotionInterpolator.interpolateForRange(
-            Interpolators(Easings.LINEAR),
-            frame,
-            Pair(startFrame, endFrame),
-            Pair(0f, wordCount.toFloat())
-        ).toInt()
+        val visibleWordCount: Int =
+            MotionInterpolator
+                .interpolateForRange(
+                    Interpolators(Easings.LINEAR),
+                    frame,
+                    Pair(startFrame, endFrame),
+                    Pair(0f, wordCount.toFloat()),
+                ).toInt()
 
         Log.d(TAG, "visibleWordCount: $visibleWordCount")
         val visibleCharacters = wordArray.subList(0, visibleWordCount).joinToString(" ").length
@@ -46,7 +48,7 @@ class WordWriterTextView(
             ForegroundColorSpan(Color.TRANSPARENT),
             maxOf(0, visibleCharacters),
             text.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         textView.text = spannableString
         textView.invalidate()

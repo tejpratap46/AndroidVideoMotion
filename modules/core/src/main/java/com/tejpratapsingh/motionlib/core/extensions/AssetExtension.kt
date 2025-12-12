@@ -1,6 +1,5 @@
 package com.tejpratapsingh.motionlib.core.extensions
 
-
 import android.content.Context
 import android.net.Uri
 import java.io.File

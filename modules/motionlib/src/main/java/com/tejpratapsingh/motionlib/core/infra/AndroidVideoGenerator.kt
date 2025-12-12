@@ -17,7 +17,6 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 class AndroidVideoGenerator {
-
     companion object {
         private const val TAG = "VideoGenerator"
 
@@ -65,7 +64,7 @@ class AndroidVideoGenerator {
         inputDir: File? = null,
         outputFile: File,
         motionConfig: MotionConfig,
-        motionAudio: List<MotionAudio> = emptyList()
+        motionAudio: List<MotionAudio> = emptyList(),
     ) {
         if (bitmaps.isEmpty() && inputDir == null) {
             Log.w(TAG, "No bitmaps provided. Cannot generate video.")
@@ -81,11 +80,12 @@ class AndroidVideoGenerator {
             val format =
                 MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
             format.setInteger(
-                MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+                MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
             )
             format.setInteger(
                 MediaFormat.KEY_BIT_RATE,
-                calculateBitRate(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height, motionConfig.fps)
+                calculateBitRate(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height, motionConfig.fps),
             )
             format.setInteger(MediaFormat.KEY_FRAME_RATE, motionConfig.fps)
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
@@ -137,7 +137,9 @@ class AndroidVideoGenerator {
                 while (true) {
                     val encoderStatus = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC)
                     when {
-                        encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> break
+                        encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                            break
+                        }
 
                         encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                             if (muxerStarted) throw RuntimeException("format changed after muxer start")
@@ -156,14 +158,14 @@ class AndroidVideoGenerator {
                         encoderStatus < 0 -> {
                             Log.w(
                                 TAG,
-                                "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus"
+                                "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus",
                             )
                         }
 
                         else -> {
                             val encodedData =
                                 mediaCodec.getOutputBuffer(encoderStatus) ?: throw RuntimeException(
-                                    "encoderOutputBuffer $encoderStatus was null"
+                                    "encoderOutputBuffer $encoderStatus was null",
                                 )
 
                             if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
@@ -205,7 +207,7 @@ class AndroidVideoGenerator {
                 fps = motionConfig.fps,
                 initialPresentationTimeUs = presentationTimeUs,
                 audioTrackFormats = audioTrackFormats,
-                muxerAudioTrackIndices = muxerAudioTrackIndices
+                muxerAudioTrackIndices = muxerAudioTrackIndices,
             )
 
             // Now copy audio samples into the muxer (timeline aligned by frames -> microseconds)
@@ -244,7 +246,7 @@ class AndroidVideoGenerator {
         mediaMuxer: MediaMuxer,
         audioSources: List<MotionAudio>,
         fps: Int,
-        audioTrackIndices: List<Int>
+        audioTrackIndices: List<Int>,
     ) {
         Log.d(TAG, "muxAudioTracks: adding audio")
         val bufferSize = 1 * 1024 * 1024
@@ -310,7 +312,7 @@ class AndroidVideoGenerator {
         fps: Int,
         initialPresentationTimeUs: Long,
         audioTrackFormats: List<MediaFormat>,
-        muxerAudioTrackIndices: MutableList<Int>
+        muxerAudioTrackIndices: MutableList<Int>,
     ) {
         var localMuxerStarted = muxerStarted
         var localVideoTrackIndex = videoTrackIndex
@@ -319,7 +321,9 @@ class AndroidVideoGenerator {
         while (true) {
             val encoderStatus = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC)
             when {
-                encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> break
+                encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                    break
+                }
 
                 encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     // This can happen if no encoded output was dequeued earlier.
@@ -336,14 +340,17 @@ class AndroidVideoGenerator {
                     localMuxerStarted = true
                 }
 
-                encoderStatus < 0 -> Log.w(
-                    TAG,
-                    "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus"
-                )
+                encoderStatus < 0 -> {
+                    Log.w(
+                        TAG,
+                        "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus",
+                    )
+                }
 
                 else -> {
-                    val encodedData = mediaCodec.getOutputBuffer(encoderStatus)
-                        ?: throw RuntimeException("encoderOutputBuffer $encoderStatus was null (during drain)")
+                    val encodedData =
+                        mediaCodec.getOutputBuffer(encoderStatus)
+                            ?: throw RuntimeException("encoderOutputBuffer $encoderStatus was null (during drain)")
 
                     if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                         bufferInfo.size = 0
@@ -371,38 +378,47 @@ class AndroidVideoGenerator {
         }
     }
 
-    private fun calculateBitRate(width: Int, height: Int, frameRate: Int): Int {
-        return (width * height * frameRate * 0.25).toInt()
-    }
+    private fun calculateBitRate(
+        width: Int,
+        height: Int,
+        frameRate: Int,
+    ): Int = (width * height * frameRate * 0.25).toInt()
 
     private fun getBitmapCount(
-        bitmaps: List<Bitmap> = mutableListOf(), inputDir: File? = null
-    ): Int = if (inputDir != null) {
-        initBitmapFiles(inputDir)
-        bitmapFiles?.size ?: 0
-    } else {
-        bitmaps.size
-    }
+        bitmaps: List<Bitmap> = mutableListOf(),
+        inputDir: File? = null,
+    ): Int =
+        if (inputDir != null) {
+            initBitmapFiles(inputDir)
+            bitmapFiles?.size ?: 0
+        } else {
+            bitmaps.size
+        }
 
     private fun getBitmap(
-        bitmaps: List<Bitmap> = mutableListOf(), inputDir: File? = null, index: Int
-    ): Bitmap? = if (inputDir != null) {
-        initBitmapFiles(inputDir)
+        bitmaps: List<Bitmap> = mutableListOf(),
+        inputDir: File? = null,
+        index: Int,
+    ): Bitmap? =
+        if (inputDir != null) {
+            initBitmapFiles(inputDir)
 
-        bitmapFiles?.getOrNull(index)?.let { file ->
-            BitmapFactory.decodeFile(file.absolutePath)
+            bitmapFiles?.getOrNull(index)?.let { file ->
+                BitmapFactory.decodeFile(file.absolutePath)
+            }
+        } else {
+            bitmaps.getOrNull(index)
         }
-    } else {
-        bitmaps.getOrNull(index)
-    }
 
     private fun initBitmapFiles(inputDir: File) {
         if (bitmapFiles == null) {
-            bitmapFiles = inputDir.listFiles { file ->
-                file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
-            }?.sortedBy { file ->
-                file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
-            }
+            bitmapFiles =
+                inputDir
+                    .listFiles { file ->
+                        file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
+                    }?.sortedBy { file ->
+                        file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
+                    }
         }
     }
 }

@@ -2,10 +2,9 @@ package com.tejpratapsingh.lyricsmaker.data.lrc
 
 object LrcHelper {
     fun getSyncedLyrics(
-        lrcContent: String, fps: Int
-    ): List<SyncedLyricFrame> {
-        return getSyncedLyricsWithFrameOffset(lrcContent, fps)
-    }
+        lrcContent: String,
+        fps: Int,
+    ): List<SyncedLyricFrame> = getSyncedLyricsWithFrameOffset(lrcContent, fps)
 
     /**
      * Parses the raw LRC string into synced lyric frames.
@@ -14,18 +13,22 @@ object LrcHelper {
      * @param parser Custom parser if needed
      */
     fun getSyncedLyricsWithFrameOffset(
-        lrcContent: String, fps: Int, offsetFrames: Int = 0,
+        lrcContent: String,
+        fps: Int,
+        offsetFrames: Int = 0,
         parser: LrcParser = LrcParser(),
     ): List<SyncedLyricFrame> {
         val parsedResult = parser.parse(lrcContent)
 
-        return parsedResult.map {
-            val frame =
-                ((it.time / (1000.0 / fps)).toInt() - offsetFrames).coerceAtLeast(0) // avoid negative frames
-            SyncedLyricFrame(
-                frame = frame, text = it.text
-            )
-        }.sortedBy { it.frame }
+        return parsedResult
+            .map {
+                val frame =
+                    ((it.time / (1000.0 / fps)).toInt() - offsetFrames).coerceAtLeast(0) // avoid negative frames
+                SyncedLyricFrame(
+                    frame = frame,
+                    text = it.text,
+                )
+            }.sortedBy { it.frame }
     }
 
     /**
@@ -33,7 +36,9 @@ object LrcHelper {
      * Converts ms to frames before shifting.
      */
     fun getSyncedLyricsWithMsOffset(
-        lrcContent: String, fps: Int, offsetMs: Long = 0L
+        lrcContent: String,
+        fps: Int,
+        offsetMs: Long = 0L,
     ): List<SyncedLyricFrame> {
         val offsetFrames = (offsetMs / (1000.0 / fps)).toInt()
         return getSyncedLyricsWithFrameOffset(lrcContent, fps, offsetFrames)
@@ -43,17 +48,15 @@ object LrcHelper {
      * Find the current lyric line for a given frame
      */
     fun getCurrentLyric(
-        lyrics: List<SyncedLyricFrame>, currentFrame: Int
-    ): SyncedLyricFrame? {
-        return lyrics.lastOrNull { it.frame <= currentFrame }
-    }
+        lyrics: List<SyncedLyricFrame>,
+        currentFrame: Int,
+    ): SyncedLyricFrame? = lyrics.lastOrNull { it.frame <= currentFrame }
 
     /**
      * Find the next lyric line for a given frame
      */
     fun getNextLyric(
-        lyrics: List<SyncedLyricFrame>, currentFrame: Int
-    ): SyncedLyricFrame? {
-        return lyrics.firstOrNull { it.frame > currentFrame }
-    }
+        lyrics: List<SyncedLyricFrame>,
+        currentFrame: Int,
+    ): SyncedLyricFrame? = lyrics.firstOrNull { it.frame > currentFrame }
 }

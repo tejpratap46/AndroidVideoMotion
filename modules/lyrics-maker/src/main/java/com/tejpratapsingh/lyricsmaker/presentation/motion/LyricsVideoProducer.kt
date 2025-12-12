@@ -14,27 +14,30 @@ fun getLyricsVideoProducer(
     applicationContext: Context,
     song: String,
     lyrics: List<SyncedLyricFrame>,
-    image: String? = null
+    image: String? = null,
 ): MotionVideoProducer {
-
     Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.size}")
 
-    val motionConfig = MotionConfig(
-        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24
-    )
+    val motionConfig =
+        MotionConfig(
+            aspectRatio = VideoAspectRatio.Ratio9x16_480,
+            fps = 24,
+        )
 
-    val motionView = LyricsContainer(
-        context = applicationContext,
-        startFrame = lyrics.first().frame,
-        endFrame = lyrics.last().frame,
-        songName = song,
-        lyrics = lyrics,
-        image = image
-    )
+    val motionView =
+        LyricsContainer(
+            context = applicationContext,
+            startFrame = lyrics.first().frame,
+            endFrame = lyrics.last().frame,
+            songName = song,
+            lyrics = lyrics,
+            image = image,
+        )
 
-    return MotionVideoProducer.with(
-        context = applicationContext,
-        config = motionConfig,
-        videoProducerAdapter = FfmpegVideoProducerAdapter()
-    ).addMotionViewToSequence(motionView = motionView)
+    return MotionVideoProducer
+        .with(
+            context = applicationContext,
+            config = motionConfig,
+            videoProducerAdapter = FfmpegVideoProducerAdapter(),
+        ).addMotionViewToSequence(motionView = motionView)
 }

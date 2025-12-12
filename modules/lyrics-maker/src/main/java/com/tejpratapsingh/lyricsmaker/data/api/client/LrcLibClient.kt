@@ -13,30 +13,34 @@ import kotlinx.serialization.json.Json
 
 class LrcLibClient(
     private val baseUrl: String = "https://lrclib.net/api",
-    private val apiKey: String? = null
+    private val apiKey: String? = null,
 ) {
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
+    private val client =
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
+                )
+            }
         }
-    }
 
-    suspend fun searchLyrics(query: SearchQuery): List<LyricsResponse> {
-        return client.get("$baseUrl/search") {
-            parameter("q", query.searchTerm)
-        }.body()
-    }
+    suspend fun searchLyrics(query: SearchQuery): List<LyricsResponse> =
+        client
+            .get("$baseUrl/search") {
+                parameter("q", query.searchTerm)
+            }.body()
 
     suspend fun getLyrics(query: LyricsQuery): LyricsResponse? {
-        val response = client.get("$baseUrl/get") {
-            query.id?.let { parameter("id", it) }
-            query.trackName?.let { parameter("track_name", it) }
-            query.artistName?.let { parameter("artist_name", it) }
-            query.albumName?.let { parameter("album_name", it) }
-            query.duration?.let { parameter("duration", it) }
-        }
+        val response =
+            client.get("$baseUrl/get") {
+                query.id?.let { parameter("id", it) }
+                query.trackName?.let { parameter("track_name", it) }
+                query.artistName?.let { parameter("artist_name", it) }
+                query.albumName?.let { parameter("album_name", it) }
+                query.duration?.let { parameter("duration", it) }
+            }
         return if (response.status.value == 404) null else response.body()
     }
 

@@ -31,9 +31,8 @@ class LyricsContainer(
     startFrame: Int,
     endFrame: Int,
     val lyrics: List<SyncedLyricFrame>,
-    image: String? = null
+    image: String? = null,
 ) : BaseFrameMotionView(context) {
-
     companion object {
         private const val TAG = "LyricsContainer"
     }
@@ -81,11 +80,11 @@ class LyricsContainer(
                     return@runBlocking
                 } else {
                     Log.i(TAG, "Fetching from musicbrainz")
-                    AlbumArtFetcher.fetchAlbumArtUrl(
-                        songName.split(" - ")[0],
-                        songName.split(" - ")[1]
-                    )
-                        ?.let { url ->
+                    AlbumArtFetcher
+                        .fetchAlbumArtUrl(
+                            songName.split(" - ")[0],
+                            songName.split(" - ")[1],
+                        )?.let { url ->
                             Log.i(TAG, "cover art found: $url")
                             setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
                             AlbumArtFetcher.close()
@@ -98,22 +97,24 @@ class LyricsContainer(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(
-            Interpolators(Easings.LINEAR),
-            frame,
-            Pair(startFrame, endFrame),
-            Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt())
-        )
+        val backgroundColor: Int =
+            MotionInterpolator.interpolateColorForRange(
+                Interpolators(Easings.LINEAR),
+                frame,
+                Pair(startFrame, endFrame),
+                Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt()),
+            )
 
         setBackgroundColor(Color.BLACK)
 
-        MotionInterpolator.getComplementaryColor(
-            backgroundColor
-        ).also {
-            tvSongName.setTextColor(it)
-            tvLyricsLine1.setTextColor(it)
-            tvLyricsLine2.setTextColor(it)
-        }
+        MotionInterpolator
+            .getComplementaryColor(
+                backgroundColor,
+            ).also {
+                tvSongName.setTextColor(it)
+                tvLyricsLine1.setTextColor(it)
+                tvLyricsLine2.setTextColor(it)
+            }
 
         fakeChartView.setFrame(frame)
 

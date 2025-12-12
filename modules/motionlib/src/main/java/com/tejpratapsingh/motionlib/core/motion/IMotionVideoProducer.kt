@@ -8,9 +8,10 @@ import java.io.File
 
 interface IMotionVideoProducer {
     fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup
+
     suspend fun produceVideo(
         context: Context,
         outputFile: File,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)? = null
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)? = null,
     ): File
 }

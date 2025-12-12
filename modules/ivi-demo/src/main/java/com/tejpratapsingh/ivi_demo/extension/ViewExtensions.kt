@@ -11,7 +11,7 @@ fun View.enableSwipeSeek(
     maxProgress: Int,
     initialProgress: () -> Int,
     onProgressChanged: (Int) -> Unit,
-    sensitivity: Float = 2f
+    sensitivity: Float = 2f,
 ) {
     var lastX = 0f
     var progressOnStart = 0
@@ -32,7 +32,9 @@ fun View.enableSwipeSeek(
                 true
             }
 
-            else -> false
+            else -> {
+                false
+            }
         }
     }
 }
@@ -42,7 +44,7 @@ fun View.enableSwipeSeekReverse(
     maxProgress: Int,
     initialProgress: () -> Int,
     onProgressChanged: (Int) -> Unit,
-    sensitivity: Float = 2f
+    sensitivity: Float = 2f,
 ) {
     var lastX = 0f
     var progressOnStart = 0
@@ -63,7 +65,9 @@ fun View.enableSwipeSeekReverse(
                 true
             }
 
-            else -> false
+            else -> {
+                false
+            }
         }
     }
 }

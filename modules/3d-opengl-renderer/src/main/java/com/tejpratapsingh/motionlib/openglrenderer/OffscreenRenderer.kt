@@ -10,47 +10,61 @@ import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
 
-class OffscreenRenderer(private val model: ObjModel) {
+class OffscreenRenderer(
+    private val model: ObjModel,
+) {
     private val modelMatrix = FloatArray(16)
     private val viewMatrix = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
     private val mvpMatrix = FloatArray(16)
     private var rotationAngle = 0f
 
-    private val vertexShaderCode = """
+    private val vertexShaderCode =
+        """
         uniform mat4 uMVPMatrix;
         attribute vec4 vPosition;
         void main() {
             gl_Position = uMVPMatrix * vPosition;
         }
-    """.trimIndent()
+        """.trimIndent()
 
-    private val fragmentShaderCode = """
+    private val fragmentShaderCode =
+        """
         precision mediump float;
         uniform vec4 vColor;
         void main() {
             gl_FragColor = vColor;
         }
-    """.trimIndent()
+        """.trimIndent()
 
     fun setRotation(angleInDegrees: Float) {
         rotationAngle = angleInDegrees
     }
 
-    fun renderOffscreen(width: Int = 512, height: Int = 512): Bitmap {
+    fun renderOffscreen(
+        width: Int = 512,
+        height: Int = 512,
+    ): Bitmap {
         val egl = EGLContext.getEGL() as EGL10
         val display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY)
         egl.eglInitialize(display, null)
 
-        val attribList = intArrayOf(
-            EGL10.EGL_RED_SIZE, 8,
-            EGL10.EGL_GREEN_SIZE, 8,
-            EGL10.EGL_BLUE_SIZE, 8,
-            EGL10.EGL_ALPHA_SIZE, 8,
-            EGL10.EGL_SURFACE_TYPE, EGL10.EGL_PBUFFER_BIT,
-            EGL10.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-            EGL10.EGL_NONE
-        )
+        val attribList =
+            intArrayOf(
+                EGL10.EGL_RED_SIZE,
+                8,
+                EGL10.EGL_GREEN_SIZE,
+                8,
+                EGL10.EGL_BLUE_SIZE,
+                8,
+                EGL10.EGL_ALPHA_SIZE,
+                8,
+                EGL10.EGL_SURFACE_TYPE,
+                EGL10.EGL_PBUFFER_BIT,
+                EGL10.EGL_RENDERABLE_TYPE,
+                EGL14.EGL_OPENGL_ES2_BIT,
+                EGL10.EGL_NONE,
+            )
 
         val configs = arrayOfNulls<EGLConfig>(1)
         val numConfigs = IntArray(1)
@@ -60,11 +74,14 @@ class OffscreenRenderer(private val model: ObjModel) {
         val attribList1 = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE)
         val context = egl.eglCreateContext(display, config, EGL10.EGL_NO_CONTEXT, attribList1)
 
-        val surfaceAttribs = intArrayOf(
-            EGL10.EGL_WIDTH, width,
-            EGL10.EGL_HEIGHT, height,
-            EGL10.EGL_NONE
-        )
+        val surfaceAttribs =
+            intArrayOf(
+                EGL10.EGL_WIDTH,
+                width,
+                EGL10.EGL_HEIGHT,
+                height,
+                EGL10.EGL_NONE,
+            )
         val surface = egl.eglCreatePbufferSurface(display, config, surfaceAttribs)
         egl.eglMakeCurrent(display, surface, surface, context)
 
@@ -101,7 +118,7 @@ class OffscreenRenderer(private val model: ObjModel) {
             GLES20.GL_TRIANGLES,
             model.indexCount,
             GLES20.GL_UNSIGNED_SHORT,
-            model.indexBuffer
+            model.indexBuffer,
         )
         GLES20.glDisableVertexAttribArray(posHandle)
 
@@ -116,7 +133,7 @@ class OffscreenRenderer(private val model: ObjModel) {
             display,
             EGL10.EGL_NO_SURFACE,
             EGL10.EGL_NO_SURFACE,
-            EGL10.EGL_NO_CONTEXT
+            EGL10.EGL_NO_CONTEXT,
         )
         egl.eglDestroySurface(display, surface)
         egl.eglDestroyContext(display, context)
@@ -143,8 +160,11 @@ class OffscreenRenderer(private val model: ObjModel) {
         }
     }
 
-    private fun loadShader(type: Int, code: String): Int {
-        return GLES20.glCreateShader(type).also {
+    private fun loadShader(
+        type: Int,
+        code: String,
+    ): Int =
+        GLES20.glCreateShader(type).also {
             GLES20.glShaderSource(it, code)
             GLES20.glCompileShader(it)
             val compiled = IntArray(1)
@@ -155,5 +175,4 @@ class OffscreenRenderer(private val model: ObjModel) {
                 throw RuntimeException("Could not compile shader $type: $log")
             }
         }
-    }
 }

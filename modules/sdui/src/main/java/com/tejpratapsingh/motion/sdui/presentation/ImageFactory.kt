@@ -8,7 +8,11 @@ import com.tejpratapsingh.motion.sdui.data.SduiRenderer
 import com.tejpratapsingh.motion.sdui.domain.ViewFactory
 
 class ImageFactory : ViewFactory {
-    override fun create(context: Context, json: JsonObject, renderer: SduiRenderer): View {
+    override fun create(
+        context: Context,
+        json: JsonObject,
+        renderer: SduiRenderer,
+    ): View {
         val imageView = ImageView(context)
         renderer.imageLoader?.load(imageView, json.get("url")?.asString ?: "")
         return imageView

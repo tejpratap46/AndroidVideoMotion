@@ -20,113 +20,128 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-
-class MotionVideoContainer(context: Context, motionVideoProducer: MotionVideoProducer) :
-    ContourLayout(context) {
-
+class MotionVideoContainer(
+    context: Context,
+    motionVideoProducer: MotionVideoProducer,
+) : ContourLayout(context) {
     private val TAG = "MotionVideoContainer"
 
-    private val toolbar: Toolbar = Toolbar(context).apply {
-        title = "Video"
-        subtitle = "Create New"
-        setBackgroundColor(Color.CYAN)
-    }
+    private val toolbar: Toolbar =
+        Toolbar(context).apply {
+            title = "Video"
+            subtitle = "Create New"
+            setBackgroundColor(Color.CYAN)
+        }
 
-    private val videoPlayer: MotionVideoPlayer = MotionVideoPlayer(
-        context, motionVideoProducer
-    )
-
-    private val exportVideo: Button = Button(context).apply {
-        text = context.getString(R.string.export_video)
-
-        val scope = CoroutineScope(
-            Dispatchers.Main + SupervisorJob()
+    private val videoPlayer: MotionVideoPlayer =
+        MotionVideoPlayer(
+            context,
+            motionVideoProducer,
         )
 
-        setOnClickListener {
-            visibility = GONE
+    private val exportVideo: Button =
+        Button(context).apply {
+            text = context.getString(R.string.export_video)
 
-            scope.launch {
-                val uri: Uri = generateVideo(
-                    motionVideoProducer = motionVideoProducer,
-                    progressListener = { progress, bitmap ->
-                        scope.launch {
-                            Log.d(TAG, "Progress: $progress")
-                            videoPlayer.seekBar.progress = progress
-                        }
-                    }
+            val scope =
+                CoroutineScope(
+                    Dispatchers.Main + SupervisorJob(),
                 )
 
-                visibility = VISIBLE
-                val shareIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "video/*"
-                    putExtra(Intent.EXTRA_STREAM, uri)
+            setOnClickListener {
+                visibility = GONE
 
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                scope.launch {
+                    val uri: Uri =
+                        generateVideo(
+                            motionVideoProducer = motionVideoProducer,
+                            progressListener = { progress, bitmap ->
+                                scope.launch {
+                                    Log.d(TAG, "Progress: $progress")
+                                    videoPlayer.seekBar.progress = progress
+                                }
+                            },
+                        )
+
+                    visibility = VISIBLE
+                    val shareIntent =
+                        Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "video/*"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+
+                    context.startActivity(Intent.createChooser(shareIntent, "Share File"))
                 }
-
-                context.startActivity(Intent.createChooser(shareIntent, "Share File"))
             }
         }
-    }
 
     init {
         toolbar.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                parent.top()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                },
         )
 
         exportVideo.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = bottomTo {
-                parent.bottom()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                bottomTo {
+                    parent.bottom()
+                },
         )
 
         videoPlayer.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                toolbar.bottom()
-            }.bottomTo {
-                exportVideo.top()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    toolbar.bottom()
+                }.bottomTo {
+                    exportVideo.top()
+                },
         )
     }
 
     suspend fun generateVideo(
         motionVideoProducer: MotionVideoProducer,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?,
     ): Uri =
         withContext(Dispatchers.IO) {
-            val fileToShare = motionVideoProducer.produceVideo(
-                context = context,
-                outputFile = File.createTempFile(
-                    "out",
-                    ".mp4",
-                    context.filesDir
-                ),
-                progressListener = progressListener
-            )
+            val fileToShare =
+                motionVideoProducer.produceVideo(
+                    context = context,
+                    outputFile =
+                        File.createTempFile(
+                            "out",
+                            ".mp4",
+                            context.filesDir,
+                        ),
+                    progressListener = progressListener,
+                )
 
             FileProvider.getUriForFile(
                 context,
                 "${context.packageName}.fileprovider",
-                fileToShare
+                fileToShare,
             )
         }
 }

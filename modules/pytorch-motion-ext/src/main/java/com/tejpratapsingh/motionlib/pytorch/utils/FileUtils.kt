@@ -7,7 +7,10 @@ import java.io.IOException
 
 object FileUtils {
     @Throws(IOException::class)
-    fun assetFilePath(context: Context, assetName: String): String? {
+    fun assetFilePath(
+        context: Context,
+        assetName: String,
+    ): String? {
         val file = File(context.filesDir, assetName)
         if (file.exists() && file.length() > 0) {
             return file.absolutePath

@@ -10,30 +10,38 @@ import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import java.io.IOException
 import java.io.InputStream
 
-class Road(context: Context, startFrame: Int, endFrame: Int) :
-    BaseContourMotionView(context, startFrame, endFrame) {
-
+class Road(
+    context: Context,
+    startFrame: Int,
+    endFrame: Int,
+) : BaseContourMotionView(context, startFrame, endFrame) {
     companion object {
         private const val TAG = "Road"
         const val imageAssetSubFolder = "road"
     }
 
-    private val imageView: ImageView = ImageView(context).apply {
-        scaleType = ImageView.ScaleType.CENTER_INSIDE
-    }
+    private val imageView: ImageView =
+        ImageView(context).apply {
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+        }
 
     private val assetManager = context.assets
 
     init {
-        imageView.layoutBy(x = leftTo {
-            parent.left()
-        }.rightTo {
-            parent.right()
-        }, y = topTo {
-            parent.top()
-        }.bottomTo {
-            parent.bottom()
-        })
+        imageView.layoutBy(
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                }.bottomTo {
+                    parent.bottom()
+                },
+        )
 
         contourHeightOf {
             MotionConfig.aspectRatio.height.toYInt()

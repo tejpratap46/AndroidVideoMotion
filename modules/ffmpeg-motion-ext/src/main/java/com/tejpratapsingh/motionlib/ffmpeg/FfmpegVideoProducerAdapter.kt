@@ -15,7 +15,6 @@ import java.io.File
 import java.util.Locale
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
-
     companion object {
         private const val TAG = "FfmpegVideoProducerAdap"
     }
@@ -29,7 +28,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?
+        progressListener: ((Int, Bitmap) -> Unit)?,
     ): File {
         if (outputFile.exists()) {
             outputFile.delete()
@@ -44,13 +43,18 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
         for (i in 1..totalFrames) {
             Log.d(TAG, "produceVideo: frame $i")
-            val frameBitmap: Bitmap = motionComposerView.forFrame(i).getViewBitmap()
-                .compressToBitmap(motionConfig.outputQuality)
+            val frameBitmap: Bitmap =
+                motionComposerView
+                    .forFrame(i)
+                    .getViewBitmap()
+                    .compressToBitmap(motionConfig.outputQuality)
 
             // It's good practice to handle potential IOExceptions when saving files
             try {
                 context.saveBitmapToCacheFolder(
-                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%05d.png", i)
+                    frameBitmap,
+                    subDirName,
+                    String.format(Locale.getDefault(), "%05d.png", i),
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving frame $i: ${e.message}", e)
@@ -75,14 +79,15 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         // -r: Output framerate (often the same as input, but can be different)
 //        val query = "-y -framerate ${motionConfig.fps} -start_number 1 -i \"$inputPattern\" -c:v libx264 -pix_fmt yuv420p -r ${motionConfig.fps} \"${outputFile.path}\""
 
-        val query = buildFfmpegCommand(
-            inputPattern = inputPattern,
-            fps = motionConfig.fps,
-            outputFile = outputFile,
-            audioTracks = motionAudio,
-            startNumber = 1,
-            mixAudio = true // Change to false if you want separate audio tracks
-        ).joinToString(" ")
+        val query =
+            buildFfmpegCommand(
+                inputPattern = inputPattern,
+                fps = motionConfig.fps,
+                outputFile = outputFile,
+                audioTracks = motionAudio,
+                startNumber = 1,
+                mixAudio = true, // Change to false if you want separate audio tracks
+            ).joinToString(" ")
 
         Log.d(TAG, "Executing FFmpeg query: $query")
         val session = FFmpegKit.execute(query)
@@ -108,12 +113,12 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
     }
 
     fun buildFfmpegCommand(
-        inputPattern: String,     // e.g. "/sdcard/frames/frame_%d.png"
+        inputPattern: String, // e.g. "/sdcard/frames/frame_%d.png"
         fps: Int,
         outputFile: File,
         audioTracks: List<MotionAudio>,
         startNumber: Int = 1,
-        mixAudio: Boolean = true  // true = mix tracks, false = keep separate
+        mixAudio: Boolean = true, // true = mix tracks, false = keep separate
     ): List<String> {
         val command = mutableListOf<String>()
 
@@ -121,10 +126,13 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         command.addAll(
             listOf(
                 "-y",
-                "-framerate", fps.toString(),
-                "-start_number", startNumber.toString(),
-                "-i", inputPattern
-            )
+                "-framerate",
+                fps.toString(),
+                "-start_number",
+                startNumber.toString(),
+                "-i",
+                inputPattern,
+            ),
         )
 
         // Add audio inputs
@@ -142,9 +150,9 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
                 val label = "a${index + 1}"
                 filterParts.add(
-                    "[${index + 1}:a]atrim=start=${startSec}:end=${endSec}," +
-                            "asetpts=PTS-STARTPTS," +
-                            "adelay=${delayMs}|${delayMs}[$label]"
+                    "[${index + 1}:a]atrim=start=$startSec:end=$endSec," +
+                        "asetpts=PTS-STARTPTS," +
+                        "adelay=$delayMs|$delayMs[$label]",
                 )
             }
 
@@ -167,13 +175,13 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
                     "-r",
                     fps.toString(),
                     "-shortest",
-                    outputFile.absolutePath
-                )
+                    outputFile.absolutePath,
+                ),
             )
         } else {
             // Keep tracks separate, no filter_complex
             command.addAll(
-                listOf("-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", fps.toString())
+                listOf("-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", fps.toString()),
             )
 
             // Map video and each audio
@@ -189,7 +197,8 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         return command
     }
 
-    fun frameToSeconds(frame: Int, fps: Int): Double {
-        return frame.toDouble() / fps.toDouble()
-    }
+    fun frameToSeconds(
+        frame: Int,
+        fps: Int,
+    ): Double = frame.toDouble() / fps.toDouble()
 }

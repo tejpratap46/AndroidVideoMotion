@@ -19,7 +19,7 @@ class TypeWriterTextView(
     private val text: String,
     startFrame: Int,
     endFrame: Int,
-    textView: AppCompatTextView = CutoutTextView(context)
+    textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
     private val TAG by lazy {
         "TypeWriterTextView"
@@ -28,12 +28,14 @@ class TypeWriterTextView(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val visibleCharsCount: Int = MotionInterpolator.interpolateForRange(
-            Interpolators(Easings.LINEAR),
-            frame,
-            Pair(startFrame, endFrame),
-            Pair(0f, text.length.toFloat())
-        ).toInt()
+        val visibleCharsCount: Int =
+            MotionInterpolator
+                .interpolateForRange(
+                    Interpolators(Easings.LINEAR),
+                    frame,
+                    Pair(startFrame, endFrame),
+                    Pair(0f, text.length.toFloat()),
+                ).toInt()
 
         Log.d(TAG, "visibleCharsCount: $visibleCharsCount")
 
@@ -42,7 +44,7 @@ class TypeWriterTextView(
             ForegroundColorSpan(Color.TRANSPARENT),
             maxOf(0, visibleCharsCount),
             text.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         textView.text = spannableString
         textView.invalidate()

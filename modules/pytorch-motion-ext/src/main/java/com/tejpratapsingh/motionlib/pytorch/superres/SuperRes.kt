@@ -13,8 +13,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class SuperRes(context: Context) {
-
+class SuperRes(
+    context: Context,
+) {
     private var module: Module
 
     companion object {
@@ -31,8 +32,8 @@ class SuperRes(context: Context) {
         }
     }
 
-    fun upscaleImage(inputBitmap: Bitmap): Bitmap? {
-        return try {
+    fun upscaleImage(inputBitmap: Bitmap): Bitmap? =
+        try {
             // Preprocess the input image
             val inputTensor = preprocessImage(inputBitmap)
 
@@ -45,7 +46,6 @@ class SuperRes(context: Context) {
             e.printStackTrace()
             null
         }
-    }
 
     private fun preprocessImage(bitmap: Bitmap): Tensor {
         // Resize image to model input size
@@ -55,11 +55,14 @@ class SuperRes(context: Context) {
         return TensorImageUtils.bitmapToFloat32Tensor(
             resizedBitmap,
             floatArrayOf(0.485f, 0.456f, 0.406f), // ImageNet mean
-            floatArrayOf(0.229f, 0.224f, 0.225f)  // ImageNet std
+            floatArrayOf(0.229f, 0.224f, 0.225f), // ImageNet std
         )
     }
 
-    private fun postprocessOutput(outputTensor: Tensor, originalBitmap: Bitmap): Bitmap {
+    private fun postprocessOutput(
+        outputTensor: Tensor,
+        originalBitmap: Bitmap,
+    ): Bitmap {
         // Get tensor data
         val outputData = outputTensor.dataAsFloatArray
         val shape = outputTensor.shape()
@@ -88,8 +91,10 @@ class SuperRes(context: Context) {
                     // Assumes CHW planar format: RRR...GGG...BBB...
                     r = (outputData[baseIndex] * 255).coerceIn(0f, 255f).toInt()
                     g = (outputData[height * width + baseIndex] * 255).coerceIn(0f, 255f).toInt()
-                    b = (outputData[2 * height * width + baseIndex] * 255).coerceIn(0f, 255f)
-                        .toInt()
+                    b =
+                        (outputData[2 * height * width + baseIndex] * 255)
+                            .coerceIn(0f, 255f)
+                            .toInt()
                 } else {
                     throw IllegalArgumentException("Unsupported number of output channels: $channels. Expected 1 or 3.")
                 }
@@ -102,7 +107,10 @@ class SuperRes(context: Context) {
     }
 
     @Throws(IOException::class)
-    private fun assetFilePath(context: Context, assetName: String): String {
+    private fun assetFilePath(
+        context: Context,
+        assetName: String,
+    ): String {
         val file = File(context.filesDir, assetName)
         if (file.exists() && file.length() > 0) {
             return file.absolutePath

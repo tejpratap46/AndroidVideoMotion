@@ -16,9 +16,7 @@ fun File.getVideoMetadata(): DemuxerTrackMeta {
     return vt.meta
 }
 
-fun File.getSingleFrameFromVideo(frameNumber: Int): Bitmap {
-    return AndroidFrameGrab.getFrame(this, frameNumber)
-}
+fun File.getSingleFrameFromVideo(frameNumber: Int): Bitmap = AndroidFrameGrab.getFrame(this, frameNumber)
 
 /**
  * Should not use this, it will require a lot of memory

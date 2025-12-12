@@ -19,17 +19,22 @@ import java.io.File
 import java.io.IOException // For more specific IO exceptions
 
 // Custom exception for better error handling if desired
-class DownloadException(message: String, cause: Throwable? = null) : IOException(message, cause)
+class DownloadException(
+    message: String,
+    cause: Throwable? = null,
+) : IOException(message, cause)
 
 suspend fun HttpClient.downloadFile(
     file: File,
-    url: String
+    url: String,
 ): File {
     try {
-        val response: HttpResponse = this.request { // Changed 'call' to 'response' for clarity
-            url(url)
-            method = HttpMethod.Get
-        }
+        val response: HttpResponse =
+            this.request {
+                // Changed 'call' to 'response' for clarity
+                url(url)
+                method = HttpMethod.Get
+            }
 
         if (!response.status.isSuccess()) {
             throw DownloadException("Error downloading file from $url: HTTP ${response.status}")
@@ -51,7 +56,7 @@ suspend fun HttpClient.downloadFile(
                 // Catch specific IOExceptions during file writing
                 throw DownloadException(
                     "Failed to write downloaded file to ${file.path}: ${e.message}",
-                    e
+                    e,
                 )
             }
         }
@@ -62,17 +67,16 @@ suspend fun HttpClient.downloadFile(
         // Catch other potential exceptions (e.g., Ktor client exceptions)
         throw DownloadException(
             "An unexpected error occurred during download from $url: ${e.message}",
-            e
+            e,
         )
     }
 }
 
-suspend fun HttpClient.fetchBitmap(url: String): Bitmap? {
-    return try {
+suspend fun HttpClient.fetchBitmap(url: String): Bitmap? =
+    try {
         val bytes: ByteArray = get(url).body()
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     } catch (e: Exception) {
         e.printStackTrace()
         null
     }
-}

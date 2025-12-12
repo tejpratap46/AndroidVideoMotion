@@ -19,7 +19,7 @@ class TiledBackgroundRemover(
     context: Context,
     modelPath: String,
     private val tileSize: Int = 257,
-    private val overlap: Int = 64
+    private val overlap: Int = 64,
 ) {
     private val interpreter: Interpreter
 
@@ -110,7 +110,10 @@ class TiledBackgroundRemover(
         return ImageUtils.intArrayToGrayscaleBitmap(mask)
     }
 
-    private fun applyMaskToBitmap(src: Bitmap, mask: Bitmap): Bitmap {
+    private fun applyMaskToBitmap(
+        src: Bitmap,
+        mask: Bitmap,
+    ): Bitmap {
         val w = src.width
         val h = src.height
         val result = createBitmap(w, h)

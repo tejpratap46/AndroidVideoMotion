@@ -5,7 +5,11 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.set
 
 object NetUtils {
-    fun convertArrayToBitmap(arr: FloatArray, width: Int, height: Int): Bitmap? {
+    fun convertArrayToBitmap(
+        arr: FloatArray,
+        width: Int,
+        height: Int,
+    ): Bitmap? {
         val grayToneImage = createBitmap(width, height)
         for (i in 0 until width) {
             for (j in 0 until height) {

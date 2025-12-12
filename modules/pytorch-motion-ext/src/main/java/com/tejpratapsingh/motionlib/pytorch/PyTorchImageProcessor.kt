@@ -16,10 +16,9 @@ object PyTorchImageProcessor {
      */
     val backgroundRemoverPlugin: MotionPlugin by lazy {
         object : MotionPlugin {
-            override fun apply(input: Bitmap): Bitmap {
-                return backgroundRemover.clearBackground(input)
+            override fun apply(input: Bitmap): Bitmap =
+                backgroundRemover.clearBackground(input)
                     ?: throw IllegalStateException("Super Resolution processing failed")
-            }
         }
     }
 
@@ -29,10 +28,9 @@ object PyTorchImageProcessor {
      */
     val superResolutionPlugin: MotionPlugin by lazy {
         object : MotionPlugin {
-            override fun apply(input: Bitmap): Bitmap {
-                return superResolutionProcessor.upscaleImage(input)
+            override fun apply(input: Bitmap): Bitmap =
+                superResolutionProcessor.upscaleImage(input)
                     ?: throw IllegalStateException("Super Resolution processing failed")
-            }
         }
     }
 

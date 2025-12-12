@@ -15,9 +15,10 @@ open class MotionComposerView(
     override val startFrame: Int = 0,
     override val endFrame: Int = 0,
     override val plugins: List<MotionPlugin>,
-    override val loop: Pair<Int, Int> = Pair(0, 0)
-) : ContourLayout(context), MotionView, IComposerView {
-
+    override val loop: Pair<Int, Int> = Pair(0, 0),
+) : ContourLayout(context),
+    MotionView,
+    IComposerView {
     override val effects: List<MotionEffect> = emptyList()
 
     companion object {
@@ -41,17 +42,17 @@ open class MotionComposerView(
         return this
     }
 
-    fun runEffects(view: MotionView, frame: Int) {
-        return view.effects.forEach { effect ->
-            effect.forFrame(frame)
-        }
+    fun runEffects(
+        view: MotionView,
+        frame: Int,
+    ) = view.effects.forEach { effect ->
+        effect.forFrame(frame)
     }
 
-    override fun getViewBitmap(): Bitmap {
-        return toBitmap().let {
+    override fun getViewBitmap(): Bitmap =
+        toBitmap().let {
             plugins.fold(it) { acc, plugin ->
                 plugin.apply(acc)
             }
         }
-    }
 }

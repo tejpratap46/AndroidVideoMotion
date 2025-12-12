@@ -6,7 +6,9 @@ import com.arthenica.ffmpegkit.ReturnCode
 import java.io.File
 
 fun extractFramesFromVideo(
-    context: Context, videoFile: File, outputDirName: String = "frames"
+    context: Context,
+    videoFile: File,
+    outputDirName: String = "frames",
 ): String {
     val outputDir = File(context.cacheDir, outputDirName)
     if (!outputDir.exists()) outputDir.mkdirs()

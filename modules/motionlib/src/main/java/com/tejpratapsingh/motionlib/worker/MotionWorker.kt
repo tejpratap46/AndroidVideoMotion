@@ -14,9 +14,8 @@ import java.io.File
 
 abstract class MotionWorker(
     appContext: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
-
     companion object {
         private const val TAG = "MotionWorker"
         const val PROGRESS_KEY = "progress"
@@ -38,32 +37,35 @@ abstract class MotionWorker(
     override suspend fun doWork(): Result {
         Log.d(TAG, "Worker ${this.id}: Starting video generation.")
         return try {
-            val videoFile: File = generateVideo(
-                motionVideoProducer = mMotionVideoProducer,
-                progressListener = { progress, currentBitmap ->
-                    // Report progress to WorkManager
-                    val progressData = workDataOf(
-                        PROGRESS_KEY to progress,
-                        TOTAL_FRAMES_KEY to mMotionVideoProducer.totalFrames
-                    )
-                    setProgressAsync(progressData)
+            val videoFile: File =
+                generateVideo(
+                    motionVideoProducer = mMotionVideoProducer,
+                    progressListener = { progress, currentBitmap ->
+                        // Report progress to WorkManager
+                        val progressData =
+                            workDataOf(
+                                PROGRESS_KEY to progress,
+                                TOTAL_FRAMES_KEY to mMotionVideoProducer.totalFrames,
+                            )
+                        setProgressAsync(progressData)
 
-                    // Call the abstract onProgress for more specific handling
-                    onProgress(
-                        totalFrames = mMotionVideoProducer.totalFrames,
-                        currentProgress = progress, // Renamed for clarity
-                        bitmap = currentBitmap
-                    )
-                }
-            )
+                        // Call the abstract onProgress for more specific handling
+                        onProgress(
+                            totalFrames = mMotionVideoProducer.totalFrames,
+                            currentProgress = progress, // Renamed for clarity
+                            bitmap = currentBitmap,
+                        )
+                    },
+                )
             this.onCompleted(videoFile = videoFile)
             Log.d(
                 TAG,
-                "Worker ${this.workId}: Video generation successful: ${videoFile.absolutePath}"
+                "Worker ${this.workId}: Video generation successful: ${videoFile.absolutePath}",
             )
-            val outputData = workDataOf(
-                KEY_OUTPUT_VIDEO_URI to videoFile.toUri().toString()
-            )
+            val outputData =
+                workDataOf(
+                    KEY_OUTPUT_VIDEO_URI to videoFile.toUri().toString(),
+                )
             Result.success(outputData)
         } catch (e: Exception) {
             Log.e(TAG, "Worker ${this.workId}: Error during video generation.", e)
@@ -86,7 +88,11 @@ abstract class MotionWorker(
      * @param currentProgress The number of frames processed so far.
      * @param bitmap The current frame/bitmap being processed.
      */
-    abstract fun onProgress(totalFrames: Int, currentProgress: Int, bitmap: Bitmap)
+    abstract fun onProgress(
+        totalFrames: Int,
+        currentProgress: Int,
+        bitmap: Bitmap,
+    )
 
     /**
      * Called when the video generation is completed successfully.
@@ -108,24 +114,25 @@ abstract class MotionWorker(
 
     private suspend fun generateVideo(
         motionVideoProducer: MotionVideoProducer,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
         withContext(Dispatchers.IO) {
-            val outputFile = File.createTempFile(
-                "motion_video_out_", // More descriptive prefix
-                ".mp4",
-                applicationContext.cacheDir // Use cacheDir for temp files that can be cleared
-            )
+            val outputFile =
+                File.createTempFile(
+                    "motion_video_out_", // More descriptive prefix
+                    ".mp4",
+                    applicationContext.cacheDir, // Use cacheDir for temp files that can be cleared
+                )
             Log.d(
                 TAG,
-                "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}"
+                "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}",
             )
 
             // Assuming produceVideo handles its own exceptions or lets them propagate
             return@withContext motionVideoProducer.produceVideo(
                 context = applicationContext,
                 outputFile = outputFile,
-                progressListener = progressListener
+                progressListener = progressListener,
             )
         }
 }

@@ -8,10 +8,13 @@ import com.tejpratapsingh.motion.sdui.data.SduiRenderer
 import com.tejpratapsingh.motion.sdui.domain.ViewFactory
 
 class TextFactory : ViewFactory {
-    override fun create(context: Context, json: JsonObject, renderer: SduiRenderer): View {
-        return TextView(context).apply {
+    override fun create(
+        context: Context,
+        json: JsonObject,
+        renderer: SduiRenderer,
+    ): View =
+        TextView(context).apply {
             text = json.get("text")?.asString ?: ""
             textSize = json.get("textSize")?.asFloat ?: 16f
         }
-    }
 }

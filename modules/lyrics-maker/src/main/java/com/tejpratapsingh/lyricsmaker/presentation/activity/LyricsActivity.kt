@@ -14,9 +14,7 @@ import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
-
 class LyricsActivity : PreviewActivity() {
-
     companion object {
         private const val TAG = "LyricsActivity"
 
@@ -27,14 +25,15 @@ class LyricsActivity : PreviewActivity() {
             context: Context,
             song: String,
             lyrics: ArrayList<SyncedLyricFrame>,
-            socialMeta: SocialMeta? = null
+            socialMeta: SocialMeta? = null,
         ) {
             context.startActivity(
                 Intent(context, LyricsActivity::class.java).also {
                     it.putExtra(SONG, song)
                     it.putExtra(ShareReceiverActivity.EXTRA_METADATA, socialMeta)
                     it.putParcelableArrayListExtra(LYRICS, lyrics)
-                })
+                },
+            )
         }
     }
 
@@ -42,13 +41,14 @@ class LyricsActivity : PreviewActivity() {
         get() = intent.getStringExtra(SONG) ?: ""
 
     private val lyrics: List<SyncedLyricFrame>
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra(LYRICS, SyncedLyricFrame::class.java)?.toList()
-                ?: emptyList()
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableArrayListExtra(LYRICS) ?: emptyList()
-        }
+        get() =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra(LYRICS, SyncedLyricFrame::class.java)?.toList()
+                    ?: emptyList()
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableArrayListExtra(LYRICS) ?: emptyList()
+            }
 
     private val socialMeta
         get() = ShareReceiverActivity.readMetadataFromIntent(intent)
@@ -58,7 +58,7 @@ class LyricsActivity : PreviewActivity() {
             applicationContext = applicationContext,
             song = song,
             lyrics = lyrics,
-            image = socialMeta?.image
+            image = socialMeta?.image,
         )
     }
 
@@ -68,26 +68,27 @@ class LyricsActivity : PreviewActivity() {
         val start = lyrics.minBy { it.frame }.frame
         val end = lyrics.maxBy { it.frame }.frame
 
-        MaterialAlertDialogBuilder(this).setTitle("Lyrics").setMessage(
-            """
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Lyrics")
+            .setMessage(
+                """
                 Rendering video for \"$song\" with ${lyrics.size} lines of lyrics.
                 Start Frame: $start
                 End Frame: ${getMotionVideo().totalFrames}
                 Duration: ${(end - start)} frames (${(end - start) / MotionConfig.fps} seconds)
-            """.trimIndent()
-        ).setPositiveButton("OK") { dialog, _ ->
-            LyricsMotionWorker.startWork(
-                context = applicationContext,
-                song = song,
-                lyrics = lyrics,
-                image = socialMeta?.image
-            )
-        }.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.dismiss()
-        }.setCancelable(false).show()
+                """.trimIndent(),
+            ).setPositiveButton("OK") { dialog, _ ->
+                LyricsMotionWorker.startWork(
+                    context = applicationContext,
+                    song = song,
+                    lyrics = lyrics,
+                    image = socialMeta?.image,
+                )
+            }.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }.setCancelable(false)
+            .show()
     }
 
-    override fun getMotionVideo(): MotionVideoProducer {
-        return video
-    }
+    override fun getMotionVideo(): MotionVideoProducer = video
 }

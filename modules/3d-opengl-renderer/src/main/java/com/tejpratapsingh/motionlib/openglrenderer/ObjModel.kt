@@ -8,7 +8,10 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
-class ObjModel(context: Context, filename: String) {
+class ObjModel(
+    context: Context,
+    filename: String,
+) {
     val vertexBuffer: FloatBuffer
     val indexBuffer: ShortBuffer
     val indexCount: Int
@@ -35,7 +38,7 @@ class ObjModel(context: Context, filename: String) {
                     for (i in 1..3) {
                         val indexStr = parts[i].split("/")[0]
                         val idx = indexStr.toInt()
-                        indices.add((idx - 1).toShort())  // OBJ is 1-based
+                        indices.add((idx - 1).toShort()) // OBJ is 1-based
                     }
                 }
             }
@@ -45,21 +48,25 @@ class ObjModel(context: Context, filename: String) {
             vertices.addAll(it.toList())
         }
 
-        vertexBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .apply {
-                put(vertices.toFloatArray())
-                position(0)
-            }
+        vertexBuffer =
+            ByteBuffer
+                .allocateDirect(vertices.size * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+                .apply {
+                    put(vertices.toFloatArray())
+                    position(0)
+                }
 
-        indexBuffer = ByteBuffer.allocateDirect(indices.size * 2)
-            .order(ByteOrder.nativeOrder())
-            .asShortBuffer()
-            .apply {
-                put(indices.toShortArray())
-                position(0)
-            }
+        indexBuffer =
+            ByteBuffer
+                .allocateDirect(indices.size * 2)
+                .order(ByteOrder.nativeOrder())
+                .asShortBuffer()
+                .apply {
+                    put(indices.toShortArray())
+                    position(0)
+                }
 
         indexCount = indices.size
     }

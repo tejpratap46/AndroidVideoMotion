@@ -12,7 +12,7 @@ import java.io.File
  */
 data class MotionAudio(
     val file: File,
-    val startFrame: Int,   // trim start frame
-    val endFrame: Int,     // trim end frame
-    val delayFrame: Int    // delay in frames
+    val startFrame: Int, // trim start frame
+    val endFrame: Int, // trim end frame
+    val delayFrame: Int, // delay in frames
 )

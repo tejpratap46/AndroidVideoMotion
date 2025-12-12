@@ -12,7 +12,6 @@ import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
 class JCodecVideoProducerAdapter : VideoProducerAdapter {
-
     companion object {
         private const val TAG = "JCodecVideoProducerAdap"
     }
@@ -24,7 +23,7 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?
+        progressListener: ((Int, Bitmap) -> Unit)?,
     ): File {
         if (outputFile.exists()) {
             outputFile.delete()
@@ -34,7 +33,9 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
             for (i in 1..totalFrames) {
                 Log.d(TAG, "produceVideo: frame $i")
                 val frameBitmap: Bitmap =
-                    motionComposerView.forFrame(i).getViewBitmap()
+                    motionComposerView
+                        .forFrame(i)
+                        .getViewBitmap()
                         .compressToBitmap(motionConfig.outputQuality)
 
                 encoder.encodeImage(frameBitmap)

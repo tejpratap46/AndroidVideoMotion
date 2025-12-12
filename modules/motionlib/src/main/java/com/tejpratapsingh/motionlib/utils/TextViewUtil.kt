@@ -10,8 +10,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
-fun TextView.getWebFont(url: String): Typeface? {
-    return runBlocking(Dispatchers.IO) {
+fun TextView.getWebFont(url: String): Typeface? =
+    runBlocking(Dispatchers.IO) {
         val client = HttpClient(CIO)
         try {
             val response = client.get(url).body<ByteArray>()
@@ -25,4 +25,3 @@ fun TextView.getWebFont(url: String): Typeface? {
             client.close()
         }
     }
-}

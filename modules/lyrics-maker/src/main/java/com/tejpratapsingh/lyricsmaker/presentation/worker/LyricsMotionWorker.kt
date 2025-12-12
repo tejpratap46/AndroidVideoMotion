@@ -32,9 +32,10 @@ import java.net.URLConnection
 import java.util.Locale
 import java.util.UUID
 
-class LyricsMotionWorker(private val appContext: Context, parameters: WorkerParameters) :
-    MotionWorker(appContext, parameters) {
-
+class LyricsMotionWorker(
+    private val appContext: Context,
+    parameters: WorkerParameters,
+) : MotionWorker(appContext, parameters) {
     private val notificationManager = NotificationManagerCompat.from(appContext)
 
     private val progressNotificationBuilder: NotificationCompat.Builder by lazy {
@@ -46,49 +47,61 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
     }
 
     private fun createForegroundInfo(
-        progressNotificationId: Int, notification: Notification
-    ): ForegroundInfo {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        progressNotificationId: Int,
+        notification: Notification,
+    ): ForegroundInfo =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             ForegroundInfo(
                 progressNotificationId,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING,
             )
         } else {
             ForegroundInfo(progressNotificationId, notification)
         }
-    }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         // Create the notification for the foreground service
         val notification =
-            progressNotificationBuilder.setContentTitle("Rendering Video...") // Initial title
+            progressNotificationBuilder
+                .setContentTitle("Rendering Video...") // Initial title
                 .setProgress(0, 0, true) // Indeterminate progress initially
-                .setOngoing(true).build()
+                .setOngoing(true)
+                .build()
         return createForegroundInfo(progressNotificationId, notification)
     }
 
-    override fun getMotionVideo(inputData: Data): MotionVideoProducer {
-        return getLyricsVideoProducer(
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer =
+        getLyricsVideoProducer(
             applicationContext = appContext,
             song = inputData.getString(SONG) ?: "Unknown Song",
             lyrics = Json.decodeFromString(inputData.getString(LYRICS)!!),
             image = inputData.getString(IMAGE),
         )
-    }
 
-    override fun onProgress(totalFrames: Int, currentProgress: Int, bitmap: Bitmap) {
+    override fun onProgress(
+        totalFrames: Int,
+        currentProgress: Int,
+        bitmap: Bitmap,
+    ) {
         Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
 
         val percentage = (currentProgress.toDouble() / totalFrames) * 100
-        val progressText = String.format(
-            Locale.getDefault(), "%d/%d frames completed", currentProgress, totalFrames
-        )
+        val progressText =
+            String.format(
+                Locale.getDefault(),
+                "%d/%d frames completed",
+                currentProgress,
+                totalFrames,
+            )
         val contentText = String.format(Locale.getDefault(), "%.0f%%", percentage)
 
         val notification =
-            progressNotificationBuilder.setProgress(totalFrames, currentProgress, false)
-                .setSubText(progressText).setContentText(contentText).build()
+            progressNotificationBuilder
+                .setProgress(totalFrames, currentProgress, false)
+                .setSubText(progressText)
+                .setContentText(contentText)
+                .build()
 
         updateNotification(progressNotificationId, notification)
 
@@ -107,19 +120,24 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
         val intentOpenFile = Intent(Intent.ACTION_VIEW)
         val pendingOpenFileIntent = createPendingIntentFor(intentOpenFile, videoFile)
 
-        val completedNotification = completedNotificationBuilder.setContentTitle("Render Complete")
-            .setContentText("Video ready: ${videoFile.name}").addAction(
-                NotificationCompat.Action(
-                    R.drawable.ic_menu_share, // Consider using a custom icon
-                    "Share Video", pendingShareIntent
-                )
-            ).addAction(
-                NotificationCompat.Action(
-                    R.drawable.ic_media_play, // Consider using a custom icon
-                    "Open Video", pendingOpenFileIntent
-                )
-            ).setAutoCancel(true) // Dismiss notification when tapped (if no content intent set)
-            .build()
+        val completedNotification =
+            completedNotificationBuilder
+                .setContentTitle("Render Complete")
+                .setContentText("Video ready: ${videoFile.name}")
+                .addAction(
+                    NotificationCompat.Action(
+                        R.drawable.ic_menu_share, // Consider using a custom icon
+                        "Share Video",
+                        pendingShareIntent,
+                    ),
+                ).addAction(
+                    NotificationCompat.Action(
+                        R.drawable.ic_media_play, // Consider using a custom icon
+                        "Open Video",
+                        pendingOpenFileIntent,
+                    ),
+                ).setAutoCancel(true) // Dismiss notification when tapped (if no content intent set)
+                .build()
 
         updateNotification(completedNotificationId, completedNotification)
     }
@@ -127,7 +145,10 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
     @Volatile
     private var lastNotificationUpdateTime = 0L
 
-    private fun updateNotification(notificationId: Int, notification: Notification) {
+    private fun updateNotification(
+        notificationId: Int,
+        notification: Notification,
+    ) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotificationUpdateTime < 500) {
             return
@@ -135,7 +156,8 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
         lastNotificationUpdateTime = currentTime
 
         if (ActivityCompat.checkSelfPermission(
-                appContext, Manifest.permission.POST_NOTIFICATIONS
+                appContext,
+                Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             notificationManager.notify(notificationId, notification)
@@ -146,12 +168,19 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
         }
     }
 
-    private fun createPendingIntentFor(intent: Intent, videoFile: File): PendingIntent {
-        val apkURI: Uri = FileProvider.getUriForFile(
-            appContext, "${appContext.packageName}.fileprovider", videoFile
-        )
+    private fun createPendingIntentFor(
+        intent: Intent,
+        videoFile: File,
+    ): PendingIntent {
+        val apkURI: Uri =
+            FileProvider.getUriForFile(
+                appContext,
+                "${appContext.packageName}.fileprovider",
+                videoFile,
+            )
         intent.setDataAndType(
-            apkURI, URLConnection.guessContentTypeFromName(videoFile.name)
+            apkURI,
+            URLConnection.guessContentTypeFromName(videoFile.name),
         )
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.putExtra(Intent.EXTRA_STREAM, apkURI)
@@ -160,8 +189,10 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
         return PendingIntent.getActivity(
-            appContext, 0, // requestCode, consider making this unique if you have many such intents
-            intent, pendingShareIntentFlags
+            appContext,
+            0, // requestCode, consider making this unique if you have many such intents
+            intent,
+            pendingShareIntentFlags,
         )
     }
 
@@ -176,13 +207,15 @@ class LyricsMotionWorker(private val appContext: Context, parameters: WorkerPara
             context: Context,
             song: String,
             lyrics: List<SyncedLyricFrame>,
-            image: String? = null
+            image: String? = null,
         ): UUID {
-            val inputData = Data.Builder()
-                .putString(SONG, song)
-                .putString(LYRICS, Json.encodeToString(lyrics))
-                .putString(IMAGE, image)
-                .build()
+            val inputData =
+                Data
+                    .Builder()
+                    .putString(SONG, song)
+                    .putString(LYRICS, Json.encodeToString(lyrics))
+                    .putString(IMAGE, image)
+                    .build()
 
             val workRequest =
                 OneTimeWorkRequestBuilder<LyricsMotionWorker>().setInputData(inputData).build()

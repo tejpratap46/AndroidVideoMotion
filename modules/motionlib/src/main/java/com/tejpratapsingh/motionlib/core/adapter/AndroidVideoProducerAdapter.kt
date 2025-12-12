@@ -14,7 +14,6 @@ import java.io.File
 import java.util.Locale
 
 class AndroidVideoProducerAdapter : VideoProducerAdapter {
-
     companion object {
         private const val TAG = "AndroidVideoProducerAda"
     }
@@ -30,7 +29,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?
+        progressListener: ((Int, Bitmap) -> Unit)?,
     ): File {
         Log.i(TAG, "produceVideo: starting")
         if (outputFile.exists()) {
@@ -46,12 +45,16 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         for (i in 1..totalFrames) {
             Log.d(TAG, "produceVideo: frame $i")
             val frameBitmap: Bitmap =
-                motionComposerView.forFrame(i).getViewBitmap()
+                motionComposerView
+                    .forFrame(i)
+                    .getViewBitmap()
                     .compressToBitmap(motionConfig.outputQuality)
 
             try {
                 context.saveBitmapToCacheFolder(
-                    frameBitmap, subDirName, String.format(Locale.getDefault(), "%05d.png", i)
+                    frameBitmap,
+                    subDirName,
+                    String.format(Locale.getDefault(), "%05d.png", i),
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving frame $i: ${e.message}", e)
@@ -68,7 +71,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
             inputDir = subDir,
             motionAudio = motionAudio,
             outputFile = outputFile,
-            motionConfig = motionConfig
+            motionConfig = motionConfig,
         )
 
         return outputFile

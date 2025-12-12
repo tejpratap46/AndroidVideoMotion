@@ -11,17 +11,22 @@ fun Context.loadBitmapsFromDirectory(dirName: String): List<Bitmap> {
         return emptyList()
     }
 
-    return dir.listFiles { file ->
-        file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
-    }?.sortedBy { file ->
-        // Extract digits from filename, default to 0 if no digits found
-        file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
-    }?.mapNotNull { file ->
-        BitmapFactory.decodeFile(file.absolutePath)
-    } ?: emptyList()
+    return dir
+        .listFiles { file ->
+            file.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp")
+        }?.sortedBy { file ->
+            // Extract digits from filename, default to 0 if no digits found
+            file.nameWithoutExtension.filter { it.isDigit() }.toIntOrNull() ?: 0
+        }?.mapNotNull { file ->
+            BitmapFactory.decodeFile(file.absolutePath)
+        } ?: emptyList()
 }
 
-fun Context.saveBitmapToCacheFolder(bitmap: Bitmap, subDirName: String, fileName: String) {
+fun Context.saveBitmapToCacheFolder(
+    bitmap: Bitmap,
+    subDirName: String,
+    fileName: String,
+) {
     val cacheSubDir = File(this.cacheDir, subDirName)
     if (!cacheSubDir.exists()) {
         cacheSubDir.mkdirs()

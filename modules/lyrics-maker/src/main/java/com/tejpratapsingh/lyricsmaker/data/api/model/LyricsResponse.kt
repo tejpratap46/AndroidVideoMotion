@@ -18,13 +18,12 @@ data class LyricsResponse(
     val plainLyrics: String? = null,
     val syncedLyrics: String? = null,
 ) : Parcelable {
-    fun getLyrics(): String {
-        return if (syncedLyrics.isNullOrEmpty()) {
+    fun getLyrics(): String =
+        if (syncedLyrics.isNullOrEmpty()) {
             "[0:00.00] No Lyrics Found"
         } else {
             syncedLyrics
         }
-    }
 
     fun getReadableDuration(): String {
         val totalSeconds = (duration ?: 0f).toInt()

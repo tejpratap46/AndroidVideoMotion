@@ -16,11 +16,12 @@ import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
-class CarBgRemover(context: Context) {
-
+class CarBgRemover(
+    context: Context,
+) {
     companion object {
         private const val MODEL_FILENAME = "DeepLabV3-Plus-MobileNet.tflite"
-        private const val PERSON_CLASS_INDEX = 15  // PASCAL VOC “person” index
+        private const val PERSON_CLASS_INDEX = 15 // PASCAL VOC “person” index
         private const val FOREGROUND_THRESHOLD = 0.5f
     }
 
@@ -29,7 +30,10 @@ class CarBgRemover(context: Context) {
         Interpreter(loadModelFile(context, MODEL_FILENAME))
     }
 
-    private fun loadModelFile(context: Context, modelName: String): MappedByteBuffer {
+    private fun loadModelFile(
+        context: Context,
+        modelName: String,
+    ): MappedByteBuffer {
         val fileDescriptor = context.assets.openFd(modelName)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
@@ -47,7 +51,8 @@ class CarBgRemover(context: Context) {
 
     // Preprocessor: resize + normalize to [-1,1]
     private val preprocessor: ImageProcessor by lazy {
-        ImageProcessor.Builder()
+        ImageProcessor
+            .Builder()
             .add(ResizeOp(inputHeight, inputWidth, ResizeOp.ResizeMethod.BILINEAR))
             .add(NormalizeOp(127.5f, 127.5f))
             .build()
@@ -64,7 +69,7 @@ class CarBgRemover(context: Context) {
 
         // 2. Prepare output buffer
         val outputTensor = interpreter.getOutputTensor(0)
-        val outputShape = outputTensor.shape()          // [1, H_out, W_out, C]
+        val outputShape = outputTensor.shape() // [1, H_out, W_out, C]
         val outputDataType = outputTensor.dataType()
         val outputBuffer = TensorBuffer.createFixedSize(outputShape, outputDataType)
 
@@ -72,11 +77,11 @@ class CarBgRemover(context: Context) {
         interpreter.run(inputBuffer, outputBuffer.buffer.rewind())
 
         // 4. Extract “person” mask channel
-        val logits = outputBuffer.floatArray         // length = H_out * W_out * C
+        val logits = outputBuffer.floatArray // length = H_out * W_out * C
         val maskWidth = outputShape[2]
         val maskHeight = outputShape[1]
         val mask = FloatArray(maskWidth * maskHeight)
-        val stride = outputShape[3]                  // number of classes
+        val stride = outputShape[3] // number of classes
 
         for (i in mask.indices) {
             mask[i] = logits[i * stride + PERSON_CLASS_INDEX]
@@ -90,7 +95,7 @@ class CarBgRemover(context: Context) {
         source: Bitmap,
         mask: FloatArray,
         maskWidth: Int,
-        maskHeight: Int
+        maskHeight: Int,
     ): Bitmap {
         val w = source.width
         val h = source.height
@@ -102,8 +107,12 @@ class CarBgRemover(context: Context) {
                 val my = y * maskHeight / h
                 val idx = my * maskWidth + mx
                 val pixel = source[x, y]
-                result[x, y] = if (mask[idx] > FOREGROUND_THRESHOLD) pixel
-                else Color.TRANSPARENT
+                result[x, y] =
+                    if (mask[idx] > FOREGROUND_THRESHOLD) {
+                        pixel
+                    } else {
+                        Color.TRANSPARENT
+                    }
             }
         }
         return result

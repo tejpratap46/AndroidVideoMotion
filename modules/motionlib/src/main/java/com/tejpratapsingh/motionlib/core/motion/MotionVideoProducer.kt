@@ -18,7 +18,7 @@ open class MotionVideoProducer(
     val motionConfig: MotionConfig,
     val videoProducerAdapter: VideoProducerAdapter,
     val motionComposerView: MotionComposerView,
-    val motionAudio: List<MotionAudio> = emptyList()
+    val motionAudio: List<MotionAudio> = emptyList(),
 ) : IMotionVideoProducer {
     var totalFrames: Int = 0
         private set
@@ -37,10 +37,12 @@ open class MotionVideoProducer(
             context = context,
             motionConfig = config,
             videoProducerAdapter = videoProducerAdapter,
-            motionComposerView = MotionComposerView(
-                context = context, plugins = plugins
-            ),
-            motionAudio = motionAudio
+            motionComposerView =
+                MotionComposerView(
+                    context = context,
+                    plugins = plugins,
+                ),
+            motionAudio = motionAudio,
         ).also {
             MotionConfig.aspectRatio = config.aspectRatio
             MotionConfig.fps = config.fps
@@ -51,11 +53,16 @@ open class MotionVideoProducer(
     override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup {
         totalFrames = maxOf(totalFrames, motionView.endFrame)
         motionComposerView.apply {
-            motionView.layoutBy(x = centerHorizontallyTo {
-                parent.centerX()
-            }, y = centerVerticallyTo {
-                parent.centerY()
-            })
+            motionView.layoutBy(
+                x =
+                    centerHorizontallyTo {
+                        parent.centerX()
+                    },
+                y =
+                    centerVerticallyTo {
+                        parent.centerY()
+                    },
+            )
         }
         return this
     }
@@ -63,22 +70,24 @@ open class MotionVideoProducer(
     override suspend fun produceVideo(
         context: Context,
         outputFile: File,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?
-    ): File = withContext(Dispatchers.IO) { // Use Dispatchers.Default for CPU-bound work
-        if (outputFile.exists()) {
-            outputFile.delete()
+        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?,
+    ): File =
+        withContext(Dispatchers.IO) {
+            // Use Dispatchers.Default for CPU-bound work
+            if (outputFile.exists()) {
+                outputFile.delete()
+            }
+
+            videoProducerAdapter.produceVideo(
+                context = context,
+                motionConfig = motionConfig,
+                motionComposerView = motionComposerView,
+                motionAudio = motionAudio,
+                totalFrames = totalFrames,
+                outputFile = outputFile,
+                progressListener = progressListener,
+            )
+
+            outputFile
         }
-
-        videoProducerAdapter.produceVideo(
-            context = context,
-            motionConfig = motionConfig,
-            motionComposerView = motionComposerView,
-            motionAudio = motionAudio,
-            totalFrames = totalFrames,
-            outputFile = outputFile,
-            progressListener = progressListener
-        )
-
-        outputFile
-    }
 }
