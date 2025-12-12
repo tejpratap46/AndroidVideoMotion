@@ -1,0 +1,58 @@
+name: Build and Attach ALL Debug APKs to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_and_attach:
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false && github.event.release.draft == false
+
+    steps:
+      - name: ⚙️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📁 Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: 🔨 Build ALL Debug APKs
+        run: |
+          # This command builds the debug variant for ALL application modules found in the project.
+          # The resulting APKs will be scattered in their respective module build directories.
+          ./gradlew assembleDebug
+
+      # Define the path to ALL generated APK files
+      # This step finds all files ending in -debug.apk within the build/outputs/apk/debug folders across the repo.
+      - name: 📌 Define ALL APK Paths
+        id: apk_paths
+        run: |
+          # Finds all debug APKs in a standard Android project structure and saves them as a multi-line string.
+          # We use a glob search pattern here to find all of them.
+          FIND_COMMAND=$(find . -path '*/build/outputs/apk/debug/*-debug.apk' -type f)
+          
+          # We escape the newline characters for proper output handling in GitHub Actions
+          ESCAPED_PATHS="${FIND_COMMAND//$'\n'/%0A}"
+          
+          echo "APK_FILES=$ESCAPED_PATHS" >> $GITHUB_OUTPUT
+          
+      - name: 📝 Show built APK paths
+        run: |
+          echo "Found the following APKs to upload:"
+          echo "${{ steps.apk_paths.outputs.APK_FILES }}"
+
+      # Upload ALL the built APKs as release assets
+      - name: 📤 Upload ALL APKs to Release Assets
+        uses: softprops/action-gh-release@v1
+        if: steps.apk_paths.outputs.APK_FILES != ''
+        with:
+          # This variable now contains all paths, separated by newlines
+          files: ${{ steps.apk_paths.outputs.APK_FILES }}
+          token: ${{ secrets.GITHUB_TOKEN }}
