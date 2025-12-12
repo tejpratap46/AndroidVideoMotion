@@ -50,7 +50,7 @@ jobs:
 
       # Upload ALL the built APKs as release assets
       - name: 📤 Upload ALL APKs to Release Assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: steps.apk_paths.outputs.APK_FILES != ''
         with:
           # This variable now contains all paths, separated by newlines
