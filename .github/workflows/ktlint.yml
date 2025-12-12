@@ -5,7 +5,9 @@ on:
     paths:
       - .github/workflows/ktlint.yml
       - 'src/**/*.kt'
-      - '**.kts'
+      - '**/*.kts'      # fixed: include kts in subdirs
+      - '**/*.kt'       # optional: catch kt files outside src/
+  workflow_dispatch:   # optional: allows manual runs from Actions UI
 
 jobs:
   ktlint:
