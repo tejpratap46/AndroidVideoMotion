@@ -18,20 +18,18 @@ import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.launch
 
 class ShareReceiverActivity : AppCompatActivity() {
-
     companion object {
         private const val TAG = "ShareReceiverActivity"
 
         const val EXTRA_METADATA = "extra_metadata"
         const val ACTIVITY_INTENT_ACTION = "com.tejpratapsingh.motion.metadataextractor.action.OPEN"
 
-        fun readMetadataFromIntent(intent: Intent): SocialMeta? {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        fun readMetadataFromIntent(intent: Intent): SocialMeta? =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(EXTRA_METADATA, SocialMeta::class.java)
             } else {
                 intent.getParcelableExtra(EXTRA_METADATA) as SocialMeta?
             }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,8 +45,10 @@ class ShareReceiverActivity : AppCompatActivity() {
         when (intent?.action) {
             Intent.ACTION_SEND -> {
                 when (intent.type) {
-                    "text/plain" -> lifecycleScope.launch {
-                        handleSharedText(intent)
+                    "text/plain" -> {
+                        lifecycleScope.launch {
+                            handleSharedText(intent)
+                        }
                     }
 
                     else -> {
@@ -79,9 +79,11 @@ class ShareReceiverActivity : AppCompatActivity() {
 
                 findViewById<MaterialButton>(R.id.btn_next).also { btn ->
                     btn.setOnClickListener {
-                        startActivity(Intent(ACTIVITY_INTENT_ACTION).apply {
-                            putExtra(EXTRA_METADATA, metaData)
-                        })
+                        startActivity(
+                            Intent(ACTIVITY_INTENT_ACTION).apply {
+                                putExtra(EXTRA_METADATA, metaData)
+                            },
+                        )
                         finish()
                     }
                 }

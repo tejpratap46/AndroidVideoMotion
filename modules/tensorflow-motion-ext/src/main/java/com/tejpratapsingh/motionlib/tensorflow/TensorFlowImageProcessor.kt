@@ -16,9 +16,7 @@ object TensorFlowImageProcessor {
      */
     val superResolutionPlugin: MotionPlugin by lazy {
         object : MotionPlugin {
-            override fun apply(input: Bitmap): Bitmap {
-                return superResolutionProcessor.enhance(input)
-            }
+            override fun apply(input: Bitmap): Bitmap = superResolutionProcessor.enhance(input)
         }
     }
 
@@ -28,9 +26,7 @@ object TensorFlowImageProcessor {
      */
     val backgroundRemovalPlugin: MotionPlugin by lazy {
         object : MotionPlugin {
-            override fun apply(input: Bitmap): Bitmap {
-                return backgroundRemover.removeBackground(input)
-            }
+            override fun apply(input: Bitmap): Bitmap = backgroundRemover.removeBackground(input)
         }
     }
 

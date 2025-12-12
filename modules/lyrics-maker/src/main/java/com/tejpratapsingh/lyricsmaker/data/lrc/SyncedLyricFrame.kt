@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
 @Parcelize
 data class SyncedLyricFrame(
     val frame: Int,
-    val text: String
+    val text: String,
 ) : Parcelable

@@ -12,6 +12,6 @@ interface VideoProducerAdapter {
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?
+        progressListener: ((Int, Bitmap) -> Unit)?,
     ): File
 }

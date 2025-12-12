@@ -11,7 +11,6 @@ import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 class MotionPreviewActivity : PreviewActivity() {
-
     val video by lazy {
         sampleMotionVideo(applicationContext)
     }
@@ -21,11 +20,14 @@ class MotionPreviewActivity : PreviewActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    0,
                 )
             }
         }
@@ -33,7 +35,5 @@ class MotionPreviewActivity : PreviewActivity() {
         SampleMotionWorker.startWork(applicationContext)
     }
 
-    override fun getMotionVideo(): MotionVideoProducer {
-        return video
-    }
+    override fun getMotionVideo(): MotionVideoProducer = video
 }

@@ -13,7 +13,11 @@ class LrcParser {
             matches.forEach { match ->
                 val min = match.groupValues[1].toInt()
                 val sec = match.groupValues[2].toInt()
-                val ms = match.groupValues.getOrNull(3)?.padEnd(3, '0')?.toIntOrNull() ?: 0
+                val ms =
+                    match.groupValues
+                        .getOrNull(3)
+                        ?.padEnd(3, '0')
+                        ?.toIntOrNull() ?: 0
 
                 val timeMs = (min * 60 * 1000 + sec * 1000 + ms).toLong()
                 lines.add(LrcLine(timeMs, lyricText))

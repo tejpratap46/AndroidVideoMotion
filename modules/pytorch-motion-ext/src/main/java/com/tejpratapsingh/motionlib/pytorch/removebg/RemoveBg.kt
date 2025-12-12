@@ -16,14 +16,16 @@ import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
 import org.pytorch.torchvision.TensorImageUtils
 
-class RemoveBg(context: Context) : Remover<Bitmap> {
-
-    private var module: Module = LiteModuleLoader.load(
-        assetFilePath(
-            context,
-            ModelTypes.U2NET.fileName
+class RemoveBg(
+    context: Context,
+) : Remover<Bitmap> {
+    private var module: Module =
+        LiteModuleLoader.load(
+            assetFilePath(
+                context,
+                ModelTypes.U2NET.fileName,
+            ),
         )
-    )
     private val maskPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val size = 320
 
@@ -38,7 +40,10 @@ class RemoveBg(context: Context) : Remover<Bitmap> {
         return removeBackground(mutableImage)
     }
 
-    override fun getMaskedImage(input: Bitmap, mask: Bitmap): Bitmap {
+    override fun getMaskedImage(
+        input: Bitmap,
+        mask: Bitmap,
+    ): Bitmap {
         val result = createBitmap(mask.width, mask.height)
         val mCanvas = Canvas(result)
 
@@ -52,15 +57,15 @@ class RemoveBg(context: Context) : Remover<Bitmap> {
         val height = input.height
 
         val scaledBitmap = input.scale(size, size)
-        val inputTensor = TensorImageUtils.bitmapToFloat32Tensor(
-            scaledBitmap,
-            TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
-            TensorImageUtils.TORCHVISION_NORM_STD_RGB
-        )
+        val inputTensor =
+            TensorImageUtils.bitmapToFloat32Tensor(
+                scaledBitmap,
+                TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+                TensorImageUtils.TORCHVISION_NORM_STD_RGB,
+            )
         val outputTensor = module.forward(IValue.from(inputTensor)).toTuple()
         val arr = outputTensor[0].toTensor().dataAsFloatArray
         val scaledMask = NetUtils.convertArrayToBitmap(arr, size, size)?.scale(width, height)
         return scaledMask?.let { getMaskedImage(input, it) }
     }
-
 }

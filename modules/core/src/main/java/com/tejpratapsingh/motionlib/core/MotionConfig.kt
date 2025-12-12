@@ -8,7 +8,7 @@ data object MotionConfig {
     operator fun invoke(
         aspectRatio: VideoAspectRatio = VideoAspectRatio.Ratio9x16_480,
         fps: Int = 24,
-        outputQuality: Int = 100
+        outputQuality: Int = 100,
     ): MotionConfig {
         this.aspectRatio = aspectRatio
         this.fps = fps

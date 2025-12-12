@@ -5,5 +5,5 @@ import android.content.Context
 open class OrientedMotionView(
     context: Context,
     startFrame: Int,
-    endFrame: Int
+    endFrame: Int,
 ) : BaseContourMotionView(context, startFrame, endFrame)

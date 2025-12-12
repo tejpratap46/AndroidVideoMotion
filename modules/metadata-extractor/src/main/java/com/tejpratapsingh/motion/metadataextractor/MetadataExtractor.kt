@@ -14,7 +14,7 @@ data class SocialMeta(
     val image: String? = null,
     val siteName: String? = null,
     val twitterCard: String? = null,
-    val url: String? = null
+    val url: String? = null,
 ) : Parcelable
 
 suspend fun HttpClient.extractSocialMetadata(url: String): SocialMeta? {
@@ -36,7 +36,7 @@ suspend fun HttpClient.extractSocialMetadata(url: String): SocialMeta? {
             image = metaContent("og:image", "twitter:image"),
             siteName = metaContent("og:site_name"),
             twitterCard = metaContent("twitter:card"),
-            url = metaContent("og:url", "twitter:url")
+            url = metaContent("og:url", "twitter:url"),
         )
     } catch (e: Exception) {
         e.printStackTrace()

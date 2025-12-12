@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 open class LyricsViewModel : ViewModel() {
-
     val socialMeta = MutableStateFlow<SocialMeta?>(null)
     val query = MutableStateFlow("")
     val isLoading = MutableStateFlow(false)
@@ -23,36 +22,40 @@ open class LyricsViewModel : ViewModel() {
 
     suspend fun fetchLyrics() {
         isLoading.value = true
-        val results = client.searchLyrics(SearchQuery(query.value)).filter {
-            it.syncedLyrics != null
-        }
+        val results =
+            client.searchLyrics(SearchQuery(query.value)).filter {
+                it.syncedLyrics != null
+            }
         _lyricsList.emit(results)
         isLoading.value = false
     }
 
-    var selectedLyricResponse: LyricsResponse = LyricsResponse(
-        id = 0,
-        trackName = "",
-        artistName = "",
-    )
+    var selectedLyricResponse: LyricsResponse =
+        LyricsResponse(
+            id = 0,
+            trackName = "",
+            artistName = "",
+        )
 
     val selectedSongName: String
         get() = "${selectedLyricResponse.trackName} - ${selectedLyricResponse.artistName}"
 
     val lyrics: List<SyncedLyricFrame>
-        get() = LrcHelper.getSyncedLyrics(
-            lrcContent = selectedLyricResponse.getLyrics(),
-            fps = MotionConfig.fps,
-        )
+        get() =
+            LrcHelper.getSyncedLyrics(
+                lrcContent = selectedLyricResponse.getLyrics(),
+                fps = MotionConfig.fps,
+            )
 
     var selectedLyrics: List<SyncedLyricFrame> = emptyList()
         get() {
             val firstFrame = field.first().frame
-            return field.map {
-                SyncedLyricFrame(
-                    frame = it.frame - firstFrame,
-                    text = it.text
-                )
-            }.sortedBy { it.frame }
+            return field
+                .map {
+                    SyncedLyricFrame(
+                        frame = it.frame - firstFrame,
+                        text = it.text,
+                    )
+                }.sortedBy { it.frame }
         }
 }

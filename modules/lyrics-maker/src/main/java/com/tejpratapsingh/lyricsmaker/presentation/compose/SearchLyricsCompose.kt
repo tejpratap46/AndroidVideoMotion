@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: LyricsViewModel,
-    onLyricsSelected: (LyricsResponse) -> Unit = {}
+    onLyricsSelected: (LyricsResponse) -> Unit = {},
 ) {
     val context = LocalContext.current
     val query = viewModel.query.collectAsState()
@@ -56,16 +56,18 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(16.dp),
     ) {
         Text(
             text = "Search Lyrics",
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier
-                .align(CenterHorizontally)
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .align(CenterHorizontally)
+                    .padding(16.dp),
         )
         OutlinedTextField(
             value = query.value,
@@ -76,25 +78,26 @@ fun SearchScreen(
                 if (isLoading.value) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 }
             },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    coroutineScope.launch {
-                        val searchQuery = query.value.trim()
-                        if (searchQuery.isNotBlank()) {
-                            keyboardController?.hide()
-                            RecentSearchHelper.saveSearch(context, searchQuery)
-                            recentSearches.value = RecentSearchHelper.getSearches(context)
-                            viewModel.fetchLyrics()
+            keyboardActions =
+                KeyboardActions(
+                    onSearch = {
+                        coroutineScope.launch {
+                            val searchQuery = query.value.trim()
+                            if (searchQuery.isNotBlank()) {
+                                keyboardController?.hide()
+                                RecentSearchHelper.saveSearch(context, searchQuery)
+                                recentSearches.value = RecentSearchHelper.getSearches(context)
+                                viewModel.fetchLyrics()
+                            }
                         }
-                    }
-                }
-            ),
-            modifier = Modifier.fillMaxWidth()
+                    },
+                ),
+            modifier = Modifier.fillMaxWidth(),
         )
 
         if (lyrics.isEmpty()) {
@@ -103,74 +106,82 @@ fun SearchScreen(
             LazyColumn {
                 items(recentSearches.value.size) { idx ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable {
-                                viewModel.query.tryEmit(recentSearches.value[idx])
-                                coroutineScope.launch {
-                                    keyboardController?.hide()
-                                    viewModel.fetchLyrics()
-                                }
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable {
+                                    viewModel.query.tryEmit(recentSearches.value[idx])
+                                    coroutineScope.launch {
+                                        keyboardController?.hide()
+                                        viewModel.fetchLyrics()
+                                    }
+                                },
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ),
                     ) {
                         Text(
                             text = recentSearches.value[idx],
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                         )
                     }
                 }
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
                 items(lyrics.size) { item ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable { onLyricsSelected(lyrics[item]) },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { onLyricsSelected(lyrics[item]) },
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ),
                     ) {
                         Text(
                             text = "${lyrics[item].trackName} - ${lyrics[item].artistName}",
                             style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(
-                                start = 16.dp,
-                                top = 16.dp,
-                                end = 16.dp,
-                                bottom = 2.dp
-                            )
+                            modifier =
+                                Modifier.padding(
+                                    start = 16.dp,
+                                    top = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 2.dp,
+                                ),
                         )
                         Text(
                             text = "Duration: ${lyrics[item].getReadableDuration()}",
                             maxLines = 2,
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(
-                                start = 16.dp,
-                                top = 2.dp,
-                                end = 16.dp,
-                                bottom = 2.dp
-                            )
+                            modifier =
+                                Modifier.padding(
+                                    start = 16.dp,
+                                    top = 2.dp,
+                                    end = 16.dp,
+                                    bottom = 2.dp,
+                                ),
                         )
                         Text(
                             text = lyrics[item].getLyrics(),
                             maxLines = 2,
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(
-                                start = 16.dp,
-                                top = 2.dp,
-                                end = 16.dp,
-                                bottom = 16.dp
-                            )
+                            modifier =
+                                Modifier.padding(
+                                    start = 16.dp,
+                                    top = 2.dp,
+                                    end = 16.dp,
+                                    bottom = 16.dp,
+                                ),
                         )
                         Spacer(Modifier.height(4.dp))
                     }

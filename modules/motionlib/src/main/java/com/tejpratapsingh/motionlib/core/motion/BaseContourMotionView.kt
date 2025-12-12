@@ -14,8 +14,9 @@ open class BaseContourMotionView(
     override val startFrame: Int,
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0),
-    override val effects: List<MotionEffect> = emptyList()
-) : ContourLayout(context), MotionView {
+    override val effects: List<MotionEffect> = emptyList(),
+) : ContourLayout(context),
+    MotionView {
     companion object {
         private const val TAG = "MotionView"
     }

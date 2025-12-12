@@ -11,20 +11,24 @@ import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
 
 fun getMultiLyricsVideoProducer(
-    applicationContext: Context, song: String, lyrics: List<SyncedLyricFrame>
+    applicationContext: Context,
+    song: String,
+    lyrics: List<SyncedLyricFrame>,
 ): MotionVideoProducer {
-
     Log.d("MotionVideoProducer", "getMultiLyricsVideoProducer: ${lyrics.size}")
 
-    val motionConfig = MotionConfig(
-        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24
-    )
+    val motionConfig =
+        MotionConfig(
+            aspectRatio = VideoAspectRatio.Ratio9x16_480,
+            fps = 24,
+        )
 
-    val producer = MotionVideoProducer.with(
-        context = applicationContext,
-        config = motionConfig,
-        videoProducerAdapter = FfmpegVideoProducerAdapter()
-    )
+    val producer =
+        MotionVideoProducer.with(
+            context = applicationContext,
+            config = motionConfig,
+            videoProducerAdapter = FfmpegVideoProducerAdapter(),
+        )
 
     lyrics.zipWithNext().forEach { (current, next) ->
         producer.addMotionViewToSequence(
@@ -33,13 +37,14 @@ fun getMultiLyricsVideoProducer(
                 text = current.text,
                 startFrame = current.frame,
                 endFrame = next.frame,
-                textView = AppCompatTextView(applicationContext).apply {
-                    textSize = 24f
-                    setTextColor(android.graphics.Color.WHITE)
-                    setPadding(16, 16, 16, 16)
-                    textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
-                }
-            )
+                textView =
+                    AppCompatTextView(applicationContext).apply {
+                        textSize = 24f
+                        setTextColor(android.graphics.Color.WHITE)
+                        setPadding(16, 16, 16, 16)
+                        textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                    },
+            ),
         )
     }
 

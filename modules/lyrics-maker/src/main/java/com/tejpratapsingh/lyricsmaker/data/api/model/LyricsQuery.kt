@@ -8,5 +8,5 @@ data class LyricsQuery(
     val trackName: String? = null,
     val artistName: String? = null,
     val albumName: String? = null,
-    val duration: Int? = null
+    val duration: Int? = null,
 )

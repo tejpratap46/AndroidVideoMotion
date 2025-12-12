@@ -12,16 +12,19 @@ import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import java.io.IOException
 import java.io.InputStream
 
-class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
-    BaseContourMotionView(context, startFrame, endFrame) {
-
+class RenaultCar(
+    context: Context,
+    startFrame: Int,
+    endFrame: Int,
+) : BaseContourMotionView(context, startFrame, endFrame) {
     companion object {
         const val imageAssetSubFolder = "renault_kiger_bg"
     }
 
-    private val imageView: ImageView = ImageView(context).apply {
-        scaleType = ImageView.ScaleType.CENTER_INSIDE
-    }
+    private val imageView: ImageView =
+        ImageView(context).apply {
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+        }
 
     private val assetManager = context.assets
 
@@ -31,16 +34,18 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
 
     init {
         imageView.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            },
-            y = topTo {
-                parent.top()
-            }.bottomTo {
-                parent.bottom()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                }.bottomTo {
+                    parent.bottom()
+                },
         )
 
         contourHeightOf {
@@ -54,15 +59,16 @@ class RenaultCar(context: Context, startFrame: Int, endFrame: Int) :
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val backgroundColor: Int = MotionInterpolator.interpolateColorForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt())
-        )
+        val backgroundColor: Int =
+            MotionInterpolator.interpolateColorForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair("#2568ff".toColorInt(), "#ba28ff".toColorInt()),
+            )
 
         setBackgroundColor(
-            backgroundColor
+            backgroundColor,
         )
 
         // Determine which image to show based on the current frame

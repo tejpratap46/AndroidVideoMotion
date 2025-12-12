@@ -6,8 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class Timer() {
-
+class Timer {
     companion object {
         private const val TAG = "Timer"
     }
@@ -18,7 +17,7 @@ class Timer() {
     private fun startCoroutineTimer(
         delayMillis: Long = 0,
         repeatMillis: Long = 0,
-        action: () -> Unit
+        action: () -> Unit,
     ) = scope.launch(Dispatchers.IO) {
         delay(delayMillis)
         if (repeatMillis > 0) {

@@ -12,22 +12,29 @@ import com.tejpratapsingh.motionlib.utils.getVideoFpsWithRetriever
 import kotlin.math.roundToLong
 
 class VideoFrameView(
-    context: Context, videoUri: Uri, startFrame: Int, endFrame: Int
+    context: Context,
+    videoUri: Uri,
+    startFrame: Int,
+    endFrame: Int,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
-
     val fps = getVideoFpsWithRetriever(context, videoUri) ?: 30F
-    val videoBitmaps = extractAllVideoFrames(
-        context = context, videoUri = videoUri, frameIntervalUs = (1_000_000 / fps).roundToLong()
-    )
+    val videoBitmaps =
+        extractAllVideoFrames(
+            context = context,
+            videoUri = videoUri,
+            frameIntervalUs = (1_000_000 / fps).roundToLong(),
+        )
 
-    private val imageView = ImageView(context).apply {
-        scaleType = ImageView.ScaleType.CENTER_CROP
-    }
+    private val imageView =
+        ImageView(context).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }
 
     init {
         imageView.layoutBy(
             x = leftTo { parent.left() }.rightTo { parent.right() },
-            y = topTo { parent.top() }.bottomTo { parent.bottom() })
+            y = topTo { parent.top() }.bottomTo { parent.bottom() },
+        )
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
         contourHeightOf {
@@ -44,7 +51,7 @@ class VideoFrameView(
         super.forFrame(frame)
         currentFrameBitmap = videoBitmaps.getOrNull(frame - startFrame) ?: videoBitmaps.last()
         imageView.setImageBitmap(
-            currentFrameBitmap
+            currentFrameBitmap,
         )
         return this
     }

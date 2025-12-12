@@ -13,24 +13,26 @@ class MotionOpenGlView(
     modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-    override val loop: Pair<Int, Int> = Pair(0, 0)
-) : FrameLayout(context), MotionView {
-
+    override val loop: Pair<Int, Int> = Pair(0, 0),
+) : FrameLayout(context),
+    MotionView {
     override val effects: List<MotionEffect> = emptyList()
 
-    private val imageView = ImageView(context).apply {
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    }
+    private val imageView =
+        ImageView(context).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        }
 
 //    private val offscreenRenderer: OffscreenRenderer
 
-    val offscreenRenderer = Object3DToBitmapRenderer(
-        context = context,
-        assetFileName = modelAssetPath,
-        width = MotionConfig.aspectRatio.width,
-        height = MotionConfig.aspectRatio.height,
-        objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f)
-    )
+    val offscreenRenderer =
+        Object3DToBitmapRenderer(
+            context = context,
+            assetFileName = modelAssetPath,
+            width = MotionConfig.aspectRatio.width,
+            height = MotionConfig.aspectRatio.height,
+            objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f),
+        )
 
     init {
         // Initialize OpenGL renderer with the model asset path

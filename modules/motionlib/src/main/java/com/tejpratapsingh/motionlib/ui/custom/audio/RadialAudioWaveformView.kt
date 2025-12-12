@@ -14,9 +14,8 @@ class RadialAudioWaveformView(
     context: Context,
     private val amplitudes: List<Float> = emptyList(),
     override var startFrame: Int,
-    override var endFrame: Int
+    override var endFrame: Int,
 ) : BaseAudioWaveformView(context, startFrame, endFrame) {
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (amplitudes.isEmpty() || startFrame >= endFrame) return

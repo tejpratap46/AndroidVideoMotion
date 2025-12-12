@@ -18,7 +18,7 @@ class WordBlinkTextView(
     text: String,
     startFrame: Int = 0,
     endFrame: Int = -1,
-    textView: AppCompatTextView = CutoutTextView(context)
+    textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
     private val TAG by lazy {
         "WordBlinkTextView"
@@ -34,19 +34,21 @@ class WordBlinkTextView(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val visibleWordCount: Int = MotionInterpolator.interpolateForRange(
-            Interpolators(Easings.LINEAR),
-            frame,
-            Pair(startFrame, endFrame),
-            Pair(0f, wordCount.toFloat())
-        ).toInt()
+        val visibleWordCount: Int =
+            MotionInterpolator
+                .interpolateForRange(
+                    Interpolators(Easings.LINEAR),
+                    frame,
+                    Pair(startFrame, endFrame),
+                    Pair(0f, wordCount.toFloat()),
+                ).toInt()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             (textView as TextView).setAutoSizeTextTypeUniformWithConfiguration(
                 12,
                 100,
                 1,
-                TypedValue.COMPLEX_UNIT_SP
+                TypedValue.COMPLEX_UNIT_SP,
             )
         }
 

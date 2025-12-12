@@ -13,8 +13,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class ImageUpscaler(context: Context) {
-
+class ImageUpscaler(
+    context: Context,
+) {
     private var module: Module
 
     companion object {
@@ -29,13 +30,13 @@ class ImageUpscaler(context: Context) {
         } catch (e: IOException) {
             throw RuntimeException(
                 "Failed to load super resolution model: $MODEL_NAME. Ensure it's in app/src/main/assets/",
-                e
+                e,
             )
         }
     }
 
-    fun upscaleImage(inputBitmap: Bitmap): Bitmap? {
-        return try {
+    fun upscaleImage(inputBitmap: Bitmap): Bitmap? =
+        try {
             val inputTensor = preprocessImage(inputBitmap)
             val outputTensor = module.forward(IValue.from(inputTensor)).toTensor()
             postprocessOutput(outputTensor)
@@ -43,7 +44,6 @@ class ImageUpscaler(context: Context) {
             e.printStackTrace() // Consider using a proper logger
             null
         }
-    }
 
     private fun preprocessImage(bitmap: Bitmap): Tensor {
         val resizedBitmap = bitmap.scale(INPUT_SIZE, INPUT_SIZE)
@@ -51,7 +51,7 @@ class ImageUpscaler(context: Context) {
         return TensorImageUtils.bitmapToFloat32Tensor(
             resizedBitmap,
             floatArrayOf(0.485f, 0.456f, 0.406f), // Example: ImageNet mean
-            floatArrayOf(0.229f, 0.224f, 0.225f)  // Example: ImageNet std
+            floatArrayOf(0.229f, 0.224f, 0.225f), // Example: ImageNet std
         )
     }
 
@@ -100,7 +100,10 @@ class ImageUpscaler(context: Context) {
     }
 
     @Throws(IOException::class)
-    private fun assetFilePath(context: Context, assetName: String): String {
+    private fun assetFilePath(
+        context: Context,
+        assetName: String,
+    ): String {
         val assetFile = File(context.filesDir, assetName)
         if (assetFile.exists() && assetFile.length() > 0) {
             return assetFile.absolutePath

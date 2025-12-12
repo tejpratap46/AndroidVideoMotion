@@ -10,20 +10,22 @@ class RotatingMotionView(
     startFrame: Int,
     endFrame: Int,
     view: View,
-    private val degreePerSecond: Float = 6f
+    private val degreePerSecond: Float = 6f,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
-
     init {
         view.layoutBy(
-            x = leftTo {
-                parent.left()
-            }.rightTo {
-                parent.right()
-            }, y = topTo {
-                parent.top()
-            }.bottomTo {
-                parent.bottom()
-            }
+            x =
+                leftTo {
+                    parent.left()
+                }.rightTo {
+                    parent.right()
+                },
+            y =
+                topTo {
+                    parent.top()
+                }.bottomTo {
+                    parent.bottom()
+                },
         )
     }
 

@@ -42,12 +42,20 @@ fun extractWaveformFromFile(file: File): List<Float> {
 
             if (sampleSize < 0) {
                 codec.queueInputBuffer(
-                    inputIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                    inputIndex,
+                    0,
+                    0,
+                    0,
+                    MediaCodec.BUFFER_FLAG_END_OF_STREAM,
                 )
                 isEOS = true
             } else {
                 codec.queueInputBuffer(
-                    inputIndex, 0, sampleSize, extractor.sampleTime, 0
+                    inputIndex,
+                    0,
+                    sampleSize,
+                    extractor.sampleTime,
+                    0,
                 )
                 extractor.advance()
             }

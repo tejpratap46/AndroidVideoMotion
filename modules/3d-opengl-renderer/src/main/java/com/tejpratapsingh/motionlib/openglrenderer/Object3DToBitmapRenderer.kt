@@ -23,9 +23,8 @@ class Object3DToBitmapRenderer(
     private val assetFileName: String,
     private val width: Int,
     private val height: Int,
-    private val objectColor: FloatArray = floatArrayOf(0.8f, 0.8f, 0.8f, 1.0f)
+    private val objectColor: FloatArray = floatArrayOf(0.8f, 0.8f, 0.8f, 1.0f),
 ) {
-
     private var egl: EGL10? = null
     private var eglDisplay: EGLDisplay? = null
     private var eglContext: EGLContext? = null
@@ -50,10 +49,11 @@ class Object3DToBitmapRenderer(
         val vertices: FloatBuffer,
         val normals: FloatBuffer,
         val indices: ShortBuffer,
-        val indexCount: Int
+        val indexCount: Int,
     )
 
-    private val vertexShaderCode = """
+    private val vertexShaderCode =
+        """
         attribute vec4 vPosition;
         attribute vec3 vNormal;
         uniform mat4 uMVPMatrix;
@@ -72,9 +72,10 @@ class Object3DToBitmapRenderer(
             diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));
             vLightIntensity = diffuse;
         }
-    """.trimIndent()
+        """.trimIndent()
 
-    private val fragmentShaderCode = """
+    private val fragmentShaderCode =
+        """
         precision mediump float;
         uniform vec4 uColor;
         varying float vLightIntensity;
@@ -82,14 +83,14 @@ class Object3DToBitmapRenderer(
         void main() {
             gl_FragColor = vec4(uColor.rgb * vLightIntensity, uColor.a);
         }
-    """.trimIndent()
+        """.trimIndent()
 
     /**
      * Initialize the renderer - call this once before generating bitmaps
      * @return true if initialization successful, false otherwise
      */
-    fun initialize(): Boolean {
-        return try {
+    fun initialize(): Boolean =
+        try {
             setupOffscreenRendering(width, height)
             mesh = loadObjFromAssets(assetFileName)
             setupShaders()
@@ -101,7 +102,6 @@ class Object3DToBitmapRenderer(
             cleanup()
             false
         }
-    }
 
     /**
      * Set the rotation angles for the 3D model
@@ -112,7 +112,7 @@ class Object3DToBitmapRenderer(
     fun setRotation(
         rotationX: Float = 0f,
         rotationY: Float = 0f,
-        rotationZ: Float = 0f
+        rotationZ: Float = 0f,
     ) {
         if (!isInitialized) {
             throw IllegalStateException("Renderer not initialized. Call initialize() first.")
@@ -152,7 +152,7 @@ class Object3DToBitmapRenderer(
     fun generateBitmapWithRotation(
         rotationX: Float = 0f,
         rotationY: Float = 0f,
-        rotationZ: Float = 0f
+        rotationZ: Float = 0f,
     ): Bitmap? {
         setRotation(rotationX, rotationY, rotationZ)
         return generateBitmap()
@@ -167,44 +167,60 @@ class Object3DToBitmapRenderer(
         mesh = null
     }
 
-    private fun setupOffscreenRendering(width: Int, height: Int) {
+    private fun setupOffscreenRendering(
+        width: Int,
+        height: Int,
+    ) {
         egl = EGL10.EGL_NO_CONTEXT as EGL10
         eglDisplay = egl!!.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY)
 
         val version = IntArray(2)
         egl!!.eglInitialize(eglDisplay, version)
 
-        val configAttribs = intArrayOf(
-            EGL10.EGL_RENDERABLE_TYPE, 4, // EGL_OPENGL_ES2_BIT
-            EGL10.EGL_RED_SIZE, 8,
-            EGL10.EGL_GREEN_SIZE, 8,
-            EGL10.EGL_BLUE_SIZE, 8,
-            EGL10.EGL_ALPHA_SIZE, 8,
-            EGL10.EGL_DEPTH_SIZE, 16,
-            EGL10.EGL_NONE
-        )
+        val configAttribs =
+            intArrayOf(
+                EGL10.EGL_RENDERABLE_TYPE,
+                4, // EGL_OPENGL_ES2_BIT
+                EGL10.EGL_RED_SIZE,
+                8,
+                EGL10.EGL_GREEN_SIZE,
+                8,
+                EGL10.EGL_BLUE_SIZE,
+                8,
+                EGL10.EGL_ALPHA_SIZE,
+                8,
+                EGL10.EGL_DEPTH_SIZE,
+                16,
+                EGL10.EGL_NONE,
+            )
 
         val configs = arrayOfNulls<EGLConfig>(1)
         val numConfigs = IntArray(1)
         egl!!.eglChooseConfig(eglDisplay, configAttribs, configs, 1, numConfigs)
 
-        val contextAttribs = intArrayOf(
-            0x3098, 2, // EGL_CONTEXT_CLIENT_VERSION
-            EGL10.EGL_NONE
-        )
+        val contextAttribs =
+            intArrayOf(
+                0x3098,
+                2, // EGL_CONTEXT_CLIENT_VERSION
+                EGL10.EGL_NONE,
+            )
 
-        eglContext = egl!!.eglCreateContext(
-            eglDisplay,
-            configs[0],
-            EGL10.EGL_NO_CONTEXT,
-            contextAttribs
-        )
+        eglContext =
+            egl!!.eglCreateContext(
+                eglDisplay,
+                configs[0],
+                EGL10.EGL_NO_CONTEXT,
+                contextAttribs,
+            )
 
-        val surfaceAttribs = intArrayOf(
-            EGL10.EGL_WIDTH, width,
-            EGL10.EGL_HEIGHT, height,
-            EGL10.EGL_NONE
-        )
+        val surfaceAttribs =
+            intArrayOf(
+                EGL10.EGL_WIDTH,
+                width,
+                EGL10.EGL_HEIGHT,
+                height,
+                EGL10.EGL_NONE,
+            )
 
         eglSurface = egl!!.eglCreatePbufferSurface(eglDisplay, configs[0], surfaceAttribs)
         egl!!.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)
@@ -230,8 +246,8 @@ class Object3DToBitmapRenderer(
                                 floatArrayOf(
                                     parts[1].toFloat(),
                                     parts[2].toFloat(),
-                                    parts[3].toFloat()
-                                )
+                                    parts[3].toFloat(),
+                                ),
                             )
                         }
 
@@ -241,8 +257,8 @@ class Object3DToBitmapRenderer(
                                 floatArrayOf(
                                     parts[1].toFloat(),
                                     parts[2].toFloat(),
-                                    parts[3].toFloat()
-                                )
+                                    parts[3].toFloat(),
+                                ),
                             )
                         }
 
@@ -254,7 +270,9 @@ class Object3DToBitmapRenderer(
                                 val normalIndex =
                                     if (vertexData.size > 2 && vertexData[2].isNotEmpty()) {
                                         vertexData[2].toInt() - 1
-                                    } else vertexIndex
+                                    } else {
+                                        vertexIndex
+                                    }
 
                                 // Add vertex
                                 vertices.addAll(tempVertices[vertexIndex].toList())
@@ -283,11 +301,14 @@ class Object3DToBitmapRenderer(
             vertices = createFloatBuffer(vertices.toFloatArray()),
             normals = createFloatBuffer(normals.toFloatArray()),
             indices = createShortBuffer(indices.toShortArray()),
-            indexCount = indices.size
+            indexCount = indices.size,
         )
     }
 
-    private fun calculateNormals(vertices: FloatArray, indices: ShortArray): FloatArray {
+    private fun calculateNormals(
+        vertices: FloatArray,
+        indices: ShortArray,
+    ): FloatArray {
         val normals = FloatArray(vertices.size)
 
         // Calculate face normals and accumulate vertex normals
@@ -303,11 +324,12 @@ class Object3DToBitmapRenderer(
             val edge1 = floatArrayOf(v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2])
             val edge2 = floatArrayOf(v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2])
 
-            val normal = floatArrayOf(
-                edge1[1] * edge2[2] - edge1[2] * edge2[1],
-                edge1[2] * edge2[0] - edge1[0] * edge2[2],
-                edge1[0] * edge2[1] - edge1[1] * edge2[0]
-            )
+            val normal =
+                floatArrayOf(
+                    edge1[1] * edge2[2] - edge1[2] * edge2[1],
+                    edge1[2] * edge2[0] - edge1[0] * edge2[2],
+                    edge1[0] * edge2[1] - edge1[1] * edge2[0],
+                )
 
             // Normalize
             val length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2])
@@ -340,21 +362,21 @@ class Object3DToBitmapRenderer(
         return normals
     }
 
-    private fun createFloatBuffer(array: FloatArray): FloatBuffer {
-        return ByteBuffer.allocateDirect(array.size * 4)
+    private fun createFloatBuffer(array: FloatArray): FloatBuffer =
+        ByteBuffer
+            .allocateDirect(array.size * 4)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()
             .put(array)
             .apply { position(0) }
-    }
 
-    private fun createShortBuffer(array: ShortArray): ShortBuffer {
-        return ByteBuffer.allocateDirect(array.size * 2)
+    private fun createShortBuffer(array: ShortArray): ShortBuffer =
+        ByteBuffer
+            .allocateDirect(array.size * 2)
             .order(ByteOrder.nativeOrder())
             .asShortBuffer()
             .put(array)
             .apply { position(0) }
-    }
 
     private fun setupShaders() {
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
@@ -372,14 +394,20 @@ class Object3DToBitmapRenderer(
         colorHandle = GLES20.glGetUniformLocation(shaderProgram, "uColor")
     }
 
-    private fun loadShader(type: Int, shaderCode: String): Int {
+    private fun loadShader(
+        type: Int,
+        shaderCode: String,
+    ): Int {
         val shader = GLES20.glCreateShader(type)
         GLES20.glShaderSource(shader, shaderCode)
         GLES20.glCompileShader(shader)
         return shader
     }
 
-    private fun setupMatrices(width: Int, height: Int) {
+    private fun setupMatrices(
+        width: Int,
+        height: Int,
+    ) {
         // Set up projection matrix
         val ratio = width.toFloat() / height.toFloat()
         Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 3f, 7f)
@@ -391,7 +419,12 @@ class Object3DToBitmapRenderer(
         Matrix.setIdentityM(modelMatrix, 0)
     }
 
-    private fun renderToBitmap(mesh: Mesh, width: Int, height: Int, color: FloatArray): Bitmap {
+    private fun renderToBitmap(
+        mesh: Mesh,
+        width: Int,
+        height: Int,
+        color: FloatArray,
+    ): Bitmap {
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f) // White background
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
@@ -420,7 +453,7 @@ class Object3DToBitmapRenderer(
             GLES20.GL_TRIANGLES,
             mesh.indexCount,
             GLES20.GL_UNSIGNED_SHORT,
-            mesh.indices
+            mesh.indices,
         )
 
         // Read pixels
@@ -432,7 +465,7 @@ class Object3DToBitmapRenderer(
             height,
             GLES20.GL_RGBA,
             GLES20.GL_UNSIGNED_BYTE,
-            pixelBuffer
+            pixelBuffer,
         )
 
         // Convert to bitmap
@@ -453,7 +486,7 @@ class Object3DToBitmapRenderer(
                     eglDisplay,
                     EGL10.EGL_NO_SURFACE,
                     EGL10.EGL_NO_SURFACE,
-                    EGL10.EGL_NO_CONTEXT
+                    EGL10.EGL_NO_CONTEXT,
                 )
                 eglSurface?.let { egl.eglDestroySurface(eglDisplay, it) }
                 eglContext?.let { egl.eglDestroyContext(eglDisplay, it) }

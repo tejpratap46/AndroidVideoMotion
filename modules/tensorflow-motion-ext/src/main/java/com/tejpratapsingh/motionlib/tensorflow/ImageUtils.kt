@@ -40,7 +40,10 @@ object ImageUtils {
         return bitmap
     }
 
-    fun applyMask(original: Bitmap, mask: Array<FloatArray>): Bitmap {
+    fun applyMask(
+        original: Bitmap,
+        mask: Array<FloatArray>,
+    ): Bitmap {
         val width = original.width
         val height = original.height
         val scaledMask = floatArrayToGrayscaleBitmap(mask).scale(width, height)

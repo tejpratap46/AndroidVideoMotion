@@ -22,7 +22,6 @@ import com.tejpratapsingh.motion.metadataextractor.ShareReceiverActivity
 import kotlinx.coroutines.launch
 
 class SearchActivity : ComponentActivity() {
-
     private val lyricsViewModel: LyricsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,11 +31,14 @@ class SearchActivity : ComponentActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    0,
                 )
             }
         }
@@ -46,7 +48,7 @@ class SearchActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         viewModel = lyricsViewModel,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
                     )
                 }
             }

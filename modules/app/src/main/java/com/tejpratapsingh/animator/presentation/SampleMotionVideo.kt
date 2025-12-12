@@ -14,18 +14,21 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 
 fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
-    val motionConfig = MotionConfig(
-        aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 30
-    )
+    val motionConfig =
+        MotionConfig(
+            aspectRatio = VideoAspectRatio.Ratio9x16_480,
+            fps = 30,
+        )
 
     val assetManager = applicationContext.assets
     val files = assetManager.list(RenaultCar.imageAssetSubFolder)
 
-    val motionView: BaseContourMotionView = RenaultCar(
-        context = applicationContext,
-        startFrame = 1,
-        endFrame = files?.size ?: 1
-    )
+    val motionView: BaseContourMotionView =
+        RenaultCar(
+            context = applicationContext,
+            startFrame = 1,
+            endFrame = files?.size ?: 1,
+        )
 
 //    val motionView = ContourDevice(
 //        context = applicationContext, startFrame = 1, endFrame = motionConfig.fps * 4
@@ -39,7 +42,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
             try {
                 httpClient.downloadFile(
                     file = file,
-                    url = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3d/be/de/3dbedeeb-4ef4-0b43-d23e-ed7b3ec0c034/mzaf_3312428321786187211.plus.aac.p.m4a"
+                    url = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3d/be/de/3dbedeeb-4ef4-0b43-d23e-ed7b3ec0c034/mzaf_3312428321786187211.plus.aac.p.m4a",
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -47,14 +50,15 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         }
     }
 
-    val motionAudio = listOf(
-        MotionAudio(
-            file = file,
-            delayFrame = motionView.startFrame,
-            startFrame = motionView.startFrame,
-            endFrame = motionView.endFrame
+    val motionAudio =
+        listOf(
+            MotionAudio(
+                file = file,
+                delayFrame = motionView.startFrame,
+                startFrame = motionView.startFrame,
+                endFrame = motionView.endFrame,
+            ),
         )
-    )
 
 //    val motionView = MotionOpenGlView(
 //        context = applicationContext,
@@ -101,9 +105,10 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         setBackgroundColor(Color.WHITE)
     }*/
 
-    return MotionVideoProducer.with(
-        context = applicationContext,
-        config = motionConfig,
-        motionAudio = motionAudio,
-    ).addMotionViewToSequence(motionView = motionView)
+    return MotionVideoProducer
+        .with(
+            context = applicationContext,
+            config = motionConfig,
+            motionAudio = motionAudio,
+        ).addMotionViewToSequence(motionView = motionView)
 }

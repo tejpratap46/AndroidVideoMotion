@@ -9,7 +9,7 @@ fun Bitmap.compressToBitmap(quality: Int): Bitmap {
     val stream = ByteArrayOutputStream()
 
     /*
-        **** reference source developer.android.com ***
+     **** reference source developer.android.com ***
 
         public boolean compress (Bitmap.CompressFormat format, int quality, OutputStream stream)
             Write a compressed version of the bitmap to the specified outputstream.
@@ -37,7 +37,7 @@ fun Bitmap.compressToBitmap(quality: Int): Bitmap {
                 Bitmap.CompressFormat  JPEG
                 Bitmap.CompressFormat  PNG
                 Bitmap.CompressFormat  WEBP
-    */
+     */
 
     // Compress the bitmap with JPEG format and quality 50%
     this.compress(Bitmap.CompressFormat.JPEG, quality, stream)

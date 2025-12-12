@@ -24,7 +24,9 @@ import java.nio.ByteOrder
 import kotlin.math.cos
 import kotlin.math.sin
 
-class FilamentOffscreenCapturer(private val context: Context) {
+class FilamentOffscreenCapturer(
+    private val context: Context,
+) {
     private lateinit var engine: Engine
     private var renderer: Renderer? = null
     private var scene: Scene? = null
@@ -39,10 +41,15 @@ class FilamentOffscreenCapturer(private val context: Context) {
     private var asset: FilamentAsset? = null
 
     enum class RotationAxis {
-        X, Y, Z
+        X,
+        Y,
+        Z,
     }
 
-    fun init(width: Int, height: Int) {
+    fun init(
+        width: Int,
+        height: Int,
+    ) {
         engine = Engine.create()
         renderer = engine.createRenderer()
 
@@ -65,12 +72,18 @@ class FilamentOffscreenCapturer(private val context: Context) {
             width.toDouble() / height.toDouble(),
             0.1,
             100.0,
-            Camera.Fov.VERTICAL
+            Camera.Fov.VERTICAL,
         )
         camera?.lookAt(
-            0.0, 0.0, 3.0, // eye
-            0.0, 0.0, 0.0, // center
-            0.0, 1.0, 0.0  // up
+            0.0,
+            0.0,
+            3.0, // eye
+            0.0,
+            0.0,
+            0.0, // center
+            0.0,
+            1.0,
+            0.0, // up
         )
 
         val materialProvider = UbershaderProvider(engine)
@@ -108,7 +121,10 @@ class FilamentOffscreenCapturer(private val context: Context) {
         scene?.addEntities(asset!!.entities)
     }
 
-    fun setRotation(axis: RotationAxis, degrees: Float) {
+    fun setRotation(
+        axis: RotationAxis,
+        degrees: Float,
+    ) {
         asset?.let {
             val radians = Math.toRadians(degrees.toDouble())
             val cos = cos(radians).toFloat()
@@ -118,26 +134,62 @@ class FilamentOffscreenCapturer(private val context: Context) {
             when (axis) {
                 RotationAxis.X -> {
                     // Rotate around X-axis
-                    transform[0] = 1f; transform[4] = 0f; transform[8] = 0f; transform[12] = 0f
-                    transform[1] = 0f; transform[5] = cos; transform[9] = -sin; transform[13] = 0f
-                    transform[2] = 0f; transform[6] = sin; transform[10] = cos; transform[14] = 0f
-                    transform[3] = 0f; transform[7] = 0f; transform[11] = 0f; transform[15] = 1f
+                    transform[0] = 1f
+                    transform[4] = 0f
+                    transform[8] = 0f
+                    transform[12] = 0f
+                    transform[1] = 0f
+                    transform[5] = cos
+                    transform[9] = -sin
+                    transform[13] = 0f
+                    transform[2] = 0f
+                    transform[6] = sin
+                    transform[10] = cos
+                    transform[14] = 0f
+                    transform[3] = 0f
+                    transform[7] = 0f
+                    transform[11] = 0f
+                    transform[15] = 1f
                 }
 
                 RotationAxis.Y -> {
                     // Rotate around Y-axis
-                    transform[0] = cos; transform[4] = 0f; transform[8] = sin; transform[12] = 0f
-                    transform[1] = 0f; transform[5] = 1f; transform[9] = 0f; transform[13] = 0f
-                    transform[2] = -sin; transform[6] = 0f; transform[10] = cos; transform[14] = 0f
-                    transform[3] = 0f; transform[7] = 0f; transform[11] = 0f; transform[15] = 1f
+                    transform[0] = cos
+                    transform[4] = 0f
+                    transform[8] = sin
+                    transform[12] = 0f
+                    transform[1] = 0f
+                    transform[5] = 1f
+                    transform[9] = 0f
+                    transform[13] = 0f
+                    transform[2] = -sin
+                    transform[6] = 0f
+                    transform[10] = cos
+                    transform[14] = 0f
+                    transform[3] = 0f
+                    transform[7] = 0f
+                    transform[11] = 0f
+                    transform[15] = 1f
                 }
 
                 RotationAxis.Z -> {
                     // Rotate around Z-axis
-                    transform[0] = cos; transform[4] = -sin; transform[8] = 0f; transform[12] = 0f
-                    transform[1] = sin; transform[5] = cos; transform[9] = 0f; transform[13] = 0f
-                    transform[2] = 0f; transform[6] = 0f; transform[10] = 1f; transform[14] = 0f
-                    transform[3] = 0f; transform[7] = 0f; transform[11] = 0f; transform[15] = 1f
+                    transform[0] = cos
+                    transform[4] = -sin
+                    transform[8] = 0f
+                    transform[12] = 0f
+                    transform[1] = sin
+                    transform[5] = cos
+                    transform[9] = 0f
+                    transform[13] = 0f
+                    transform[2] = 0f
+                    transform[6] = 0f
+                    transform[10] = 1f
+                    transform[14] = 0f
+                    transform[3] = 0f
+                    transform[7] = 0f
+                    transform[11] = 0f
+                    transform[15] = 1f
                 }
             }
 
@@ -161,7 +213,10 @@ class FilamentOffscreenCapturer(private val context: Context) {
         setRotation(RotationAxis.Z, degrees)
     }
 
-    fun capture(width: Int, height: Int): Bitmap? {
+    fun capture(
+        width: Int,
+        height: Int,
+    ): Bitmap? {
         try {
             if (renderer?.beginFrame(swapChain!!, 0L) == true) {
                 renderer?.render(view!!)
@@ -170,11 +225,12 @@ class FilamentOffscreenCapturer(private val context: Context) {
 
             val pixelCount = width * height
             val buf = ByteBuffer.allocateDirect(pixelCount * 4).order(ByteOrder.nativeOrder())
-            val descriptor = Texture.PixelBufferDescriptor(
-                buf,
-                Texture.Format.RGBA,
-                Texture.Type.UBYTE
-            )
+            val descriptor =
+                Texture.PixelBufferDescriptor(
+                    buf,
+                    Texture.Format.RGBA,
+                    Texture.Type.UBYTE,
+                )
             renderer?.readPixels(0, 0, width, height, descriptor)
 
             buf.rewind()

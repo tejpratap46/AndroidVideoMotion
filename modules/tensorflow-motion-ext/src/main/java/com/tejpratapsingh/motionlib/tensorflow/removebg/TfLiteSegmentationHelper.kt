@@ -16,7 +16,9 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
-class TfLiteSegmentationHelper(context: Context) {
+class TfLiteSegmentationHelper(
+    context: Context,
+) {
     private val modelName = "deeplabv3_257_mv_gpu.tflite"
     private val inputSize = 257
     private val interpreter: Interpreter
@@ -26,9 +28,7 @@ class TfLiteSegmentationHelper(context: Context) {
         interpreter = Interpreter(modelFile)
     }
 
-    fun segmentAndRemoveBackground(
-        bitmap: Bitmap
-    ): Bitmap {
+    fun segmentAndRemoveBackground(bitmap: Bitmap): Bitmap {
         // Run segmentation on background thread
         val mask = runDeepLabSegmentation(bitmap)
         return applyMask(bitmap, mask)
@@ -40,16 +40,19 @@ class TfLiteSegmentationHelper(context: Context) {
 
         // 2. Prepare input tensor
         val tensorImage = TensorImage.fromBitmap(resized)
-        val processor = ImageProcessor.Builder()
-            .add(NormalizeOp(127.5f, 127.5f))
-            .build()
+        val processor =
+            ImageProcessor
+                .Builder()
+                .add(NormalizeOp(127.5f, 127.5f))
+                .build()
         val input = processor.process(tensorImage)
 
         // 3. Prepare output buffer
-        val outputBuffer = TensorBuffer.createFixedSize(
-            intArrayOf(1, inputSize, inputSize, 21),
-            org.tensorflow.lite.DataType.FLOAT32
-        )
+        val outputBuffer =
+            TensorBuffer.createFixedSize(
+                intArrayOf(1, inputSize, inputSize, 21),
+                org.tensorflow.lite.DataType.FLOAT32,
+            )
 
         // 4. Run inference
         interpreter.run(input.buffer, outputBuffer.buffer.rewind())
@@ -60,14 +63,21 @@ class TfLiteSegmentationHelper(context: Context) {
         for (i in maskPixels.indices) {
             val offset = i * 21
             val maxIndex =
-                scores.copyOfRange(offset, offset + 21).withIndex().maxByOrNull { it.value }!!.index
+                scores
+                    .copyOfRange(offset, offset + 21)
+                    .withIndex()
+                    .maxByOrNull { it.value }!!
+                    .index
             maskPixels[i] = if (maxIndex == 15) Color.WHITE else Color.TRANSPARENT
         }
         val mask = Bitmap.createBitmap(maskPixels, inputSize, inputSize, Bitmap.Config.ARGB_8888)
         return mask.scale(originalBitmap.width, originalBitmap.height)
     }
 
-    private fun applyMask(original: Bitmap, mask: Bitmap): Bitmap {
+    private fun applyMask(
+        original: Bitmap,
+        mask: Bitmap,
+    ): Bitmap {
         val result = createBitmap(original.width, original.height)
         val canvas = Canvas(result)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)

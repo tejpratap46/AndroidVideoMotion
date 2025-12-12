@@ -30,7 +30,7 @@ object MotionInterpolator {
         interpolator: Interpolator,
         currentFrame: Int,
         frameRange: Pair<Int, Int>,
-        valueRange: Pair<Float, Float>
+        valueRange: Pair<Float, Float>,
     ): Float {
         val (startFrame, endFrame) = frameRange
         val (startValue, endValue) = valueRange
@@ -57,7 +57,7 @@ object MotionInterpolator {
         if (BuildConfig.DEBUG) { // Example: Only log in debug builds
             Log.d(
                 TAG,
-                "interpolateForRange: currentFrame: $currentFrame, framePercent: $framePercent, interpolatedFramePercent: $interpolatedFramePercent, valueFromPercent: $valueFromPercent"
+                "interpolateForRange: currentFrame: $currentFrame, framePercent: $framePercent, interpolatedFramePercent: $interpolatedFramePercent, valueFromPercent: $valueFromPercent",
             )
         }
 
@@ -76,7 +76,7 @@ object MotionInterpolator {
         interpolator: Interpolator,
         currentFrame: Int,
         frameRange: Pair<Int, Int>,
-        @ColorInt valueRange: Pair<Int, Int> // Added @ColorInt for clarity
+        @ColorInt valueRange: Pair<Int, Int>, // Added @ColorInt for clarity
     ): Int {
         val (startFrame, endFrame) = frameRange
         val (startColor, endColor) = valueRange
@@ -97,7 +97,7 @@ object MotionInterpolator {
         return argbEvaluator.evaluate(
             interpolatedFramePercent,
             startColor,
-            endColor
+            endColor,
         ) as Int
     }
 
@@ -106,11 +106,15 @@ object MotionInterpolator {
      * @param colorToInvert The @ColorInt to invert.
      * @return The complementary @ColorInt.
      */
-    fun getComplementaryColor(@ColorInt colorToInvert: Int): Int {
+    fun getComplementaryColor(
+        @ColorInt colorToInvert: Int,
+    ): Int {
         val hsv = FloatArray(3)
         Color.RGBToHSV(
-            Color.red(colorToInvert), Color.green(colorToInvert),
-            Color.blue(colorToInvert), hsv
+            Color.red(colorToInvert),
+            Color.green(colorToInvert),
+            Color.blue(colorToInvert),
+            hsv,
         )
         hsv[0] = (hsv[0] + 180) % 360 // Add 180 degrees to hue for complementary color
         return Color.HSVToColor(hsv)

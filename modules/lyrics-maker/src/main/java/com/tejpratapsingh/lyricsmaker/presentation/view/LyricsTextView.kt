@@ -13,16 +13,15 @@ class LyricsTextView(
     startFrame: Int,
     endFrame: Int,
     textView: AppCompatTextView = AppCompatTextView(context),
-    fontUrl: String? = null
+    fontUrl: String? = null,
 ) : AbstractMotionTextView(
-    context = context,
-    text = lyrics.first().text,
-    startFrame = startFrame,
-    endFrame = endFrame,
-    textView = textView,
-    fontUrl = fontUrl
-) {
-
+        context = context,
+        text = lyrics.first().text,
+        startFrame = startFrame,
+        endFrame = endFrame,
+        textView = textView,
+        fontUrl = fontUrl,
+    ) {
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 

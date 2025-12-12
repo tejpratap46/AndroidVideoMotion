@@ -11,23 +11,25 @@ import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 
 class MainActivity : PreviewActivity() {
-
     val video by lazy {
-        MotionVideoProducer.with(
-            context = applicationContext,
-            config = motionConfig,
-        ).addMotionViewToSequence(motionView = motionView)
+        MotionVideoProducer
+            .with(
+                context = applicationContext,
+                config = motionConfig,
+            ).addMotionViewToSequence(motionView = motionView)
     }
 
-    val motionConfig = MotionConfig(
-        aspectRatio = VideoAspectRatio.Ratio16x9_480, fps = 30
-    )
+    val motionConfig =
+        MotionConfig(
+            aspectRatio = VideoAspectRatio.Ratio16x9_480,
+            fps = 30,
+        )
 
     val motionView: BaseContourMotionView by lazy {
         RenaultCar(
             context = applicationContext,
             startFrame = 1,
-            endFrame = 72
+            endFrame = 72,
         )
     }
 
@@ -44,11 +46,9 @@ class MainActivity : PreviewActivity() {
                 motionVideoPlayer.seekBar.progress = newProgress
                 video.motionComposerView.forFrame(newProgress)
             },
-            sensitivity = 5f
+            sensitivity = 5f,
         )
     }
 
-    override fun getMotionVideo(): MotionVideoProducer {
-        return video
-    }
+    override fun getMotionVideo(): MotionVideoProducer = video
 }

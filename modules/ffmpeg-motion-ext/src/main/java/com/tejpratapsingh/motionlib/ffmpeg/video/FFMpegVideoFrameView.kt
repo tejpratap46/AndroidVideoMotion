@@ -16,21 +16,25 @@ class FFMpegVideoFrameView(
     val videoFile: File,
     override val startFrame: Int,
     override val endFrame: Int,
-    override val loop: Pair<Int, Int> = Pair(0, 0)
-) : FrameLayout(context), MotionView {
-
+    override val loop: Pair<Int, Int> = Pair(0, 0),
+) : FrameLayout(context),
+    MotionView {
     override val effects: List<MotionEffect> = emptyList()
 
-    val imageView = ImageView(context).apply {
-        scaleType = ImageView.ScaleType.CENTER_CROP
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    }
+    val imageView =
+        ImageView(context).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        }
 
-    private val videoBitmaps = extractFramesFromVideo(
-        context = context, videoFile = videoFile, outputDirName = videoFile.name.md5()
-    ).let {
-        context.loadBitmapsFromDirectory(it)
-    }
+    private val videoBitmaps =
+        extractFramesFromVideo(
+            context = context,
+            videoFile = videoFile,
+            outputDirName = videoFile.name.md5(),
+        ).let {
+            context.loadBitmapsFromDirectory(it)
+        }
 
     init {
         addView(imageView)
@@ -41,7 +45,7 @@ class FFMpegVideoFrameView(
     override fun forFrame(frame: Int): MotionView {
         currentFrameBitmap = videoBitmaps.getOrNull(frame - startFrame) ?: videoBitmaps.last()
         imageView.setImageBitmap(
-            currentFrameBitmap
+            currentFrameBitmap,
         )
         return this
     }

@@ -17,7 +17,7 @@ import android.net.Uri
 fun extractAllVideoFrames(
     context: Context,
     videoUri: Uri,
-    frameIntervalUs: Long
+    frameIntervalUs: Long,
 ): List<Bitmap> {
     val retriever = MediaMetadataRetriever()
     val frames = mutableListOf<Bitmap>()
@@ -27,18 +27,22 @@ fun extractAllVideoFrames(
         retriever.setDataSource(context, videoUri)
 
         // 2. Retrieve video duration (in microseconds)
-        val durationUs = retriever.extractMetadata(
-            MediaMetadataRetriever.METADATA_KEY_DURATION
-        )?.toLongOrNull()?.times(1000) ?: 0L
+        val durationUs =
+            retriever
+                .extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_DURATION,
+                )?.toLongOrNull()
+                ?.times(1000) ?: 0L
 
         // 3. Iterate through timestamps from 0 to duration, stepping by frameIntervalUs
         var timeUs = 0L
         while (timeUs < durationUs) {
             // OPTIONALLY: Use OPTION_CLOSEST or OPTION_CLOSEST_SYNC
-            val bitmap = retriever.getFrameAtTime(
-                timeUs,
-                MediaMetadataRetriever.OPTION_CLOSEST
-            )
+            val bitmap =
+                retriever.getFrameAtTime(
+                    timeUs,
+                    MediaMetadataRetriever.OPTION_CLOSEST,
+                )
             bitmap?.let { frames.add(it) }
             timeUs += frameIntervalUs
         }
@@ -56,14 +60,18 @@ fun extractAllVideoFrames(
  * @param videoUri Uri of the video (content://, file://, etc.).
  * @return FPS as a Float, or null if unavailable.
  */
-fun getVideoFpsWithRetriever(context: Context, videoUri: Uri): Float? {
+fun getVideoFpsWithRetriever(
+    context: Context,
+    videoUri: Uri,
+): Float? {
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, videoUri)
         // METADATA_KEY_CAPTURE_FRAMERATE introduced in API 24
-        retriever.extractMetadata(
-            MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE
-        )?.toFloatOrNull()
+        retriever
+            .extractMetadata(
+                MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE,
+            )?.toFloatOrNull()
     } finally {
         retriever.release()
     }

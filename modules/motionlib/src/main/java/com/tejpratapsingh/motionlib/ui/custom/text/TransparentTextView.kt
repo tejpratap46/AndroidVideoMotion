@@ -6,14 +6,17 @@ import com.tejpratapsingh.motionlib.ui.custom.CutoutTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 
 class TransparentTextView(
-    context: Context, private val text: String, startFrame: Int, endFrame: Int
+    context: Context,
+    private val text: String,
+    startFrame: Int,
+    endFrame: Int,
 ) : AbstractMotionTextView(
-    context,
-    text,
-    startFrame,
-    endFrame,
-    textView = CutoutTextView(context)
-) {
+        context,
+        text,
+        startFrame,
+        endFrame,
+        textView = CutoutTextView(context),
+    ) {
     private val TAG by lazy {
         "TransparentTextView"
     }

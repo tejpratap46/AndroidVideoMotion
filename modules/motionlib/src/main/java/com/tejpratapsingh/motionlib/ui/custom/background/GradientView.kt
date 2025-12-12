@@ -18,7 +18,7 @@ import com.tejpratapsingh.motionlib.core.motion.OrientedMotionView
 enum class Orientation {
     HORIZONTAL,
     VERTICAL,
-    CIRCULAR
+    CIRCULAR,
 }
 
 class GradientView(
@@ -26,19 +26,20 @@ class GradientView(
     startFrame: Int,
     endFrame: Int,
     private val orientation: Orientation,
-    private val colors: IntArray
+    private val colors: IntArray,
 ) : OrientedMotionView(
-    context = context,
-    startFrame = startFrame,
-    endFrame = endFrame
-) {
+        context = context,
+        startFrame = startFrame,
+        endFrame = endFrame,
+    ) {
     private companion object {
         // const val TAG = "GradientView" // For logging if needed
     }
 
-    private val paint: Paint = Paint().apply {
-        isAntiAlias = true // Good practice for smoother gradients
-    }
+    private val paint: Paint =
+        Paint().apply {
+            isAntiAlias = true // Good practice for smoother gradients
+        }
     private var currentFrame: Int = 0
 
     private val interpolator: Interpolators =
@@ -66,7 +67,12 @@ class GradientView(
         }
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    override fun onSizeChanged(
+        w: Int,
+        h: Int,
+        oldw: Int,
+        oldh: Int,
+    ) {
         super.onSizeChanged(w, h, oldw, oldh)
         // If valueRange depends on the view's actual dimensions:
         /*
@@ -75,7 +81,7 @@ class GradientView(
             Orientation.VERTICAL -> Pair(first = 0f, second = h.toFloat().coerceAtLeast(1f))
             Orientation.HORIZONTAL -> Pair(first = 0f, second = w.toFloat().coerceAtLeast(1f))
         }
-        */
+         */
         gradientShader = null // Invalidate shader if size changes affect it
     }
 
@@ -98,46 +104,54 @@ class GradientView(
         //     Log.d(TAG, "onDraw: called : $currentFrame, width: $width, height: $height, valueRange: $valueRange")
         // }
 
-        val interpolatedValue: Float = MotionInterpolator.interpolateForRange(
-            interpolator = interpolator,
-            currentFrame = currentFrame,
-            frameRange = frameRange,
-            valueRange = valueRange
-        )
+        val interpolatedValue: Float =
+            MotionInterpolator.interpolateForRange(
+                interpolator = interpolator,
+                currentFrame = currentFrame,
+                frameRange = frameRange,
+                valueRange = valueRange,
+            )
 
         // Only recreate shader if necessary (value changed or not created yet)
         if (gradientShader == null || interpolatedValue != lastInterpolatedValue) {
             lastInterpolatedValue = interpolatedValue
-            gradientShader = when (orientation) {
-                Orientation.CIRCULAR -> RadialGradient(
-                    (width / 2).toFloat(),
-                    (height / 2).toFloat(),
-                    interpolatedValue.coerceAtLeast(0.1f), // Ensure radius is positive
-                    colors,
-                    null, // Positions: null means evenly distributed
-                    Shader.TileMode.CLAMP
-                )
+            gradientShader =
+                when (orientation) {
+                    Orientation.CIRCULAR -> {
+                        RadialGradient(
+                            (width / 2).toFloat(),
+                            (height / 2).toFloat(),
+                            interpolatedValue.coerceAtLeast(0.1f), // Ensure radius is positive
+                            colors,
+                            null, // Positions: null means evenly distributed
+                            Shader.TileMode.CLAMP,
+                        )
+                    }
 
-                Orientation.VERTICAL -> LinearGradient(
-                    0f,
-                    0f,
-                    0f,
-                    interpolatedValue.coerceAtLeast(0.1f), // Ensure height is positive
-                    colors,
-                    null,
-                    Shader.TileMode.CLAMP
-                )
+                    Orientation.VERTICAL -> {
+                        LinearGradient(
+                            0f,
+                            0f,
+                            0f,
+                            interpolatedValue.coerceAtLeast(0.1f), // Ensure height is positive
+                            colors,
+                            null,
+                            Shader.TileMode.CLAMP,
+                        )
+                    }
 
-                Orientation.HORIZONTAL -> LinearGradient(
-                    0f,
-                    0f,
-                    interpolatedValue.coerceAtLeast(0.1f), // Ensure width is positive
-                    0f,
-                    colors,
-                    null,
-                    Shader.TileMode.CLAMP
-                )
-            }
+                    Orientation.HORIZONTAL -> {
+                        LinearGradient(
+                            0f,
+                            0f,
+                            interpolatedValue.coerceAtLeast(0.1f), // Ensure width is positive
+                            0f,
+                            colors,
+                            null,
+                            Shader.TileMode.CLAMP,
+                        )
+                    }
+                }
             paint.shader = gradientShader
         }
 
