@@ -1,12 +1,15 @@
 name: Build and Attach ALL Debug APKs to Release
 
 on:
+  # Triggers the workflow when a new release is published
   release:
     types: [published]
 
 jobs:
   build_and_attach:
     runs-on: ubuntu-latest
+    
+    # Only run this job if the release is not a pre-release or draft
     if: github.event.release.prerelease == false && github.event.release.draft == false
 
     steps:
@@ -24,35 +27,39 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: 🔨 Build ALL Debug APKs
+        # This command runs the 'assembleDebug' task across all subprojects/modules
         run: |
-          # This command builds the debug variant for ALL application modules found in the project.
-          # The resulting APKs will be scattered in their respective module build directories.
           ./gradlew assembleDebug
 
-      # Define the path to ALL generated APK files
-      # This step finds all files ending in -debug.apk within the build/outputs/apk/debug folders across the repo.
+      # NOTE: This step is fixed to correctly output multi-line file paths for the next action.
       - name: 📌 Define ALL APK Paths
         id: apk_paths
         run: |
-          # Finds all debug APKs in a standard Android project structure and saves them as a multi-line string.
-          # We use a glob search pattern here to find all of them.
-          FIND_COMMAND=$(find . -path '*/build/outputs/apk/debug/*-debug.apk' -type f)
+          echo "🔎 Searching for APKs..."
           
-          # We escape the newline characters for proper output handling in GitHub Actions
-          ESCAPED_PATHS="${FIND_COMMAND//$'\n'/%0A}"
+          # Find all debug APKs in standard output directories (*/build/outputs/apk/debug/*-debug.apk)
+          APK_FILES=$(find . -path '*/build/outputs/apk/debug/*-debug.apk' -type f)
           
-          echo "APK_FILES=$ESCAPED_PATHS" >> $GITHUB_OUTPUT
-          
-      - name: 📝 Show built APK paths
-        run: |
-          echo "Found the following APKs to upload:"
-          echo "${{ steps.apk_paths.outputs.APK_FILES }}"
+          if [ -z "$APK_FILES" ]; then
+            echo "::warning::No debug APKs found in the standard build paths."
+            echo "APK_FILES=" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Found the following APKs:"
+            echo "$APK_FILES"
+            
+            # Use the EOF delimiter to output a multi-line string with true newlines
+            echo "APK_FILES<<EOF" >> $GITHUB_OUTPUT
+            echo "$APK_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
 
-      # Upload ALL the built APKs as release assets
       - name: 📤 Upload ALL APKs to Release Assets
+        # Using the recommended v2 of the action
         uses: softprops/action-gh-release@v2
-        if: steps.apk_paths.outputs.APK_FILES != ''
+        if: steps.apk_paths.outputs.APK_FILES != '' # Only run if APKs were found
         with:
-          # This variable now contains all paths, separated by newlines
+          # The 'files' input receives the newline-separated list of paths
           files: ${{ steps.apk_paths.outputs.APK_FILES }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Added based on your previous logs to allow re-running and replacing files
+          overwrite_files: true
