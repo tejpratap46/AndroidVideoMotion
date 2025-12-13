@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
-import com.tejpratapsingh.motion.metadataextractor.SocialMeta
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer

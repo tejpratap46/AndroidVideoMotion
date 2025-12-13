@@ -28,6 +28,7 @@ activityComposeVersion = "1.12.1"
 composeBomVersion = "2025.12.00"
 navigationComposeVersion = "2.9.6"
 ktlint = "14.0.1"
+runtimeVersion = "1.10.0"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -75,6 +76,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
@@ -90,6 +92,7 @@ androidx = [
     "androidx-constraintlayout",
     "androidx-core-ktx",
     "androidx-appcompat",
+    "androidx-activity",
     "androidx-lifecycle-runtime-ktx",
     "androidx-work-runtime-ktx"
 ]
@@ -134,5 +137,6 @@ compose = [
     "androidx-ui-graphics",
     "androidx-ui-tooling",
     "androidx-ui-tooling-preview",
-    "androidx-material3"
+    "androidx-material3",
+    "androidx-compose-runtime"
 ]

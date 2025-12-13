@@ -6,7 +6,7 @@ import com.tejpratapsingh.lyricsmaker.data.api.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.data.api.model.SearchQuery
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.motion.metadataextractor.SocialMeta
+import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

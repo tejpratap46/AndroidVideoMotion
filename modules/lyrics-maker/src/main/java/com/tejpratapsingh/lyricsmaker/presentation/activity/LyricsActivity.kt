@@ -8,8 +8,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
-import com.tejpratapsingh.motion.metadataextractor.ShareReceiverActivity
-import com.tejpratapsingh.motion.metadataextractor.SocialMeta
+import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
+import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer

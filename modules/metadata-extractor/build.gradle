@@ -29,6 +29,10 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 afterEvaluate {
@@ -42,19 +46,14 @@ afterEvaluate {
 }
 
 dependencies {
-
-    implementation libs.androidx.core.ktx
-
-    implementation libs.androidx.appcompat
-    implementation libs.google.android.material
-    implementation libs.androidx.constraintlayout
+    implementation libs.bundles.androidx
+    implementation libs.bundles.material
 
     implementation project(path: ':modules:core')
 
     implementation libs.bundles.ktor
     implementation libs.jsoup
     implementation libs.androidx.activity
-    implementation libs.androidx.constraintlayout
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
