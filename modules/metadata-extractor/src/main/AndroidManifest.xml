@@ -5,7 +5,7 @@
 
     <application>
         <activity
-            android:name=".ShareReceiverActivity"
+            android:name=".presentation.ShareReceiverActivity"
             android:label="@string/motion_video"
             android:exported="true">
             <intent-filter>

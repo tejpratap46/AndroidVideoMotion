@@ -18,7 +18,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.compose.AppNavHost
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.AnimatorTheme
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
-import com.tejpratapsingh.motion.metadataextractor.ShareReceiverActivity
+import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import kotlinx.coroutines.launch
 
 class SearchActivity : ComponentActivity() {
