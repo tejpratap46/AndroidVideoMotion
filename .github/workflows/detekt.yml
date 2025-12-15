@@ -1,0 +1,21 @@
+name: detekt
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/detekt.yml
+      - 'src/**/*.kt'
+      - '**/*.kts'      # fixed: include kts in subdirs
+      - '**/*.kt'       # optional: catch kt files outside src/
+  workflow_dispatch:   # optional: allows manual runs from Actions UI
+
+jobs:
+   detekt:
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: "checkout"
+        uses: actions/checkout@v4
+
+       - name: "detekt"
+        uses: natiginfo/action-detekt-all@2.0.0
