@@ -15,7 +15,7 @@ on:
 
      steps:
        - name: "checkout"
-         uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
        - name: "detekt"
          uses: natiginfo/action-detekt-all@2.0.0-alpha.1
