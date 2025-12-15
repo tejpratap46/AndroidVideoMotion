@@ -9,7 +9,7 @@ on:
       - '**/*.kt'       # optional: catch kt files outside src/
   workflow_dispatch:   # optional: allows manual runs from Actions UI
 
- jobs:
+jobs:
    detekt:
      runs-on: ubuntu-latest
 
