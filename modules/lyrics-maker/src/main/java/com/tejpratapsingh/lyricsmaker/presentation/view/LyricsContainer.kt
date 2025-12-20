@@ -14,6 +14,7 @@ import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.client.AlbumArtFetcher
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.motion.imageloader.ImageLoader
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
@@ -24,7 +25,12 @@ import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.suspendCoroutine
 
 class LyricsContainer(
     context: Context,
@@ -46,6 +52,7 @@ class LyricsContainer(
     private val progress: SeekBar
     private val fakeChartView: FakeAudioChartView
     override val effects: List<MotionEffect> = emptyList()
+    private val viewScope = MainScope()
 
     init {
         super.startFrame = startFrame
@@ -72,13 +79,11 @@ class LyricsContainer(
         }
 
         ivAlbumArt.apply {
-            runBlocking {
+            viewScope.launch {
                 if (image != null) {
-                    val client = HttpClient(CIO)
                     Log.i(TAG, "Using image from social meta: $image")
-                    setImageBitmap(client.fetchBitmap(image))
-                    client.close()
-                    return@runBlocking
+                    ImageLoader.loadImage(context,image).into(this@apply)
+
                 } else {
                     Log.i(TAG, "Fetching from musicbrainz")
                     AlbumArtFetcher
@@ -87,8 +92,9 @@ class LyricsContainer(
                             songName.split(" - ")[1],
                         )?.let { url ->
                             Log.i(TAG, "cover art found: $url")
-                            setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
-                            AlbumArtFetcher.close()
+                            ImageLoader.loadImage(context,url).into(this@apply)
+//                            setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
+//                            AlbumArtFetcher.close()
                         }
                 }
             }
@@ -130,4 +136,9 @@ class LyricsContainer(
     }
 
     override fun getViewBitmap(): Bitmap = this.toBitmap()
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        viewScope.cancel()
+    }
 }

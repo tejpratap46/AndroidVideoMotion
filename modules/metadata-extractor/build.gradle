@@ -50,6 +50,7 @@ dependencies {
     implementation libs.bundles.material
 
     implementation project(path: ':modules:core')
+    implementation project(path: ':modules:imageloader')
 
     implementation libs.bundles.ktor
     implementation libs.jsoup

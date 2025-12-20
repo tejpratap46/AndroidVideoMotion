@@ -1,6 +1,8 @@
 package com.tejpratapsingh.lyricsmaker.presentation.activity
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
 import com.tejpratapsingh.lyricsmaker.presentation.compose.AppNavHost
+import com.tejpratapsingh.lyricsmaker.presentation.compose.Screen
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.AnimatorTheme
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
@@ -49,6 +53,7 @@ class SearchActivity : ComponentActivity() {
                     AppNavHost(
                         viewModel = lyricsViewModel,
                         modifier = Modifier.padding(innerPadding),
+                       startDestination = Screen.Home.route
                     )
                 }
             }
@@ -60,6 +65,14 @@ class SearchActivity : ComponentActivity() {
                 lyricsViewModel.query.value = it.title ?: it.description ?: ""
                 lyricsViewModel.fetchLyrics()
             }
+        }
+    }
+
+    companion object {
+        fun startActivity(context: Context) {
+            context.startActivity(
+                Intent(context, SearchActivity::class.java)
+            )
         }
     }
 }

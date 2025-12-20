@@ -9,4 +9,6 @@ import kotlinx.serialization.Serializable
 data class SyncedLyricFrame(
     val frame: Int,
     val text: String,
-) : Parcelable
+) : Parcelable{
+    fun line() = String.format("%d:%s",frame,text)
+}
