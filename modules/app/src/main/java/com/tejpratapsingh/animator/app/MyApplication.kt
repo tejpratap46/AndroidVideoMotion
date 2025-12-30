@@ -7,7 +7,7 @@ import com.tejpratapsingh.motionlib.tensorflow.TensorFlowImageProcessor
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        NotificationFactory.Companion.createNotificationChannels(this)
+        NotificationFactory.createNotificationChannels(this)
 
 //        PyTorchImageProcessor.init(applicationContext)
         TensorFlowImageProcessor.init(applicationContext)

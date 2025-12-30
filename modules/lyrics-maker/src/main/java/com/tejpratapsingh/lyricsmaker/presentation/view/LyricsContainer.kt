@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.lyricsmaker.R
@@ -42,7 +43,7 @@ class LyricsContainer(
     private val ivAlbumArt: ImageView
     private val tvLyricsLine1: TextView
     private val tvLyricsLine2: TextView
-    private val progress: ProgressBar
+    private val progress: SeekBar
     private val fakeChartView: FakeAudioChartView
     override val effects: List<MotionEffect> = emptyList()
 
