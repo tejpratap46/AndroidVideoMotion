@@ -4,9 +4,7 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17" // Use 17 for modern Android apps
-    }
+    "ghcr.io/NordcomInc/devcontainer-features/android-sdk:1": {}
   },
   "customizations": {
     "vscode": {
