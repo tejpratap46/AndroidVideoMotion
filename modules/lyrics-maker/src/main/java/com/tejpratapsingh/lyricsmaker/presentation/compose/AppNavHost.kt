@@ -30,7 +30,7 @@ fun AppNavHost(
                 viewModel = viewModel,
                 modifier = modifier,
                 onLyricsSelected = {
-                    viewModel.selectedLyricResponse = it
+                    viewModel.selectedLyric.tryEmit(it)
                     navController.navigate(Screen.Lyrics.route)
                 },
             )

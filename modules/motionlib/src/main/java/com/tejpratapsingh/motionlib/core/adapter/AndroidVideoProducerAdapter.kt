@@ -10,6 +10,7 @@ import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
 import com.tejpratapsingh.motionlib.core.infra.AndroidVideoGenerator
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.util.Locale
 
@@ -24,12 +25,11 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
 
     override suspend fun produceVideo(
         context: Context,
-        motionConfig: MotionConfig,
         motionComposerView: MotionView,
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?,
+        progressListener: (suspend (Int, Bitmap) -> Unit)?,
     ): File {
         Log.i(TAG, "produceVideo: starting")
         if (outputFile.exists()) {
@@ -41,6 +41,8 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
             subDir.deleteRecursively() // Clear old frames
         }
         subDir.mkdirs() // Create the directory if it doesn't exist
+
+        val motionConfig: MotionConfig = provideCurrentConfig()
 
         for (i in 1..totalFrames) {
             Log.d(TAG, "produceVideo: frame $i")
@@ -71,7 +73,6 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
             inputDir = subDir,
             motionAudio = motionAudio,
             outputFile = outputFile,
-            motionConfig = motionConfig,
         )
 
         return outputFile

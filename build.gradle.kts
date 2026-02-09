@@ -7,14 +7,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath libs.ktlint.gradle
+        classpath(libs.ktlint.gradle)
     }
 }
+
 plugins {
     alias(libs.plugins.ktlint)
 }
+
 ktlint {
-    android.set(true)     // set true for Android projects
+    android.set(true) // set true for Android projects
     outputToConsole.set(true)
     ignoreFailures.set(false)
     enableExperimentalRules.set(false)

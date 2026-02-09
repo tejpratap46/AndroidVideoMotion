@@ -88,7 +88,7 @@ abstract class MotionWorker(
      * @param currentProgress The number of frames processed so far.
      * @param bitmap The current frame/bitmap being processed.
      */
-    abstract fun onProgress(
+    abstract suspend fun onProgress(
         totalFrames: Int,
         currentProgress: Int,
         bitmap: Bitmap,
@@ -100,7 +100,7 @@ abstract class MotionWorker(
      *
      * @param videoFile The generated video file.
      */
-    abstract fun onCompleted(videoFile: File)
+    abstract suspend fun onCompleted(videoFile: File)
 
     /**
      * Optional: Called if an exception occurs during doWork.
@@ -112,17 +112,14 @@ abstract class MotionWorker(
         // Default implementation does nothing, subclasses can override.
     }
 
+    abstract suspend fun getOutputFile(): File
+
     private suspend fun generateVideo(
         motionVideoProducer: MotionVideoProducer,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?,
+        progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
         withContext(Dispatchers.IO) {
-            val outputFile =
-                File.createTempFile(
-                    "motion_video_out_", // More descriptive prefix
-                    ".mp4",
-                    applicationContext.cacheDir, // Use cacheDir for temp files that can be cleared
-                )
+            val outputFile = getOutputFile()
             Log.d(
                 TAG,
                 "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}",

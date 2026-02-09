@@ -15,7 +15,6 @@ import java.io.File
 
 open class MotionVideoProducer(
     val context: Context,
-    val motionConfig: MotionConfig,
     val videoProducerAdapter: VideoProducerAdapter,
     val motionComposerView: MotionComposerView,
     val motionAudio: List<MotionAudio> = emptyList(),
@@ -29,13 +28,11 @@ open class MotionVideoProducer(
         @JvmStatic
         fun with(
             context: Context,
-            config: MotionConfig,
             plugins: List<MotionPlugin> = emptyList(),
             motionAudio: List<MotionAudio> = emptyList(),
             videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
         ) = MotionVideoProducer(
             context = context,
-            motionConfig = config,
             videoProducerAdapter = videoProducerAdapter,
             motionComposerView =
                 MotionComposerView(
@@ -43,11 +40,7 @@ open class MotionVideoProducer(
                     plugins = plugins,
                 ),
             motionAudio = motionAudio,
-        ).also {
-            MotionConfig.aspectRatio = config.aspectRatio
-            MotionConfig.fps = config.fps
-            MotionConfig.outputQuality = config.outputQuality
-        }
+        )
     }
 
     override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup {
@@ -70,7 +63,7 @@ open class MotionVideoProducer(
     override suspend fun produceVideo(
         context: Context,
         outputFile: File,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)?,
+        progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
         withContext(Dispatchers.IO) {
             // Use Dispatchers.Default for CPU-bound work
@@ -80,7 +73,6 @@ open class MotionVideoProducer(
 
             videoProducerAdapter.produceVideo(
                 context = context,
-                motionConfig = motionConfig,
                 motionComposerView = motionComposerView,
                 motionAudio = motionAudio,
                 totalFrames = totalFrames,

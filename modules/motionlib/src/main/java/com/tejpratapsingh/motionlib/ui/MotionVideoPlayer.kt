@@ -8,7 +8,9 @@ import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionAudio
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +30,9 @@ class MotionVideoPlayer(
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var playbackJob: Job? = null
 
-    private val playbackDelayMs = 1000L / motionVideoProducer.motionConfig.fps
+    private val motionConfig: MotionConfig = provideCurrentConfig()
+
+    private val playbackDelayMs = 1000L / motionConfig.fps
 
     private var isPlaying = false
 

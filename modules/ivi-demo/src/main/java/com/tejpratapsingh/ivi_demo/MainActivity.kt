@@ -9,13 +9,13 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.setCurrentConfig
 
 class MainActivity : PreviewActivity() {
     val video by lazy {
         MotionVideoProducer
             .with(
                 context = applicationContext,
-                config = motionConfig,
             ).addMotionViewToSequence(motionView = motionView)
     }
 
@@ -31,6 +31,10 @@ class MainActivity : PreviewActivity() {
             startFrame = 1,
             endFrame = 72,
         )
+    }
+
+    init {
+        setCurrentConfig(motionConfig)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

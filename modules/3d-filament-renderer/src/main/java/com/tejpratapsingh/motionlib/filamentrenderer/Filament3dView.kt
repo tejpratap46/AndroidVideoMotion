@@ -21,9 +21,9 @@ import com.google.android.filament.Viewport
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.Utils
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.nio.ByteBuffer
 
 class Filament3dView(
@@ -67,8 +67,8 @@ class Filament3dView(
         Utils.init()
         surfaceTexture = SurfaceTexture(0)
         surfaceTexture.setDefaultBufferSize(
-            MotionConfig.aspectRatio.width,
-            MotionConfig.aspectRatio.height,
+            provideCurrentConfig().aspectRatio.width,
+            provideCurrentConfig().aspectRatio.height,
         )
         surface = Surface(surfaceTexture)
         engine = Engine.create()
@@ -78,7 +78,12 @@ class Filament3dView(
         view.scene = scene
         renderer = engine.createRenderer()
         view.viewport =
-            Viewport(0, 0, MotionConfig.aspectRatio.width, MotionConfig.aspectRatio.height)
+            Viewport(
+                0,
+                0,
+                provideCurrentConfig().aspectRatio.width,
+                provideCurrentConfig().aspectRatio.height,
+            )
     }
 
     private fun loadModel() {
@@ -107,7 +112,7 @@ class Filament3dView(
         camera = engine.createCamera(cameraEntity)
         camera.setProjection(
             45.0,
-            (MotionConfig.aspectRatio.width / MotionConfig.aspectRatio.height).toDouble(),
+            provideCurrentConfig().aspectRatio.width.toDouble() / provideCurrentConfig().aspectRatio.height.toDouble(),
             0.1,
             1000.0,
             Camera.Fov.VERTICAL,

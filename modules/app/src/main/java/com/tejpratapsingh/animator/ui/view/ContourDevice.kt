@@ -5,13 +5,13 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Gravity
 import androidx.core.graphics.toColorInt
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
 class ContourDevice(
@@ -49,10 +49,14 @@ class ContourDevice(
         )
 
         contourHeightOf {
-            MotionConfig.aspectRatio.height.toYInt()
+            provideCurrentConfig()
+                .aspectRatio.height
+                .toYInt()
         }
         contourWidthOf {
-            MotionConfig.aspectRatio.width.toXInt()
+            provideCurrentConfig()
+                .aspectRatio.width
+                .toXInt()
         }
     }
 

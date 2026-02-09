@@ -70,11 +70,22 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private fun handleSharedText(intent: Intent) {
         val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        Log.d("ShareReceiver", "Received text: $sharedText")
+        val links = extractLinks(sharedText ?: "")
 
-        sharedText?.let { sharedText ->
-            Log.d("ShareReceiver", "Received text: $sharedText")
-            metadataViewModel.getMetaData(sharedText)
+        links.firstOrNull()?.let { sharedLink ->
+            Log.d("ShareReceiver", "Received link: $sharedLink")
+            metadataViewModel.getMetaData(sharedLink)
         }
+    }
+
+    private fun extractLinks(text: String): List<String> {
+        // A robust regex for URLs that includes http, https, or ftp protocols
+        val urlRegex = Regex("""\b(?:https?|ftp)://\S+\b""")
+
+        // Find all matches and map them to their string values
+        val matches = urlRegex.findAll(text).map { it.value }.toList()
+        return matches
     }
 
     private fun observerMetaData() {

@@ -12,10 +12,6 @@ class SlideRightToLeftEffect(
     override val startFrame: Int,
     override val endFrame: Int,
 ) : MotionEffect {
-    private val TAG by lazy {
-        "SlideRightToLeftEffect"
-    }
-
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) motionView
         if (frame !in startFrame..endFrame) motionView

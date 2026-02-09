@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.core.graphics.scale
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -63,13 +64,14 @@ class AndroidVideoGenerator {
         bitmaps: List<Bitmap> = emptyList(),
         inputDir: File? = null,
         outputFile: File,
-        motionConfig: MotionConfig,
         motionAudio: List<MotionAudio> = emptyList(),
     ) {
         if (bitmaps.isEmpty() && inputDir == null) {
             Log.w(TAG, "No bitmaps provided. Cannot generate video.")
             return
         }
+
+        val motionConfig: MotionConfig = provideCurrentConfig()
 
         var mediaCodec: MediaCodec? = null
         var mediaMuxer: MediaMuxer? = null

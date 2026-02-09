@@ -11,6 +11,7 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -21,11 +22,17 @@ import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
+import com.tejpratapsingh.motionstore.extensions.createProjectFile
+import com.tejpratapsingh.motionstore.tables.createOrSaveProject
+import com.tejpratapsingh.motionstore.tables.provideCurrentProject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.URLConnection
@@ -45,6 +52,13 @@ class LyricsMotionWorker(
     private val completedNotificationBuilder: NotificationCompat.Builder by lazy {
         NotificationFactory.getRenderCompleteNotification(appContext)
     }
+
+    private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val wakeLock: PowerManager.WakeLock =
+        powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "MyApp::MyWakelockTag",
+        )
 
     private fun createForegroundInfo(
         progressNotificationId: Int,
@@ -71,6 +85,12 @@ class LyricsMotionWorker(
         return createForegroundInfo(progressNotificationId, notification)
     }
 
+    override suspend fun getOutputFile(): File =
+        withContext(Dispatchers.Unconfined) {
+            val motionProject = provideCurrentProject()
+            applicationContext.createProjectFile(motionProject)
+        }
+
     override fun getMotionVideo(inputData: Data): MotionVideoProducer =
         getLyricsVideoProducer(
             applicationContext = appContext,
@@ -79,7 +99,7 @@ class LyricsMotionWorker(
             image = inputData.getString(IMAGE),
         )
 
-    override fun onProgress(
+    override suspend fun onProgress(
         totalFrames: Int,
         currentProgress: Int,
         bitmap: Bitmap,
@@ -109,8 +129,12 @@ class LyricsMotionWorker(
         setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
     }
 
-    override fun onCompleted(videoFile: File) {
+    override suspend fun onCompleted(videoFile: File) {
         Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
+
+        val motionProject = provideCurrentProject()
+        Log.i(TAG, "onCompleted: $motionProject")
+//        applicationContext.asLyricsApp().database.createOrSaveProject(motionProject)
 
         // Cancel the progress notification
         notificationManager.cancel(progressNotificationId)
@@ -136,8 +160,7 @@ class LyricsMotionWorker(
                         "Open Video",
                         pendingOpenFileIntent,
                     ),
-                ).setAutoCancel(true) // Dismiss notification when tapped (if no content intent set)
-                .build()
+                ).build()
 
         updateNotification(completedNotificationId, completedNotification)
     }
@@ -150,7 +173,7 @@ class LyricsMotionWorker(
         notification: Notification,
     ) {
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastNotificationUpdateTime < 500) {
+        if (currentTime - lastNotificationUpdateTime < 1000) {
             return
         }
         lastNotificationUpdateTime = currentTime

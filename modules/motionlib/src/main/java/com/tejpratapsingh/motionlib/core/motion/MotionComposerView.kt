@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 open class MotionComposerView(
     context: Context,
@@ -26,7 +27,8 @@ open class MotionComposerView(
     }
 
     init {
-        this.layout(0, 0, MotionConfig.aspectRatio.width, MotionConfig.aspectRatio.height)
+        val config: MotionConfig = provideCurrentConfig()
+        this.layout(0, 0, config.aspectRatio.width, config.aspectRatio.height)
     }
 
     override fun forFrame(frame: Int): MotionView {

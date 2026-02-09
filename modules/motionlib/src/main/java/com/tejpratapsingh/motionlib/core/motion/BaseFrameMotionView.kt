@@ -7,10 +7,9 @@ import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
-import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 abstract class BaseFrameMotionView
     @JvmOverloads
@@ -79,8 +78,8 @@ abstract class BaseFrameMotionView
             widthMeasureSpec: Int,
             heightMeasureSpec: Int,
         ) {
-            val desiredWidth = MotionConfig.aspectRatio.width
-            val desiredHeight = MotionConfig.aspectRatio.height
+            val desiredWidth = provideCurrentConfig().aspectRatio.width
+            val desiredHeight = provideCurrentConfig().aspectRatio.height
             setMeasuredDimension(desiredWidth, desiredHeight)
             getChildAt(0)?.measure(
                 MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),

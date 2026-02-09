@@ -11,8 +11,11 @@ import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionstore.tables.MotionProject
+import com.tejpratapsingh.motionstore.tables.provideCurrentProject
+import com.tejpratapsingh.motionstore.tables.setCurrentProject
 
 class LyricsActivity : PreviewActivity() {
     companion object {
@@ -54,6 +57,9 @@ class LyricsActivity : PreviewActivity() {
         get() = ShareReceiverActivity.readMetadataFromIntent(intent)
 
     private val video by lazy {
+        setCurrentProject(
+            provideCurrentProject().copy(name = song),
+        )
         getLyricsVideoProducer(
             applicationContext = applicationContext,
             song = song,
@@ -75,7 +81,7 @@ class LyricsActivity : PreviewActivity() {
                 Rendering video for \"$song\" with ${lyrics.size} lines of lyrics.
                 Start Frame: $start
                 End Frame: ${getMotionVideo().totalFrames}
-                Duration: ${(end - start)} frames (${(end - start) / MotionConfig.fps} seconds)
+                Duration: ${(end - start)} frames (${(end - start) / provideCurrentConfig().fps} seconds)
                 """.trimIndent(),
             ).setPositiveButton("OK") { dialog, _ ->
                 LyricsMotionWorker.startWork(

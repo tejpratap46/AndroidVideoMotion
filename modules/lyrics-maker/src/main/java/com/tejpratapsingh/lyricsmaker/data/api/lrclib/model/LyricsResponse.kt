@@ -1,22 +1,32 @@
-package com.tejpratapsingh.lyricsmaker.data.api.model
+package com.tejpratapsingh.lyricsmaker.data.api.lrclib.model
 
 import android.os.Parcelable
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import java.util.Locale
 
-@Serializable
 @Parcelize
 data class LyricsResponse(
+    @SerializedName("id")
     val id: Int,
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("trackName")
     val trackName: String,
+    @SerializedName("artistName")
     val artistName: String,
-    val albumName: String? = null,
-    val duration: Float? = null,
-    val instrumental: Boolean = false,
-    val plainLyrics: String? = null,
-    val syncedLyrics: String? = null,
+    @SerializedName("albumName")
+    val albumName: String?,
+    @SerializedName("duration")
+    val duration: Double,
+    @SerializedName("instrumental")
+    val instrumental: Boolean,
+    @SerializedName("plainLyrics")
+    val plainLyrics: String?,
+    @SerializedName("syncedLyrics")
+    val syncedLyrics: String?,
 ) : Parcelable {
     fun getLyrics(): String =
         if (syncedLyrics.isNullOrEmpty()) {
@@ -26,7 +36,7 @@ data class LyricsResponse(
         }
 
     fun getReadableDuration(): String {
-        val totalSeconds = (duration ?: 0f).toInt()
+        val totalSeconds = duration.toInt()
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format(Locale.getDefault(), "%02d min and %02d sec", minutes, seconds)

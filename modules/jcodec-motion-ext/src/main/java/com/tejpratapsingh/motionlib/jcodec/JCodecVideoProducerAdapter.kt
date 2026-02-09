@@ -8,6 +8,7 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
@@ -18,16 +19,16 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
 
     override suspend fun produceVideo(
         context: Context,
-        motionConfig: MotionConfig,
         motionComposerView: MotionView,
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
-        progressListener: ((Int, Bitmap) -> Unit)?,
+        progressListener: (suspend (Int, Bitmap) -> Unit)?,
     ): File {
         if (outputFile.exists()) {
             outputFile.delete()
         }
+        val motionConfig: MotionConfig = provideCurrentConfig()
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
         try {
             for (i in 1..totalFrames) {

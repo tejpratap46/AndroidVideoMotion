@@ -4,9 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.utils.extractAllVideoFrames
 import com.tejpratapsingh.motionlib.utils.getVideoFpsWithRetriever
 import kotlin.math.roundToLong
@@ -38,10 +38,14 @@ class VideoFrameView(
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
         contourHeightOf {
-            MotionConfig.aspectRatio.height.toYInt()
+            provideCurrentConfig()
+                .aspectRatio.height
+                .toYInt()
         }
         contourWidthOf {
-            MotionConfig.aspectRatio.width.toXInt()
+            provideCurrentConfig()
+                .aspectRatio.width
+                .toXInt()
         }
     }
 
