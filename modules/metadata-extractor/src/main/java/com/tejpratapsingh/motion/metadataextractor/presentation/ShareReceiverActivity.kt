@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.tejpratapsingh.motion.imageloader.ImageLoader
 import com.tejpratapsingh.motion.metadataextractor.data.MetaDataResult
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motion.metadataextractor.databinding.ActivityShareReceiverBinding
@@ -117,8 +118,7 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private fun loadImage(url: String) {
         lifecycleScope.launch {
-            val image = metadataViewModel.downloadImage(url)
-            binding.ivImage.setImageBitmap(image)
+            ImageLoader.loadImage(this@ShareReceiverActivity, url).into(binding.ivImage)
         }
     }
 }

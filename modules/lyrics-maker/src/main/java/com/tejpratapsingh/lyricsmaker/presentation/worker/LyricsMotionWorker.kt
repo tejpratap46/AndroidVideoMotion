@@ -24,8 +24,13 @@ import androidx.work.WorkerParameters
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
+import com.tejpratapsingh.motion.ongoing.domain.ProjectManager
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.URLConnection
@@ -111,7 +116,14 @@ class LyricsMotionWorker(
 
     override fun onCompleted(videoFile: File) {
         Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
-
+        CoroutineScope(Dispatchers.IO).launch {
+            with(ProjectManager) {
+                with(songProject) {
+                    savedFilePath = videoFile.absolutePath
+                }
+                saveProject()
+            }
+        }
         // Cancel the progress notification
         notificationManager.cancel(progressNotificationId)
 

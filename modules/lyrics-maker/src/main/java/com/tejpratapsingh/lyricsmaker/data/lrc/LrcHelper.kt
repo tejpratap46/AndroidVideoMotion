@@ -1,5 +1,7 @@
 package com.tejpratapsingh.lyricsmaker.data.lrc
 
+import android.util.Log
+
 object LrcHelper {
     fun getSyncedLyrics(
         lrcContent: String,
@@ -18,12 +20,14 @@ object LrcHelper {
         offsetFrames: Int = 0,
         parser: LrcParser = LrcParser(),
     ): List<SyncedLyricFrame> {
+        Log.d("getSyncedLyricsWithFrameOffset", "lrcContentString: $lrcContent")
         val parsedResult = parser.parse(lrcContent)
 
         return parsedResult
             .map {
                 val frame =
                     ((it.time / (1000.0 / fps)).toInt() - offsetFrames).coerceAtLeast(0) // avoid negative frames
+                Log.d("getSyncedLyricsWithFrameOffset", "(frame,text) - ($frame,${it.text})")
                 SyncedLyricFrame(
                     frame = frame,
                     text = it.text,

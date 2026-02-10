@@ -50,6 +50,7 @@ data class RangeSelection(
 
 @Composable
 fun SyncedLyricsSelector(
+    lyricsList : List<SyncedLyricFrame>?,
     viewModel: LyricsViewModel,
     modifier: Modifier = Modifier,
     onSelectionChanged: (List<SyncedLyricFrame>) -> Unit = {},
@@ -58,11 +59,15 @@ fun SyncedLyricsSelector(
     val listState = rememberLazyListState()
     val haptics = LocalHapticFeedback.current
     var selection by remember { mutableStateOf<RangeSelection?>(null) }
-
+    val lyrics: List<SyncedLyricFrame> = if (lyricsList.isNullOrEmpty()){
+        viewModel.lyrics
+    }else{
+        lyricsList
+    }
     Column(modifier = modifier.fillMaxSize()) {
         // Selection summary bar
         if (selection != null) {
-            val selected = viewModel.lyrics.subList(selection!!.minIndex, selection!!.maxIndex + 1)
+            val selected = lyrics.subList(selection!!.minIndex, selection!!.maxIndex + 1)
             Surface(tonalElevation = 2.dp) {
                 Row(
                     modifier =
@@ -91,7 +96,7 @@ fun SyncedLyricsSelector(
             onSelectionChanged(selected)
         }
 
-        if (viewModel.lyrics.isEmpty()) {
+        if (lyrics.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Text("No Lyrics Selected", modifier = Modifier.align(Alignment.Center))
             }
@@ -101,7 +106,7 @@ fun SyncedLyricsSelector(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
-                itemsIndexed(viewModel.lyrics) { index, line ->
+                itemsIndexed(lyrics) { index, line ->
                     val isSelected = selection?.contains(index) == true
 
                     Row(
