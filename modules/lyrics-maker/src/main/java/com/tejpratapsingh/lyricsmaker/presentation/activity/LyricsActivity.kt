@@ -11,6 +11,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
+import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionstore.tables.MotionProject
@@ -58,7 +59,7 @@ class LyricsActivity : PreviewActivity() {
 
     private val video by lazy {
         setCurrentProject(
-            provideCurrentProject().copy(name = song),
+            provideCurrentProject(id = song.md5()).copy(name = song),
         )
         getLyricsVideoProducer(
             applicationContext = applicationContext,

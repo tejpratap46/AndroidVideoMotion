@@ -12,7 +12,8 @@
         style="@style/Widget.MaterialComponents.LinearProgressIndicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:indeterminate="true" />
+        android:indeterminate="true"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_image"
@@ -36,6 +37,9 @@
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:imeOptions="actionNext"
+            android:lines="1"
             android:padding="16dp" />
 
     </com.google.android.material.textfield.TextInputLayout>

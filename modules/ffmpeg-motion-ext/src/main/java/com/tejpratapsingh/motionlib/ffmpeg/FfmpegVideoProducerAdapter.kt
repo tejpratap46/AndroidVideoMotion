@@ -14,13 +14,14 @@ import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.util.Locale
+import java.util.UUID
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
     companion object {
         private const val TAG = "FfmpegVideoProducerAdap"
     }
 
-    private val subDirName = "motion_frames"
+    private val subDirName by lazy { UUID.randomUUID().toString() }
 
     override suspend fun produceVideo(
         context: Context,

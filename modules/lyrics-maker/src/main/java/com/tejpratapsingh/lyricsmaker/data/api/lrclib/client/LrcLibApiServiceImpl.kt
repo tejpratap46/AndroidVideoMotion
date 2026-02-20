@@ -19,7 +19,7 @@ class LrcLibApiServiceImpl(
     private val client: OkHttpClient,
     private val gson: Gson,
 ) : LrcLibApiService {
-    private val baseUrl: String = "https://lrclib.net/api"
+    private val baseUrl: String = "https://lrclib-proxy.tej.workers.dev/api"
 
     override suspend fun search(params: SearchParams): Result<List<LyricsResponse>> =
         withContext(Dispatchers.IO) {

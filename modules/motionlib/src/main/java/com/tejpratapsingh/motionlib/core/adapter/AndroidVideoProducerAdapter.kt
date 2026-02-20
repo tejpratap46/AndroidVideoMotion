@@ -13,13 +13,14 @@ import com.tejpratapsingh.motionlib.core.infra.AndroidVideoGenerator
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.util.Locale
+import java.util.UUID
 
 class AndroidVideoProducerAdapter : VideoProducerAdapter {
     companion object {
         private const val TAG = "AndroidVideoProducerAda"
     }
 
-    private val subDirName = "motion_frames"
+    private val subDirName by lazy { UUID.randomUUID().toString() }
 
     private val androidVideoGenerator = AndroidVideoGenerator()
 

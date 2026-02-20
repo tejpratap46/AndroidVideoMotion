@@ -2,35 +2,53 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
 import com.tejpratapsingh.lyricsmaker.presentation.activity.LyricsActivity
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
+import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
+import com.tejpratapsingh.motionstore.tables.MotionProject
 
 sealed class Screen(
     val route: String,
 ) {
-    object Home : Screen("home")
+    object Projects : Screen("projects")
+
+    object Search : Screen("search")
 
     object Lyrics : Screen("lyrics")
 }
 
 @Composable
 fun AppNavHost(
-    viewModel: LyricsViewModel,
+    navController: NavHostController,
+    currentScreen: Screen = Screen.Projects,
+    projectsViewModel: ProjectsViewModel,
+    onProjectClick: (MotionProject) -> Unit = {},
+    lyricsViewModel: LyricsViewModel,
     modifier: Modifier,
 ) {
-    val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(route = Screen.Home.route) {
+    NavHost(navController = navController, startDestination = currentScreen.route) {
+        composable(route = Screen.Projects.route) {
+            ProjectsRoute(
+                viewModel = projectsViewModel,
+                onCreateNew = {
+                    navController.navigate(Screen.Search.route)
+                },
+                onProjectClick = onProjectClick,
+                modifier = modifier,
+            )
+        }
+        composable(route = Screen.Search.route) {
             SearchScreen(
-                viewModel = viewModel,
+                viewModel = lyricsViewModel,
                 modifier = modifier,
                 onLyricsSelected = {
-                    viewModel.selectedLyric.tryEmit(it)
+                    lyricsViewModel.selectedLyric.tryEmit(it)
                     navController.navigate(Screen.Lyrics.route)
                 },
             )
@@ -38,17 +56,17 @@ fun AppNavHost(
 
         composable(route = Screen.Lyrics.route) {
             SyncedLyricsSelector(
-                viewModel = viewModel,
+                viewModel = lyricsViewModel,
                 modifier = modifier,
                 onSelectionChanged = { selectedLyrics ->
-                    viewModel.selectedLyrics = selectedLyrics
+                    lyricsViewModel.selectedLyrics = selectedLyrics
                 },
                 onFinalize = {
                     LyricsActivity.start(
                         context = navController.context,
-                        song = viewModel.selectedSongName,
-                        lyrics = viewModel.selectedLyrics.ensureArrayList(),
-                        socialMeta = viewModel.socialMeta.value,
+                        song = lyricsViewModel.selectedSongName,
+                        lyrics = lyricsViewModel.selectedLyrics.ensureArrayList(),
+                        socialMeta = lyricsViewModel.socialMeta.value,
                     )
                 },
             )

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -70,12 +71,16 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private fun handleSharedText(intent: Intent) {
         val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-        Log.d("ShareReceiver", "Received text: $sharedText")
+        Log.d(TAG, "Received text: $sharedText")
         val links = extractLinks(sharedText ?: "")
 
         links.firstOrNull()?.let { sharedLink ->
-            Log.d("ShareReceiver", "Received link: $sharedLink")
+            Log.d(TAG, "Received link: $sharedLink")
             metadataViewModel.getMetaData(sharedLink)
+        } ?: run {
+            Log.w(TAG, "No links found in shared text")
+            Toast.makeText(this, "No link found in shared text", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -102,7 +107,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                     binding.tvTitle.setText(result.metaData.title ?: "No Title Found")
 
                     binding.btnNext.isEnabled = true
-                    binding.btnNext.setOnClickListener {
+                    val onDone = {
                         startActivity(
                             Intent(ACTIVITY_INTENT_ACTION).apply {
                                 putExtra(
@@ -113,6 +118,17 @@ class ShareReceiverActivity : AppCompatActivity() {
                             },
                         )
                         finish()
+                    }
+
+                    binding.btnNext.setOnClickListener { onDone() }
+
+                    binding.tvTitle.setOnEditorActionListener { _, actionId, _ ->
+                        if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                            onDone()
+                            true
+                        } else {
+                            false
+                        }
                     }
                 }
 

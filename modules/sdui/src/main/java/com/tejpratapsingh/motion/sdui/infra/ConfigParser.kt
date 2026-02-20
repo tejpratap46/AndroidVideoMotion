@@ -7,7 +7,7 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 fun MotionConfig.toJsonObject(): JsonObject =
     Gson()
         .toJsonTree(
-            mapOf<String, Any>(
+            mapOf(
                 "aspectRatio" to aspectRatio.toJsonObject(),
                 "fps" to fps,
                 "outputQuality" to outputQuality,
