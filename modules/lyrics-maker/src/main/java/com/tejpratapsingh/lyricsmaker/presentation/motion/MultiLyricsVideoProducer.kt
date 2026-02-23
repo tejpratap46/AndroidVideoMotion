@@ -7,6 +7,7 @@ import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
 
@@ -23,10 +24,11 @@ fun getMultiLyricsVideoProducer(
             fps = 24,
         )
 
+    setCurrentConfig(motionConfig)
+
     val producer =
         MotionVideoProducer.with(
             context = applicationContext,
-            config = motionConfig,
             videoProducerAdapter = FfmpegVideoProducerAdapter(),
         )
 

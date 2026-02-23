@@ -1,0 +1,62 @@
+package com.tejpratapsingh.motionstore.dao
+
+import android.content.ContentValues
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import com.tejpratapsingh.motionstore.infra.DatabaseManager
+import com.tejpratapsingh.motionstore.tables.MotionProject
+
+class MotionProjectDao(
+    dbManager: DatabaseManager,
+) : BaseDao<MotionProject>(dbManager) {
+    companion object {
+        const val TABLE = "MotionProject"
+
+        const val COL_ID = "id"
+        const val COL_NAME = "name"
+        const val COL_PATH = "path"
+        const val COL_SDUI = "sdui"
+        const val COL_METADATA = "metadata"
+        const val COL_CREATED = "created"
+        const val COL_UPDATED = "updated"
+
+        const val SCHEMA = """
+            CREATE TABLE $TABLE (
+                $COL_ID STRING NOT NULL PRIMARY KEY,
+                $COL_NAME TEXT NOT NULL,
+                $COL_PATH TEXT NOT NULL,
+                $COL_SDUI TEXT,
+                $COL_METADATA TEXT,
+                $COL_CREATED INTEGER NOT NULL,
+                $COL_UPDATED INTEGER NOT NULL
+            )
+        """
+    }
+
+    override val tableName = TABLE
+
+    override val primaryKey: String
+        get() = COL_ID
+
+    override fun fromCursor(cursor: Cursor): MotionProject =
+        MotionProject(
+            id = cursor.getString(cursor.getColumnIndexOrThrow(COL_ID)),
+            name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
+            path = cursor.getString(cursor.getColumnIndexOrThrow(COL_PATH)),
+            sdui = cursor.getString(cursor.getColumnIndexOrThrow(COL_SDUI)),
+            metadata = cursor.getString(cursor.getColumnIndexOrThrow(COL_METADATA)),
+            created = cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED)),
+            updated = cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED)),
+        )
+
+    override fun toContentValues(entity: MotionProject): ContentValues =
+        ContentValues().apply {
+            put(COL_ID, entity.id)
+            put(COL_NAME, entity.name)
+            put(COL_PATH, entity.path)
+            put(COL_SDUI, entity.sdui)
+            put(COL_METADATA, entity.metadata)
+            put(COL_CREATED, entity.created)
+            put(COL_UPDATED, entity.updated)
+        }
+}

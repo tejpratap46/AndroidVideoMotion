@@ -7,6 +7,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 
 fun getLyricsVideoProducer(
@@ -23,6 +24,8 @@ fun getLyricsVideoProducer(
             fps = 24,
         )
 
+    setCurrentConfig(motionConfig)
+
     val motionView =
         LyricsContainer(
             context = applicationContext,
@@ -36,7 +39,6 @@ fun getLyricsVideoProducer(
     return MotionVideoProducer
         .with(
             context = applicationContext,
-            config = motionConfig,
             videoProducerAdapter = FfmpegVideoProducerAdapter(),
         ).addMotionViewToSequence(motionView = motionView)
 }

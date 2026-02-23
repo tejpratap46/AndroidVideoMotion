@@ -4,9 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 class MotionOpenGlView(
     context: Context,
@@ -29,8 +29,8 @@ class MotionOpenGlView(
         Object3DToBitmapRenderer(
             context = context,
             assetFileName = modelAssetPath,
-            width = MotionConfig.aspectRatio.width,
-            height = MotionConfig.aspectRatio.height,
+            width = provideCurrentConfig().aspectRatio.width,
+            height = provideCurrentConfig().aspectRatio.height,
             objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f),
         )
 

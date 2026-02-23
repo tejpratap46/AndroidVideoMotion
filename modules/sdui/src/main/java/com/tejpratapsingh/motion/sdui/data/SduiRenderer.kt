@@ -5,16 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.tejpratapsingh.motion.sdui.domain.ActionHandler
 import com.tejpratapsingh.motion.sdui.domain.ImageLoader
 import com.tejpratapsingh.motion.sdui.domain.ViewFactory
 import com.tejpratapsingh.motion.sdui.presentation.ContainerFactory
-import com.tejpratapsingh.motion.sdui.presentation.DefaultActionHandler
 import com.tejpratapsingh.motion.sdui.presentation.ImageFactory
 import com.tejpratapsingh.motion.sdui.presentation.TextFactory
 
 class SduiRenderer(
-    val actionHandler: ActionHandler = DefaultActionHandler(),
     val imageLoader: ImageLoader? = null,
 ) {
     private val gson = Gson()

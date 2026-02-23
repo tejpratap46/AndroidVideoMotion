@@ -2,10 +2,8 @@ package com.tejpratapsingh.motionlib.core.animation
 
 import android.animation.ArgbEvaluator
 import android.graphics.Color
-import android.util.Log
 import android.view.animation.Interpolator
 import androidx.annotation.ColorInt
-import com.tejpratapsingh.motionlib.BuildConfig
 
 object MotionInterpolator {
     private const val TAG = "MotionInterpolator"
@@ -52,14 +50,6 @@ object MotionInterpolator {
         // Calculate the final value based on the interpolated percentage
         val valueFromPercent =
             startValue + interpolatedFramePercent * (endValue - startValue)
-
-        // Logging can be expensive, consider using it only in debug builds or when necessary
-        if (BuildConfig.DEBUG) { // Example: Only log in debug builds
-            Log.d(
-                TAG,
-                "interpolateForRange: currentFrame: $currentFrame, framePercent: $framePercent, interpolatedFramePercent: $interpolatedFramePercent, valueFromPercent: $valueFromPercent",
-            )
-        }
 
         return valueFromPercent
     }

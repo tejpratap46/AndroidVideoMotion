@@ -19,4 +19,6 @@
     <string name="notification_render_complete_text">Video Rendering finished</string>
     <string name="title_activity_search">SearchActivity</string>
     <string name="back">Lyrics Backdrop</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Retry (%d)</string>
 </resources>

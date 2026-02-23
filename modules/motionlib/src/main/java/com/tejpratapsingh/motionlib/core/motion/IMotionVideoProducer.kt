@@ -12,6 +12,6 @@ interface IMotionVideoProducer {
     suspend fun produceVideo(
         context: Context,
         outputFile: File,
-        progressListener: ((progress: Int, bitmap: Bitmap) -> Unit)? = null,
+        progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)? = null,
     ): File
 }

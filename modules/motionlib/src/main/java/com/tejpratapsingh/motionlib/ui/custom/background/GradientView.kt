@@ -7,13 +7,13 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.OrientedMotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 enum class Orientation {
     HORIZONTAL,
@@ -60,10 +60,14 @@ class GradientView(
         // If the view *is* the size of motionConfig, then using width/height
         // directly in onDraw/onSizeChanged is also good.
         contourWidthOf {
-            MotionConfig.aspectRatio.width.toXInt()
+            provideCurrentConfig()
+                .aspectRatio.width
+                .toXInt()
         }
         contourHeightOf {
-            MotionConfig.aspectRatio.height.toYInt()
+            provideCurrentConfig()
+                .aspectRatio.height
+                .toYInt()
         }
     }
 
@@ -74,14 +78,6 @@ class GradientView(
         oldh: Int,
     ) {
         super.onSizeChanged(w, h, oldw, oldh)
-        // If valueRange depends on the view's actual dimensions:
-        /*
-        valueRange = when (orientation) {
-            Orientation.CIRCULAR -> Pair(first = 0f, second = w.toFloat().coerceAtLeast(1f))
-            Orientation.VERTICAL -> Pair(first = 0f, second = h.toFloat().coerceAtLeast(1f))
-            Orientation.HORIZONTAL -> Pair(first = 0f, second = w.toFloat().coerceAtLeast(1f))
-        }
-         */
         gradientShader = null // Invalidate shader if size changes affect it
     }
 

@@ -24,13 +24,15 @@ import com.tejpratapsingh.animator.notification.NotificationFactory
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URLConnection
 import java.util.Locale
 import java.util.UUID
 
 class SampleMotionWorker(
-    private val appContext: Context,
+    appContext: Context,
     parameters: WorkerParameters,
 ) : MotionWorker(appContext, parameters) {
     private val notificationManager = NotificationManagerCompat.from(appContext)
@@ -68,9 +70,19 @@ class SampleMotionWorker(
         return createForegroundInfo(progressNotificationId, notification)
     }
 
-    override fun getMotionVideo(inputData: Data): MotionVideoProducer = sampleMotionVideo(appContext)
+    override suspend fun getOutputFile(): File =
+        withContext(Dispatchers.Unconfined) {
+            File
+                .createTempFile(
+                    "motion_video_out_", // More descriptive prefix
+                    ".mp4",
+                    applicationContext.cacheDir, // Use cacheDir for temp files that can be cleared
+                )
+        }
 
-    override fun onProgress(
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer = sampleMotionVideo(applicationContext)
+
+    override suspend fun onProgress(
         totalFrames: Int,
         currentProgress: Int,
         bitmap: Bitmap,
@@ -100,7 +112,7 @@ class SampleMotionWorker(
         setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
     }
 
-    override fun onCompleted(videoFile: File) {
+    override suspend fun onCompleted(videoFile: File) {
         Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
 
         // Cancel the progress notification
@@ -147,7 +159,7 @@ class SampleMotionWorker(
         lastNotificationUpdateTime = currentTime
 
         if (ActivityCompat.checkSelfPermission(
-                appContext,
+                applicationContext,
                 Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
         ) {
@@ -165,8 +177,8 @@ class SampleMotionWorker(
     ): PendingIntent {
         val apkURI: Uri =
             FileProvider.getUriForFile(
-                appContext,
-                "${appContext.packageName}.fileprovider",
+                applicationContext,
+                "${applicationContext.packageName}.fileprovider",
                 videoFile,
             )
         intent.setDataAndType(
@@ -180,7 +192,7 @@ class SampleMotionWorker(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
         return PendingIntent.getActivity(
-            appContext,
+            applicationContext,
             0, // requestCode, consider making this unique if you have many such intents
             intent,
             pendingShareIntentFlags,

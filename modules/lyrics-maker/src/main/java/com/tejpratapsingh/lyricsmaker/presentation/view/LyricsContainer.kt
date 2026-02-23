@@ -6,14 +6,15 @@ import android.graphics.Color
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.lyricsmaker.R
-import com.tejpratapsingh.lyricsmaker.data.api.client.AlbumArtFetcher
+import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
+import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
@@ -46,6 +47,10 @@ class LyricsContainer(
     private val progress: SeekBar
     private val fakeChartView: FakeAudioChartView
     override val effects: List<MotionEffect> = emptyList()
+
+    private val okHttp = OkHttpProvider.httpClient
+    private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
+    private val repository = AlbumArtRepositoryImpl(remote)
 
     init {
         super.startFrame = startFrame
@@ -81,15 +86,15 @@ class LyricsContainer(
                     return@runBlocking
                 } else {
                     Log.i(TAG, "Fetching from musicbrainz")
-                    AlbumArtFetcher
-                        .fetchAlbumArtUrl(
-                            songName.split(" - ")[0],
-                            songName.split(" - ")[1],
-                        )?.let { url ->
-                            Log.i(TAG, "cover art found: $url")
-                            setImageBitmap(AlbumArtFetcher.fetchAlbumArtBitmap(url))
-                            AlbumArtFetcher.close()
-                        }
+                    val songDetails = songName.split(" - ")
+                    val url =
+                        repository.getAlbumArtUrl(
+                            songDetails[0],
+                            songDetails[1],
+                        )
+                    url?.let { repository.getAlbumArtBitmap(it) }?.also {
+                        setImageBitmap(it)
+                    }
                 }
             }
         }

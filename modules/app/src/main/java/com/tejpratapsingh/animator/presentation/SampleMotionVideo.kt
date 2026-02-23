@@ -8,6 +8,7 @@ import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
@@ -19,6 +20,8 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
             aspectRatio = VideoAspectRatio.Ratio9x16_480,
             fps = 30,
         )
+
+    setCurrentConfig(motionConfig)
 
     val assetManager = applicationContext.assets
     val files = assetManager.list(RenaultCar.imageAssetSubFolder)
@@ -108,7 +111,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     return MotionVideoProducer
         .with(
             context = applicationContext,
-            config = motionConfig,
             motionAudio = motionAudio,
         ).addMotionViewToSequence(motionView = motionView)
 }
