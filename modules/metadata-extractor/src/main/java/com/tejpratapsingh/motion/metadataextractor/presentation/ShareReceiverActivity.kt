@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motion.metadataextractor.presentation
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.EditorInfo
@@ -9,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -26,11 +26,7 @@ class ShareReceiverActivity : AppCompatActivity() {
         const val ACTIVITY_INTENT_ACTION = "com.tejpratapsingh.motion.metadataextractor.action.OPEN"
 
         fun readMetadataFromIntent(intent: Intent): SocialMeta? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableExtra(EXTRA_METADATA, SocialMeta::class.java)
-            } else {
-                intent.getParcelableExtra(EXTRA_METADATA) as SocialMeta?
-            }
+            IntentCompat.getParcelableExtra(intent, EXTRA_METADATA, SocialMeta::class.java)
     }
 
     private lateinit var binding: ActivityShareReceiverBinding
@@ -112,8 +108,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                             Intent(ACTIVITY_INTENT_ACTION).apply {
                                 putExtra(
                                     EXTRA_METADATA,
-                                    result.metaData
-                                        .copy(title = binding.tvTitle.text.toString()),
+                                    result.metaData.copy(title = binding.tvTitle.text.toString()),
                                 )
                             },
                         )
@@ -134,9 +129,7 @@ class ShareReceiverActivity : AppCompatActivity() {
 
                 is MetaDataResult.Error -> {
                     Log.e(TAG, "Received error", result.error)
-                    Toast
-                        .makeText(this, "Failed to fetch metadata", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(this, "Failed to fetch metadata", Toast.LENGTH_SHORT).show()
                 }
             }
         }

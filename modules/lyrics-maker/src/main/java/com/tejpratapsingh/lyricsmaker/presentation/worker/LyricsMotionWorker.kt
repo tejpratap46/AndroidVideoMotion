@@ -144,7 +144,7 @@ class LyricsMotionWorker(
 
         val motionProject = provideCurrentProject()
         Log.i(TAG, "onCompleted: $motionProject")
-        applicationContext.asLyricsApp().motionStore.upsert(motionProject)
+        applicationContext.asLyricsApp().motionStoreDao.upsert(motionProject)
 
         // Cancel the progress notification
         notificationManager.cancel(progressNotificationId)

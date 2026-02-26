@@ -37,6 +37,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import com.tejpratapsingh.motionstore.worker.SyncWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.net.URLConnection
@@ -44,7 +45,7 @@ import java.net.URLConnection
 class SearchActivity : ComponentActivity() {
     private val projectsViewModel: ProjectsViewModel by viewModels {
         ProjectsViewModelFactory(
-            applicationContext.asLyricsApp().motionStore,
+            applicationContext.asLyricsApp().motionStoreDao,
         )
     }
 
@@ -84,6 +85,10 @@ class SearchActivity : ComponentActivity() {
                         projectsViewModel = projectsViewModel,
                         onProjectClick = { motionProject ->
                             Log.i("AppNavHost", "AppNavHost: $motionProject")
+
+                            Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
+                            SyncWorker.scheduleImmediate(this@SearchActivity)
+
                             shareProjectFile(motionProject)
                         },
                         lyricsViewModel = lyricsViewModel,
@@ -111,6 +116,14 @@ class SearchActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 projectsViewModel.shareEvent.collect {
                     shareProjectFile(it)
+                }
+            }
+
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                projectsViewModel.syncEvent.collect {
+                    Log.d(TAG, "onCreate: syncEvent called")
+                    Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
+                    SyncWorker.scheduleImmediate(this@SearchActivity)
                 }
             }
         }
@@ -192,5 +205,9 @@ class SearchActivity : ComponentActivity() {
                 lyricsViewModel.searchLyrics(lyricsViewModel.query.value)
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "SearchActivity"
     }
 }

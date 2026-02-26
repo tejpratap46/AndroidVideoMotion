@@ -1,7 +1,9 @@
 [versions]
+firebaseBomVersion = "34.9.0"
+supabaseBomVersion = "3.4.0"
 constraintlayoutVersion = "2.2.1"
 contourVersion = "1.1.0"
-filamentAndroidVersion = "1.69.2"
+filamentAndroidVersion = "1.69.4"
 jcodecVersion = "0.2.5"
 jsoupVersion = "1.22.1"
 kotlinxCoroutinesCoreVersion = "1.10.2"
@@ -28,8 +30,10 @@ activityComposeVersion = "1.12.4"
 composeBomVersion = "2026.02.00"
 navigationComposeVersion = "2.9.7"
 ktlint = "14.0.1"
-runtimeVersion = "1.10.3"
+runtimeVersion = "1.10.4"
 composeCompilerVersion = "1.5.14"
+crashlyticsVersion = "3.0.6"
+googleServicesVersion = "4.4.4"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -39,12 +43,14 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 contour = { module = "app.cash.contour:contour", version.ref = "contourVersion" }
 filament-android = { module = "com.google.android.filament:filament-android", version.ref = "filamentAndroidVersion" }
 filament-utils-android = { module = "com.google.android.filament:filament-utils-android", version.ref = "filamentAndroidVersion" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 gltfio-android = { module = "com.google.android.filament:gltfio-android", version.ref = "filamentAndroidVersion" }
 google-android-material = { group = "com.google.android.material", name = "material", version.ref = "material_version" }
 
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle_runtime_ktx" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work_version" }
 
+google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodecVersion" }
 jcodec-android = { module = "org.jcodec:jcodec-android", version.ref = "jcodecVersion" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoupVersion" }
@@ -81,6 +87,16 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 
+supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabaseBomVersion" }
+supabase-auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt" }
+supabase-postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
+supabase-realtime-kt = { module = "io.github.jan-tennert.supabase:realtime-kt" }
+
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
 android-library = { id = "com.android.library", version.ref = "agpVersion" }
@@ -88,6 +104,8 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlinVersion" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesVersion" }
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsVersion" }
 
 [bundles]
 androidx = [
@@ -141,4 +159,16 @@ compose = [
     "androidx-ui-tooling-preview",
     "androidx-material3",
     "androidx-compose-runtime"
+]
+supabase = [
+    "supabase-auth-kt",
+    "supabase-postgrest-kt",
+    "supabase-realtime-kt",
+    "ktor-client-cio",
+]
+firebase = [
+    "firebase-auth",
+    "firebase-firestore",
+    "firebase-crashlytics",
+    "google-firebase-analytics"
 ]

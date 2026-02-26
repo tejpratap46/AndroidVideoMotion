@@ -45,6 +45,9 @@ jobs:
       - name: Ensure gradlew is executable
         run: chmod +x ./gradlew
 
+      - name: Decode google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | openssl base64 -d > modules/lyrics-maker/google-services.json
+
       - name: Build APK for module ${{ matrix.module }}
         # Using assembleRelease so you get APKs in build/outputs; if you prefer debug builds (always unsigned),
         # change to :${{ matrix.module }}:assembleDebug
@@ -71,7 +74,7 @@ jobs:
         shell: bash
 
       - name: Upload APK artifact for ${{ matrix.module }}
-        if: always()     # still run to ensure artifact (even if none found, action will create empty artifact) 
+        if: always()     # still run to ensure artifact (even if none found, action will create empty artifact)
         uses: actions/upload-artifact@v4
         with:
           # name artifact per module so each appears separately in Actions UI

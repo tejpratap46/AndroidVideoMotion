@@ -105,13 +105,13 @@ abstract class BaseDao<T>(
     // ── Read ─────────────────────────────────────────────────────────────────
 
     /** Fetch a single entity by primary key, or null if not found. */
-    fun findById(id: Long): T? =
+    fun findById(id: String): T? =
         db
             .query(
                 tableName,
                 null,
                 "$primaryKey = ?",
-                arrayOf(id.toString()),
+                arrayOf(id),
                 null,
                 null,
                 null,
@@ -150,7 +150,7 @@ abstract class BaseDao<T>(
 
     /** Update the row with [id]. Returns number of rows affected. */
     fun update(
-        id: Long,
+        id: String,
         entity: T,
     ): Int = db.update(tableName, toContentValues(entity), "$primaryKey = ?", arrayOf(id.toString()))
 
