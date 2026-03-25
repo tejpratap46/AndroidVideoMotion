@@ -4,7 +4,8 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/NordcomInc/devcontainer-features/android-sdk:1": {}
+    "ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {},
+    "ghcr.io/Evit15/devcontainer-features/adb-fastboot:1": {}
   },
   "customizations": {
     "vscode": {
