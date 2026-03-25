@@ -2,13 +2,15 @@ package com.tejpratapsingh.motionstore.dao
 
 import android.content.ContentValues
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.tejpratapsingh.motionstore.infra.DatabaseManager
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import com.tejpratapsingh.motionstore.tables.SyncTracker
 
 class MotionProjectDao(
     dbManager: DatabaseManager,
-) : BaseDao<MotionProject>(dbManager) {
+) : SyncableDao<MotionProject>(dbManager) {
     companion object {
         const val TABLE = "MotionProject"
 
@@ -28,7 +30,8 @@ class MotionProjectDao(
                 $COL_SDUI TEXT,
                 $COL_METADATA TEXT,
                 $COL_CREATED INTEGER NOT NULL,
-                $COL_UPDATED INTEGER NOT NULL
+                $COL_UPDATED INTEGER NOT NULL,
+                ${SyncTracker.COLUMNS_SQL}
             )
         """
     }
@@ -43,10 +46,11 @@ class MotionProjectDao(
             id = cursor.getString(cursor.getColumnIndexOrThrow(COL_ID)),
             name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
             path = cursor.getString(cursor.getColumnIndexOrThrow(COL_PATH)),
-            sdui = cursor.getString(cursor.getColumnIndexOrThrow(COL_SDUI)),
-            metadata = cursor.getString(cursor.getColumnIndexOrThrow(COL_METADATA)),
+            sdui = cursor.getString(cursor.getColumnIndexOrThrow(COL_SDUI))?.toJsonObject() ?: JsonObject(),
+            metadata = cursor.getString(cursor.getColumnIndexOrThrow(COL_METADATA))?.toJsonObject() ?: JsonObject(),
             created = cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED)),
             updated = cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED)),
+            syncTracker = cursor.readSyncTracker(),
         )
 
     override fun toContentValues(entity: MotionProject): ContentValues =
@@ -54,9 +58,40 @@ class MotionProjectDao(
             put(COL_ID, entity.id)
             put(COL_NAME, entity.name)
             put(COL_PATH, entity.path)
-            put(COL_SDUI, entity.sdui)
-            put(COL_METADATA, entity.metadata)
+            put(COL_SDUI, entity.sdui.toString())
+            put(COL_METADATA, entity.metadata.toString())
             put(COL_CREATED, entity.created)
             put(COL_UPDATED, entity.updated)
+            putSyncTracker(entity.syncTracker)
         }
+
+    override fun fromServerRow(
+        row: Map<String, Any?>,
+        localId: String,
+    ) = MotionProject(
+        id = localId,
+        name = row[COL_NAME] as String,
+        path = row[COL_PATH] as String,
+        sdui = (row[COL_SDUI] as? String)?.toJsonObject() ?: JsonObject(),
+        metadata = (row[COL_METADATA] as? String)?.toJsonObject() ?: JsonObject(),
+        created = (row[COL_CREATED] as Number).toLong(),
+        updated = (row[COL_UPDATED] as Number).toLong(),
+        syncTracker =
+            SyncTracker(
+                isDirty = false,
+                updatedBy = row[SyncTracker.COL_UPDATED_BY] as String,
+                createdOn = (row[SyncTracker.COL_CREATED_ON] as Number).toLong(),
+                updatedOn = (row[SyncTracker.COL_UPDATED_ON] as Number).toLong(),
+                serverId = row[SyncTracker.COL_SERVER_ID] as? String,
+                uploadedAt = (row[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong(),
+            ),
+    )
+
+    private fun String.toJsonObject(): JsonObject {
+        return try {
+            JsonParser.parseString(this).asJsonObject
+        } catch (e: Exception) {
+            JsonObject()
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import androidx.compose.foundation.BorderStroke
@@ -24,6 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CloudDone
+import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
@@ -41,7 +42,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,6 +77,7 @@ fun ProjectsRoute(
         onProjectClick = onProjectClick,
         onDeleteProject = viewModel::deleteProject,
         onShareProject = viewModel::shareProject,
+        onSync = viewModel::syncProject,
         modifier = modifier,
     )
 }
@@ -91,6 +92,7 @@ fun ProjectsScreen(
     onProjectClick: (MotionProject) -> Unit,
     onDeleteProject: (MotionProject) -> Unit,
     onShareProject: (MotionProject) -> Unit,
+    onSync: (MotionProject) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PullToRefreshBox(
@@ -114,6 +116,7 @@ fun ProjectsScreen(
                     onClick = { onProjectClick(project) },
                     onDelete = { onDeleteProject(project) },
                     onShare = { onShareProject(project) },
+                    onSync = { onSync(project) },
                 )
             }
         }
@@ -228,12 +231,14 @@ private fun ProjectCard(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onShare: () -> Unit,
+    onSync: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val thumbnail: Bitmap? = remember(project.id) { extractFirstFrame(context.createProjectFile(project).path) }
+    val thumbnail: Bitmap? =
+        remember(project.id) { extractFirstFrame(context.createProjectFile(project).path) }
 
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
@@ -286,24 +291,46 @@ private fun ProjectCard(
                         .padding(14.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                Box(
-                    modifier =
-                        Modifier
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(10.dp),
-                            ),
-                    contentAlignment = Alignment.Center,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
+                    // Left Item
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(10.dp),
+                                ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
 
+                    // Right Item - Sync button
+                    IconButton(
+                        onClick = onSync,
+                        modifier = Modifier.size(40.dp),
+                        colors =
+                            IconButtonDefaults.iconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.secondary,
+                            ),
+                    ) {
+                        Icon(
+                            imageVector = if (project.syncTracker.isDirty) Icons.Rounded.CloudOff else Icons.Rounded.CloudDone,
+                            contentDescription = if (project.syncTracker.isDirty) "Start sync" else "Synced",
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                }
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = project.name,

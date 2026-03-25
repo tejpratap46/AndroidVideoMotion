@@ -1,16 +1,22 @@
 package com.tejpratapsingh.motionstore.tables
 
+import com.google.gson.JsonObject
+import com.tejpratapsingh.motionstore.domain.SyncableEntity
+import com.tejpratapsingh.motionstore.infra.DeviceInfo
 import java.util.UUID
 
 data class MotionProject(
-    val id: String,
+    override val id: String,
     val name: String,
     val path: String,
-    val sdui: String? = null,
-    val metadata: String? = null,
+    val sdui: JsonObject = JsonObject(),
+    val metadata: JsonObject = JsonObject(),
     val created: Long = System.currentTimeMillis(),
     val updated: Long = System.currentTimeMillis(),
-)
+    override val syncTracker: SyncTracker = SyncTracker(updatedBy = DeviceInfo.id),
+) : SyncableEntity {
+    override fun withSyncTracker(tracker: SyncTracker) = copy(syncTracker = tracker)
+}
 
 private object ProjectStore {
     @Volatile
@@ -26,7 +32,6 @@ fun provideCurrentProject(id: String = UUID.randomUUID().toString()): MotionProj
         id = id,
         name = "",
         path = "/$id",
-        sdui = null,
     ).also {
         ProjectStore.motionProject = it
     }

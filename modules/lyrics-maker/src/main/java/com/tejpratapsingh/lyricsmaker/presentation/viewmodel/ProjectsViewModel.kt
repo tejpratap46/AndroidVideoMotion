@@ -1,5 +1,6 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -25,6 +26,9 @@ class ProjectsViewModel(
 
     private val _shareEvent = MutableSharedFlow<MotionProject>()
     val shareEvent: SharedFlow<MotionProject> = _shareEvent.asSharedFlow()
+
+    private val _syncEvent = MutableSharedFlow<MotionProject>()
+    val syncEvent: SharedFlow<MotionProject> = _syncEvent.asSharedFlow()
 
     init {
         loadProjects()
@@ -56,6 +60,17 @@ class ProjectsViewModel(
         viewModelScope.launch {
             _shareEvent.emit(project)
         }
+    }
+
+    fun syncProject(project: MotionProject) {
+        viewModelScope.launch {
+            Log.d(TAG, "syncProject: Called")
+            _syncEvent.emit(project)
+        }
+    }
+
+    companion object {
+        private const val TAG = "ProjectsViewModel"
     }
 }
 

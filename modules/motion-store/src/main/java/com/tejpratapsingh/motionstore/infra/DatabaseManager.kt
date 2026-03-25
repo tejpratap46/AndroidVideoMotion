@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionstore.infra
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 
 /**
@@ -90,7 +91,7 @@ class DatabaseManager private constructor(
             context: Context,
             databaseName: String = "app.db",
             version: Int = 1,
-            schemas: List<String> = listOf(MotionProjectDao.SCHEMA),
+            schemas: List<String> = listOf(MotionProjectDao.SCHEMA, DownloadedTrackerDao.SCHEMA),
             onUpgrade: ((db: SQLiteDatabase, oldVersion: Int, newVersion: Int) -> Unit)? = null,
         ): DatabaseManager =
             instance ?: synchronized(this) {
