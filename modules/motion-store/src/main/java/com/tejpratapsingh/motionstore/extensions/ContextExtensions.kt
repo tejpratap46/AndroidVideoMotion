@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motionstore.extensions
 
 import android.content.Context
-import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import java.io.File
 

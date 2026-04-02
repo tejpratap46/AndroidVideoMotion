@@ -33,6 +33,9 @@ class RestAdapter(
     private val baseUrl: String,
     private val authTokenProvider: suspend () -> String? = { null },
 ) : BackendAdapter {
+    override val userId: String?
+        get() = null
+
     override suspend fun fetchSince(
         tableName: String,
         since: Long,

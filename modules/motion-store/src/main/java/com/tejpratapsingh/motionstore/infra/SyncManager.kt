@@ -20,36 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Orchestrates the full bidirectional sync cycle for one or more tables.
- *
- * Each call to [sync] (or [syncTable]) executes the following steps:
- *
- *   DOWNLOAD PHASE
- *   ─────────────
- *   1. Read `downloadedTill` cursor from [DownloadedTrackerDao] for this table.
- *   2. Fetch all server rows with `uploadedAt > downloadedTill`,
- *      excluding rows from this device (`updatedBy == deviceId`).
- *   3. For each fetched row:
- *        a. Look up a local row with the same `serverId`.
- *        b. If no local row exists → INSERT (new data from server).
- *        c. If local row exists and server's `updatedOn` ≥ local `updatedOn` → UPDATE.
- *        d. If local row exists and local `updatedOn` is newer → SKIP (local wins).
- *   4. After all rows are saved, advance `downloadedTill` to the highest
- *      `uploadedAt` seen in this batch.
- *
- *   UPLOAD PHASE
- *   ─────────────
- *   5. Query all local rows where `isDirty = 1`.
- *   6. For each dirty row:
- *        a. If `serverId == null` → POST (CREATE) to the server.
- *        b. If `serverId != null` → PUT (UPDATE) to the server.
- *   7. On success, write the returned `serverId` (creates only) and `uploadedAt`
- *      back to the local row and clear `isDirty`.
- *
- * @param backend           The [BackendAdapter] implementation to use.
- * @param downloadedTracker DAO for persisting the download cursor.
- * @param scope             CoroutineScope in which sync jobs run.
- *                          Defaults to a SupervisorJob so one table failure
- *                          does not cancel others.
  */
 class SyncManager(
     private val backend: BackendAdapter,
@@ -60,23 +30,17 @@ class SyncManager(
         ),
 ) {
     private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
-
-    /** Observable sync status. Collect in your ViewModel to drive UI. */
     val status: StateFlow<SyncStatus> = _status
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    // Define the column name for the User ID
+    companion object {
+        const val COL_USER_ID = "userId"
+    }
 
-    /**
-     * Run a full sync cycle across all [daos] concurrently.
-     * Each table runs in its own coroutine under a [SupervisorJob], so a
-     * failure in one table does not block the others.
-     *
-     * @return List of [SyncResult], one per DAO/table.
-     */
-    suspend fun sync(daos: List<SyncableDao<*>>): List<SyncResult> {
-        _status.value = SyncStatus.Running(daos.joinToString { it.tableName })
+    suspend fun sync(daoList: List<SyncableDao<*>>): List<SyncResult> {
+        _status.value = SyncStatus.Running(daoList.joinToString { it.tableName })
         val results =
-            daos
+            daoList
                 .map { dao ->
                     scope.async { syncTable(dao) }
                 }.awaitAll()
@@ -84,9 +48,6 @@ class SyncManager(
         return results
     }
 
-    /**
-     * Sync a single table. Safe to call directly for targeted syncs.
-     */
     suspend fun <T : SyncableEntity> syncTable(dao: SyncableDao<T>): SyncResult {
         _status.value = SyncStatus.Running(dao.tableName)
         return try {
@@ -107,8 +68,6 @@ class SyncManager(
         }
     }
 
-    // ── Download ──────────────────────────────────────────────────────────────
-
     private suspend fun <T : SyncableEntity> download(dao: SyncableDao<T>): DownloadStats {
         val since = downloadedTracker.getDownloadedTill(dao.tableName)
 
@@ -127,38 +86,24 @@ class SyncManager(
         for (row in serverRows) {
             val serverId = row[SyncTracker.COL_SERVER_ID] as? String ?: continue
             val uploadedAt = (row[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong() ?: 0L
-
             val serverUpdatedOn = (row[SyncTracker.COL_UPDATED_ON] as? Number)?.toLong() ?: 0L
 
             val localEntity = dao.findByServerId(serverId)
 
             when {
-                // ── New row from server — never seen locally ──────────────────
                 localEntity == null -> {
-                    val entity =
-                        try {
-                            dao.fromServerRow(row)
-                        } catch (e: Exception) {
-                            throw SyncException.ParseError(dao.tableName, row, e)
-                        }
+                    val entity = dao.fromServerRow(row)
                     dao.insert(entity)
                     saved++
                 }
 
-                // ── Conflict: server wins (server is newer or equal) ──────────
                 serverUpdatedOn >= localEntity.syncTracker.updatedOn -> {
-                    val entity =
-                        try {
-                            dao.fromServerRow(row, localId = localEntity.id)
-                        } catch (e: Exception) {
-                            throw SyncException.ParseError(dao.tableName, row, e)
-                        }
+                    val entity = dao.fromServerRow(row, localId = localEntity.id)
                     dao.update(localEntity.id, entity)
                     conflicts++
                     saved++
                 }
 
-                // ── Conflict: local wins (local is newer) — skip ──────────────
                 else -> {
                     skipped++
                 }
@@ -167,7 +112,6 @@ class SyncManager(
             if (uploadedAt > highWaterMark) highWaterMark = uploadedAt
         }
 
-        // Advance cursor only after all rows are safely written
         if (highWaterMark > since) {
             downloadedTracker.setDownloadedTill(dao.tableName, highWaterMark)
         }
@@ -175,52 +119,42 @@ class SyncManager(
         return DownloadStats(saved, conflicts, skipped)
     }
 
-    // ── Upload ────────────────────────────────────────────────────────────────
-
     private suspend fun <T : SyncableEntity> upload(dao: SyncableDao<T>): UploadStats {
         val dirtyRows = dao.findDirty()
         var uploaded = 0
-        var failed = 0
+        val failed = 0
+
+        // Get the current userId once per upload batch
+        val currentUserId = backend.userId
 
         for (entity in dirtyRows) {
             try {
                 val payload =
                     dao.toServerMap(entity).toMutableMap().apply {
                         put(SyncTracker.COL_UPDATED_BY, DeviceInfo.id)
+                        // If a userId is available, include it in the payload
+                        currentUserId?.let { put(COL_USER_ID, it) }
                     }
 
                 if (entity.syncTracker.serverId == null) {
-                    // ── CREATE ────────────────────────────────────────────────
                     val response = backend.create(dao.tableName, payload)
                     val serverId =
                         response[SyncTracker.COL_SERVER_ID] as? String
-                            ?: throw SyncException.NetworkError(
-                                "Server did not return '${SyncTracker.COL_SERVER_ID}' after create on '${dao.tableName}'",
-                            )
+                            ?: throw SyncException.NetworkError("Server missing ID")
                     val uploadedAt =
                         (response[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong()
                             ?: System.currentTimeMillis()
                     dao.markUploaded(entity.id, serverId, uploadedAt)
                 } else {
-                    // ── UPDATE ────────────────────────────────────────────────
-                    val response =
-                        backend.update(
-                            dao.tableName,
-                            entity.syncTracker.serverId!!,
-                            payload,
-                        )
+                    val response = backend.update(dao.tableName, entity.syncTracker.serverId!!, payload)
                     val uploadedAt =
                         (response[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong()
                             ?: System.currentTimeMillis()
                     dao.markSynced(entity.id, uploadedAt)
                 }
-
                 uploaded++
-            } catch (e: SyncException) {
-                // Log and continue — a single row failure must not abort the whole batch
-                failed++
             } catch (e: Exception) {
-                failed++
+                throw SyncException.NetworkError("Upload failed for ${dao.tableName}", e)
             }
         }
 

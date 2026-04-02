@@ -14,7 +14,6 @@ import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.tables.provideCurrentProject
 import com.tejpratapsingh.motionstore.tables.setCurrentProject
 
