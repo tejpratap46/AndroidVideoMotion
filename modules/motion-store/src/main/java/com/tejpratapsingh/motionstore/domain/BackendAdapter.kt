@@ -16,6 +16,12 @@ package com.tejpratapsingh.motionstore.domain
  */
 interface BackendAdapter {
     /**
+     * Optional user ID to include in synced data.
+     * Implementation varies (Firebase UID, Supabase UUID, etc.)
+     */
+    val userId: String?
+
+    /**
      * Fetch rows from [tableName] on the server where `uploadedAt > since`.
      * The server must exclude rows whose `updatedBy == deviceId` so a device
      * never downloads its own uploads back.

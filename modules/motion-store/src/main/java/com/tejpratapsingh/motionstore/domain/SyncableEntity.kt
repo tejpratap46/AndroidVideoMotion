@@ -1,6 +1,5 @@
 package com.tejpratapsingh.motionstore.domain
 
-import android.content.ContentValues
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 
 /**

@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionstore.infra
 import com.tejpratapsingh.motionstore.domain.BackendAdapter
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
@@ -47,6 +48,13 @@ import kotlinx.serialization.json.longOrNull
 class SupabaseAdapter(
     private val client: SupabaseClient,
 ) : BackendAdapter {
+    override val userId: String?
+        get() =
+            client.auth
+                .currentSessionOrNull()
+                ?.user
+                ?.id
+
     override suspend fun fetchSince(
         tableName: String,
         since: Long,

@@ -2,11 +2,9 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
 import com.tejpratapsingh.lyricsmaker.presentation.activity.LyricsActivity
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel

@@ -28,6 +28,13 @@ import kotlinx.coroutines.tasks.await
 class FirebaseAdapter(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
 ) : BackendAdapter {
+    override val userId: String?
+        get() =
+            com.google.firebase.auth.FirebaseAuth
+                .getInstance()
+                .currentUser
+                ?.uid
+
     fun convertNanosToTimestamp(totalNanos: Long): Timestamp {
         val seconds = totalNanos / 1_000_000_000L
         val remainingNanos = (totalNanos % 1_000_000_000L).toInt()

@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
-import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
@@ -165,12 +164,14 @@ class SyncWorkerFactory(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters,
-    ): ListenableWorker? {
-        return when (workerClassName) {
+    ): ListenableWorker? =
+        when (workerClassName) {
             SyncWorker::class.java.name -> {
                 SyncWorker(appContext, workerParameters, syncManager, daos)
             }
-            else -> null
+
+            else -> {
+                null
+            }
         }
-    }
 }

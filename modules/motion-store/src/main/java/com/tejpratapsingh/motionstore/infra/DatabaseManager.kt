@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
+import com.tejpratapsingh.motionstore.infra.DatabaseManager.Companion.init
 
 /**
  * Singleton that owns the [SQLiteOpenHelper] lifecycle and vends
