@@ -1,7 +1,7 @@
 package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
-import android.util.Log
+import timber.log.Timber
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
@@ -17,9 +17,6 @@ open class BaseContourMotionView(
     override val effects: List<MotionEffect> = emptyList(),
 ) : ContourLayout(context),
     MotionView {
-    companion object {
-        private const val TAG = "MotionView"
-    }
 
     @CallSuper
     override fun forFrame(frame: Int): MotionView {
@@ -33,7 +30,7 @@ open class BaseContourMotionView(
         }
         visibility = VISIBLE
 
-        Log.d(TAG, "forFrame: isVisible: $isVisible")
+        Timber.d("forFrame: isVisible: $isVisible")
 
         for (i in 0..this.childCount) {
             val view = this.getChildAt(i)

@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motionstore.worker
 
 import android.content.Context
-import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -20,6 +19,7 @@ import com.tejpratapsingh.motionstore.domain.SyncException
 import com.tejpratapsingh.motionstore.infra.SyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 /**
@@ -37,9 +37,9 @@ class SyncWorker(
     override suspend fun doWork(): Result =
         withContext(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Starting sync work (attempt $runAttemptCount)")
+                Timber.d("Starting sync work (attempt $runAttemptCount)")
                 val results = syncManager.sync(daos)
-                Log.d(TAG, "Sync completed successfully. Results: ${results.size} tables synced")
+                Timber.d("Sync completed successfully. Results: ${results.size} tables synced")
 
                 val anyNetworkFailure =
                     results.any { result ->
@@ -47,8 +47,7 @@ class SyncWorker(
                     }
 
                 if (anyNetworkFailure && runAttemptCount < MAX_ATTEMPTS) {
-                    Log.w(
-                        TAG,
+                    Timber.w(
                         "Network error detected in results. Retrying (attempt ${runAttemptCount + 1}/$MAX_ATTEMPTS)",
                     )
                     return@withContext Result.retry()
@@ -65,21 +64,19 @@ class SyncWorker(
 
                 Result.success(output)
             } catch (e: SyncException.NetworkError) {
-                Log.w(TAG, "Network error caught: ${e.message}", e)
+                Timber.w(e, "Network error caught: ${e.message}")
                 if (runAttemptCount < MAX_ATTEMPTS) {
                     Result.retry()
                 } else {
                     Result.failure(workDataOf(KEY_ERROR to e.message))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Unexpected error during sync: ${e.message}", e)
+                Timber.e(e, "Unexpected error during sync: ${e.message}")
                 Result.failure(workDataOf(KEY_ERROR to (e.message ?: "Unknown error")))
             }
         }
 
     companion object {
-        private const val TAG = "SyncWorker"
-
         const val TAG_PERIODIC = "sync_periodic"
         const val TAG_IMMEDIATE = "sync_immediate"
 

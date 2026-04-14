@@ -3,7 +3,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
@@ -26,6 +25,7 @@ import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 
 class LyricsContainer(
     context: Context,
@@ -35,9 +35,6 @@ class LyricsContainer(
     val lyrics: List<SyncedLyricFrame>,
     image: String? = null,
 ) : BaseFrameMotionView(context) {
-    companion object {
-        private const val TAG = "LyricsContainer"
-    }
 
     private val cvLyrics: ViewGroup
     private val tvSongName: TextView
@@ -80,12 +77,12 @@ class LyricsContainer(
             runBlocking {
                 if (image != null) {
                     val client = HttpClient(CIO)
-                    Log.i(TAG, "Using image from social meta: $image")
+                    Timber.i("Using image from social meta: $image")
                     setImageBitmap(client.fetchBitmap(image))
                     client.close()
                     return@runBlocking
                 } else {
-                    Log.i(TAG, "Fetching from musicbrainz")
+                    Timber.i("Fetching from musicbrainz")
                     val songDetails = songName.split(" - ")
                     val url =
                         repository.getAlbumArtUrl(

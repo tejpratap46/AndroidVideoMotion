@@ -2,11 +2,11 @@ package com.tejpratapsingh.ivi_demo.motion
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 
@@ -16,7 +16,6 @@ class Road(
     endFrame: Int,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
     companion object {
-        private const val TAG = "Road"
         const val imageAssetSubFolder = "road"
     }
 
@@ -67,7 +66,7 @@ class Road(
             imageView.setImageBitmap(bitmap)
             inputStream.close()
         } catch (e: IOException) {
-            Log.e(TAG, "Error loading image from asset: $imageName", e)
+            Timber.e(e, "Error loading image from asset: $imageName")
         }
 
         return this

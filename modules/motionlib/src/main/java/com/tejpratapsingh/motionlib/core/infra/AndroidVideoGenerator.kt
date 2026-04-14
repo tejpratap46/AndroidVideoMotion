@@ -8,19 +8,17 @@ import android.media.MediaCodecInfo
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import android.util.Log
 import androidx.core.graphics.scale
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 
 class AndroidVideoGenerator {
     companion object {
-        private const val TAG = "VideoGenerator"
-
         private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_MPEG4 // H.264
         private const val I_FRAME_INTERVAL = 5 // Keyframe interval in seconds
         private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
@@ -67,7 +65,7 @@ class AndroidVideoGenerator {
         motionAudio: List<MotionAudio> = emptyList(),
     ) {
         if (bitmaps.isEmpty() && inputDir == null) {
-            Log.w(TAG, "No bitmaps provided. Cannot generate video.")
+            Timber.w("No bitmaps provided. Cannot generate video.")
             return
         }
 
@@ -158,8 +156,7 @@ class AndroidVideoGenerator {
                         }
 
                         encoderStatus < 0 -> {
-                            Log.w(
-                                TAG,
+                            Timber.w(
                                 "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus",
                             )
                         }
@@ -189,7 +186,7 @@ class AndroidVideoGenerator {
                             mediaCodec.releaseOutputBuffer(encoderStatus, false)
 
                             if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                                Log.d(TAG, "End of stream reached for encoder output.")
+                                Timber.d("End of stream reached for encoder output.")
                                 break
                             }
                         }
@@ -214,13 +211,13 @@ class AndroidVideoGenerator {
 
             // Now copy audio samples into the muxer (timeline aligned by frames -> microseconds)
             if (motionAudio.isNotEmpty() && muxerAudioTrackIndices.isNotEmpty()) {
-                Log.d(TAG, "generateVideo: adding audio")
+                Timber.d("generateVideo: adding audio")
                 muxAudioTracks(mediaMuxer, motionAudio, motionConfig.fps, muxerAudioTrackIndices)
             }
 
-            Log.i(TAG, "Video generation complete: ${outputFile.absolutePath}")
+            Timber.i("Video generation complete: ${outputFile.absolutePath}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error generating video", e)
+            Timber.e(e, "Error generating video")
             if (outputFile.exists()) {
                 outputFile.delete()
             }
@@ -230,7 +227,7 @@ class AndroidVideoGenerator {
                 mediaCodec?.stop()
                 mediaCodec?.release()
             } catch (e: Exception) {
-                Log.e(TAG, "Error stopping/releasing MediaCodec", e)
+                Timber.e(e, "Error stopping/releasing MediaCodec")
             }
             try {
                 if (muxerStarted) {
@@ -238,7 +235,7 @@ class AndroidVideoGenerator {
                 }
                 mediaMuxer?.release()
             } catch (e: Exception) {
-                Log.e(TAG, "Error stopping/releasing MediaMuxer", e)
+                Timber.e(e, "Error stopping/releasing MediaMuxer")
             }
         }
     }
@@ -250,7 +247,7 @@ class AndroidVideoGenerator {
         fps: Int,
         audioTrackIndices: List<Int>,
     ) {
-        Log.d(TAG, "muxAudioTracks: adding audio")
+        Timber.d("muxAudioTracks: adding audio")
         val bufferSize = 1 * 1024 * 1024
         val buffer = ByteBuffer.allocate(bufferSize)
         val bufferInfo = MediaCodec.BufferInfo()
@@ -343,8 +340,7 @@ class AndroidVideoGenerator {
                 }
 
                 encoderStatus < 0 -> {
-                    Log.w(
-                        TAG,
+                    Timber.w(
                         "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus",
                     )
                 }
@@ -372,7 +368,7 @@ class AndroidVideoGenerator {
                     mediaCodec.releaseOutputBuffer(encoderStatus, false)
 
                     if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                        Log.d(TAG, "End of stream reached for encoder output (during drain).")
+                        Timber.d("End of stream reached for encoder output (during drain).")
                         break
                     }
                 }

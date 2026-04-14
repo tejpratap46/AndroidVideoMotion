@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.core.adapter
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
+import timber.log.Timber
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -16,9 +16,6 @@ import java.util.Locale
 import java.util.UUID
 
 class AndroidVideoProducerAdapter : VideoProducerAdapter {
-    companion object {
-        private const val TAG = "AndroidVideoProducerAda"
-    }
 
     private val subDirName by lazy { UUID.randomUUID().toString() }
 
@@ -32,7 +29,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         outputFile: File,
         progressListener: (suspend (Int, Bitmap) -> Unit)?,
     ): File {
-        Log.i(TAG, "produceVideo: starting")
+        Timber.i("produceVideo: starting")
         if (outputFile.exists()) {
             outputFile.delete()
         }
@@ -46,7 +43,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         val motionConfig: MotionConfig = provideCurrentConfig()
 
         for (i in 1..totalFrames) {
-            Log.d(TAG, "produceVideo: frame $i")
+            Timber.d("produceVideo: frame $i")
             val frameBitmap: Bitmap =
                 motionComposerView
                     .forFrame(i)
@@ -60,7 +57,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
                     String.format(Locale.getDefault(), "%05d.png", i),
                 )
             } catch (e: Exception) {
-                Log.e(TAG, "Error saving frame $i: ${e.message}", e)
+                Timber.e(e, "Error saving frame $i: ${e.message}")
                 // Decide how to handle this error, e.g., stop processing, skip frame, etc.
                 return outputFile // Or throw a custom exception
             }

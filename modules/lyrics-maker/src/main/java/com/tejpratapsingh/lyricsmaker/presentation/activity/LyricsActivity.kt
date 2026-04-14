@@ -19,8 +19,6 @@ import com.tejpratapsingh.motionstore.tables.setCurrentProject
 
 class LyricsActivity : PreviewActivity() {
     companion object {
-        private const val TAG = "LyricsActivity"
-
         const val SONG = "song"
         const val LYRICS = "lyrics"
 

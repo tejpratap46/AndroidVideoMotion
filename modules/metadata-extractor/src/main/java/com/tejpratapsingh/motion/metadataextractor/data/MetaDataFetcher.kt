@@ -1,6 +1,5 @@
 package com.tejpratapsingh.motion.metadataextractor.data
 
-import android.util.Log
 import com.tejpratapsingh.motionlib.core.extensions.DownloadException
 import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import io.ktor.client.HttpClient
@@ -8,19 +7,18 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import org.jsoup.Jsoup
+import timber.log.Timber
 
 class MetaDataFetcher {
-    private val TAG = "MetaDataFetcher"
-
     private val client = HttpClient(CIO)
 
     suspend fun extractSocialMetadata(url: String): MetaDataResult {
-        Log.d(TAG, "extractSocialMetadata: $url")
+        Timber.d("extractSocialMetadata: $url")
         try {
             val html = client.get(url).bodyAsText()
             val doc = Jsoup.parse(html)
 
-            Log.d(TAG, "extractSocialMetadata: downloaded")
+            Timber.d("extractSocialMetadata: downloaded")
 
             fun metaContent(vararg keys: String): String? {
                 for (key in keys) {
@@ -41,7 +39,7 @@ class MetaDataFetcher {
                 ),
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to extract social metadata for url: $url", e)
+            Timber.e(e, "Failed to extract social metadata for url: $url")
             return MetaDataResult.Error(
                 DownloadException("Failed to fetch metadata"),
             )

@@ -2,6 +2,7 @@ package com.tejpratapsingh.lyricsmaker
 
 import android.app.Application
 import android.content.Context
+import timber.log.Timber
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
@@ -27,6 +28,8 @@ class LyricsApp :
 
     override fun onCreate() {
         super.onCreate()
+
+        Timber.i("LyricsApp onCreate")
 
         FirebaseApp.initializeApp(this)
         SyncWorker.scheduleImmediate(this)

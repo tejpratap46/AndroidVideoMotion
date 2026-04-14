@@ -8,6 +8,8 @@ import com.tejpratapsingh.motionstore.domain.BackendAdapter
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 import kotlinx.coroutines.tasks.await
 
+import timber.log.Timber
+
 /**
  * [BackendAdapter] backed by Cloud Firestore.
  *
@@ -28,12 +30,14 @@ import kotlinx.coroutines.tasks.await
 class FirebaseAdapter(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
 ) : BackendAdapter {
+
     override val userId: String?
         get() =
             com.google.firebase.auth.FirebaseAuth
                 .getInstance()
                 .currentUser
                 ?.uid
+
 
     fun convertNanosToTimestamp(totalNanos: Long): Timestamp {
         val seconds = totalNanos / 1_000_000_000L
@@ -65,7 +69,7 @@ class FirebaseAdapter(
             }
         } catch (e: Exception) {
             // Log and return empty list if network is unavailable or host cannot be resolved
-            e.printStackTrace()
+            Timber.e(e, "fetchSince failed")
             emptyList()
         }
 
@@ -91,7 +95,7 @@ class FirebaseAdapter(
                 )
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "create failed")
             data // Return original data on failure or handle as needed
         }
 
@@ -123,7 +127,7 @@ class FirebaseAdapter(
                 )
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "update failed")
             data
         }
 
@@ -138,7 +142,7 @@ class FirebaseAdapter(
                 .delete()
                 .await()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "delete failed")
         }
     }
 }
