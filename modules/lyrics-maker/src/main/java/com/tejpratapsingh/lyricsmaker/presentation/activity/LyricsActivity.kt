@@ -21,8 +21,8 @@ class LyricsActivity : PreviewActivity() {
     companion object {
         private const val TAG = "LyricsActivity"
 
-        private const val SONG = "song"
-        private const val LYRICS = "lyrics"
+        const val SONG = "song"
+        const val LYRICS = "lyrics"
 
         fun start(
             context: Context,

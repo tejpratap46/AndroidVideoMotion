@@ -44,14 +44,11 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation project(path: ':modules:core')
     implementation libs.bundles.androidx
     implementation libs.bundles.material
 
-    implementation project(path: ':modules:core')
-
-    implementation libs.bundles.ktor
     implementation libs.jsoup
-    implementation libs.androidx.activity
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit

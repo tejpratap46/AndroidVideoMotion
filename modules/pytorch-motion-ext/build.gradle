@@ -40,7 +40,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation libs.androidx.core.ktx
     implementation libs.pytorch.android.lite
     implementation libs.pytorch.android.torchvision.lite
 
