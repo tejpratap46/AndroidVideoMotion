@@ -40,8 +40,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation libs.androidx.core.ktx
-
     implementation libs.bundles.smart.exception
 
     implementation project(path: ':modules:core')

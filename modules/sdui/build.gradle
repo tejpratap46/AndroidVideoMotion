@@ -40,11 +40,9 @@ afterEvaluate {
 }
 
 dependencies {
-
-    implementation libs.androidx.core.ktx
+    implementation project(path: ':modules:core')
     implementation libs.androidx.appcompat
 
-    implementation libs.gson
     implementation project(path: ':modules:motionlib')
 
     testImplementation libs.junit

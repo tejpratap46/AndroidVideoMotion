@@ -41,7 +41,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation libs.androidx.core.ktx
     implementation libs.bundles.filament
 
     api project(path: ':modules:motionlib')

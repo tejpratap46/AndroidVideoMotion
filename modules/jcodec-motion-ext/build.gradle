@@ -40,7 +40,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation libs.androidx.core.ktx
     implementation project(path: ':modules:core')
 
     implementation libs.bundles.jcodec

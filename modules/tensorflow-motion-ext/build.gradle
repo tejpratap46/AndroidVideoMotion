@@ -47,7 +47,6 @@ afterEvaluate {
 
 dependencies {
 
-    implementation libs.androidx.core.ktx
 //    implementation libs.tensorflow.lite
     implementation libs.tensorflow.lite.support
 

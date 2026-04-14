@@ -41,8 +41,6 @@ afterEvaluate {
 }
 
 dependencies {
-
-    implementation libs.androidx.core.ktx
     api project(path: ':modules:motionlib')
 
     testImplementation libs.junit

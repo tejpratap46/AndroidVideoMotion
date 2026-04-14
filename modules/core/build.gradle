@@ -26,8 +26,8 @@ android {
 }
 
 dependencies {
-    implementation libs.androidx.core.ktx
-    implementation libs.gson
+    api libs.androidx.core.ktx
+    api libs.gson
     api libs.bundles.ktor
 
     testImplementation libs.junit
