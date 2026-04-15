@@ -8,7 +8,6 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 import java.io.File
 
 fun TextView.getWebFont(url: String): Typeface? =
@@ -20,7 +19,7 @@ fun TextView.getWebFont(url: String): Typeface? =
             fontFile.writeBytes(response)
             Typeface.createFromFile(fontFile)
         } catch (e: Exception) {
-            Timber.e(e, "getWebFont failed for url: $url")
+            e.printStackTrace()
             null
         } finally {
             client.close()

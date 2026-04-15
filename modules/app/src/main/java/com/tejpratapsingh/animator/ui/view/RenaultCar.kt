@@ -1,6 +1,6 @@
 import android.content.Context
 import android.graphics.BitmapFactory
-import timber.log.Timber
+import android.util.Log
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -85,7 +85,7 @@ class RenaultCar(
 //            imageView.setImageBitmap(superResolutionPlugin.apply(bitmap))
             inputStream.close()
         } catch (e: IOException) {
-            Timber.e(e, "Error loading image from asset: $imageName")
+            Log.e("RenaultCar", "Error loading image from asset: $imageName", e)
         }
 
         return this

@@ -1,7 +1,7 @@
 package com.tejpratapsingh.lyricsmaker.presentation.motion
 
 import android.content.Context
-import timber.log.Timber
+import android.util.Log
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -16,7 +16,7 @@ fun getMultiLyricsVideoProducer(
     song: String,
     lyrics: List<SyncedLyricFrame>,
 ): MotionVideoProducer {
-    Timber.d("getMultiLyricsVideoProducer: ${lyrics.size}")
+    Log.d("MotionVideoProducer", "getMultiLyricsVideoProducer: ${lyrics.size}")
 
     val motionConfig =
         MotionConfig(

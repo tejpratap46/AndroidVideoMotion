@@ -11,7 +11,6 @@ import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 
 open class MotionVideoProducer(
@@ -24,6 +23,8 @@ open class MotionVideoProducer(
         private set
 
     companion object {
+        private const val TAG = "MotionVideo"
+
         @JvmStatic
         fun with(
             context: Context,
@@ -65,7 +66,6 @@ open class MotionVideoProducer(
         progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
         withContext(Dispatchers.IO) {
-            Timber.i("Starting video production: ${outputFile.name}, totalFrames: $totalFrames")
             // Use Dispatchers.Default for CPU-bound work
             if (outputFile.exists()) {
                 outputFile.delete()
@@ -80,7 +80,6 @@ open class MotionVideoProducer(
                 progressListener = progressListener,
             )
 
-            Timber.i("Video production completed: ${outputFile.absolutePath}")
             outputFile
         }
 }

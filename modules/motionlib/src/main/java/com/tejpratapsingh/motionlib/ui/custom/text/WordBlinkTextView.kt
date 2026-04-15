@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
 import android.os.Build
-import timber.log.Timber
+import android.util.Log
 import android.util.TypedValue
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
@@ -20,6 +20,9 @@ class WordBlinkTextView(
     endFrame: Int = -1,
     textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
+    private val TAG by lazy {
+        "WordBlinkTextView"
+    }
 
     init {
         textView.maxLines = 1
@@ -49,7 +52,7 @@ class WordBlinkTextView(
             )
         }
 
-        Timber.d("visibleWordCount: $visibleWordCount")
+        Log.d(TAG, "visibleWordCount: $visibleWordCount")
 
         textView.text = wordArray[maxOf(visibleWordCount - 1, 0)]
         textView.invalidate()

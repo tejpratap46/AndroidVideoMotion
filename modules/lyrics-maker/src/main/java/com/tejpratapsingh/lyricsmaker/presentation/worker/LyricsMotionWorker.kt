@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -32,7 +33,6 @@ import com.tejpratapsingh.motionstore.tables.provideCurrentProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import timber.log.Timber
 import java.io.File
 import java.net.URLConnection
 import java.util.Locale
@@ -95,22 +95,20 @@ class LyricsMotionWorker(
             applicationContext.createProjectFile(motionProject)
         }
 
-    override fun getMotionVideo(inputData: Data): MotionVideoProducer {
-        Timber.d("Creating MotionVideoProducer for song: ${inputData.getString(SONG)}")
-        return getLyricsVideoProducer(
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer =
+        getLyricsVideoProducer(
             applicationContext = appContext,
             song = inputData.getString(SONG) ?: "Unknown Song",
             lyrics = Json.decodeFromString(inputData.getString(LYRICS)!!),
             image = inputData.getString(IMAGE),
         )
-    }
 
     override suspend fun onProgress(
         totalFrames: Int,
         currentProgress: Int,
         bitmap: Bitmap,
     ) {
-        Timber.d("onProgress: $currentProgress / $totalFrames")
+        Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
 
         val percentage = (currentProgress.toDouble() / totalFrames) * 100
         val progressText =
@@ -142,10 +140,10 @@ class LyricsMotionWorker(
     }
 
     override suspend fun onCompleted(videoFile: File) {
-        Timber.d("onCompleted: Video saved to ${videoFile.absolutePath}")
+        Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
 
         val motionProject = provideCurrentProject()
-        Timber.i("onCompleted: $motionProject")
+        Log.i(TAG, "onCompleted: $motionProject")
         applicationContext.asLyricsApp().motionStoreDao.upsert(motionProject)
 
         // Cancel the progress notification
@@ -197,7 +195,7 @@ class LyricsMotionWorker(
         } else {
             // Handle the case where permission is not granted.
             // Maybe log an error or inform the user in a different way.
-            Timber.w("POST_NOTIFICATIONS permission not granted. Cannot show notification.")
+            Log.w(TAG, "POST_NOTIFICATIONS permission not granted. Cannot show notification.")
         }
     }
 
@@ -244,6 +242,8 @@ class LyricsMotionWorker(
     }
 
     companion object {
+        private const val TAG = "SampleMotionWorker"
+
         private const val SONG = "song"
         private const val LYRICS = "lyrics"
         private const val IMAGE = "image"
@@ -265,7 +265,6 @@ class LyricsMotionWorker(
             val workRequest =
                 OneTimeWorkRequestBuilder<LyricsMotionWorker>().setInputData(inputData).build()
 
-            Timber.i("Enqueuing LyricsMotionWorker with ID: ${workRequest.id}")
             WorkManager.getInstance(context).enqueue(workRequest)
             return workRequest.id
         }

@@ -29,7 +29,6 @@ dependencies {
     api libs.androidx.core.ktx
     api libs.gson
     api libs.bundles.ktor
-    api libs.timber
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit

@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.util.AttributeSet
-import timber.log.Timber
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
@@ -22,6 +22,10 @@ abstract class BaseFrameMotionView
         override var startFrame: Int = 0
         override var endFrame: Int = 0
         override var loop: Pair<Int, Int> = Pair(0, 0)
+
+        companion object {
+            private const val TAG = "MotionView"
+        }
 
         init {
             context.theme
@@ -55,7 +59,7 @@ abstract class BaseFrameMotionView
             }
             visibility = VISIBLE
 
-            Timber.d("forFrame: isVisible: $isVisible")
+            Log.d(TAG, "forFrame: isVisible: $isVisible")
 
             for (i in 0 until this.childCount) {
                 val view = this.getChildAt(i)

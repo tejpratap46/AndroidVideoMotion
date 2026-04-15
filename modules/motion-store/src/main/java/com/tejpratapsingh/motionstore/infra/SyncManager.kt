@@ -17,7 +17,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import timber.log.Timber
 
 /**
  * Orchestrates the full bidirectional sync cycle for one or more tables.
@@ -39,7 +38,6 @@ class SyncManager(
     }
 
     suspend fun sync(daoList: List<SyncableDao<*>>): List<SyncResult> {
-        Timber.i("Starting sync for ${daoList.size} tables")
         _status.value = SyncStatus.Running(daoList.joinToString { it.tableName })
         val results =
             daoList
@@ -51,7 +49,6 @@ class SyncManager(
     }
 
     suspend fun <T : SyncableEntity> syncTable(dao: SyncableDao<T>): SyncResult {
-        Timber.d("Syncing table: ${dao.tableName}")
         _status.value = SyncStatus.Running(dao.tableName)
         return try {
             val downloadResult = download(dao)
@@ -73,7 +70,6 @@ class SyncManager(
 
     private suspend fun <T : SyncableEntity> download(dao: SyncableDao<T>): DownloadStats {
         val since = downloadedTracker.getDownloadedTill(dao.tableName)
-        Timber.v("Downloading '${dao.tableName}' since $since")
 
         val serverRows =
             try {
@@ -117,17 +113,14 @@ class SyncManager(
         }
 
         if (highWaterMark > since) {
-            Timber.v("Updating high water mark for '${dao.tableName}' to $highWaterMark")
             downloadedTracker.setDownloadedTill(dao.tableName, highWaterMark)
         }
 
-        Timber.d("Download for '${dao.tableName}' finished: saved=$saved, conflicts=$conflicts, skipped=$skipped")
         return DownloadStats(saved, conflicts, skipped)
     }
 
     private suspend fun <T : SyncableEntity> upload(dao: SyncableDao<T>): UploadStats {
         val dirtyRows = dao.findDirty()
-        Timber.v("Found ${dirtyRows.size} dirty rows to upload for '${dao.tableName}'")
         var uploaded = 0
         val failed = 0
 
@@ -161,12 +154,10 @@ class SyncManager(
                 }
                 uploaded++
             } catch (e: Exception) {
-                Timber.e(e, "Upload failed for ${dao.tableName}")
                 throw SyncException.NetworkError("Upload failed for ${dao.tableName}", e)
             }
         }
 
-        Timber.d("Upload for '${dao.tableName}' finished: uploaded=$uploaded")
         return UploadStats(uploaded, failed)
     }
 

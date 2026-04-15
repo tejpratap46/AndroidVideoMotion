@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motionlib.activities
 
 import android.os.Bundle
-import timber.log.Timber
 import androidx.activity.ComponentActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -15,7 +14,6 @@ abstract class PreviewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.i("PreviewActivity onCreate")
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContentView(motionVideoPlayer)

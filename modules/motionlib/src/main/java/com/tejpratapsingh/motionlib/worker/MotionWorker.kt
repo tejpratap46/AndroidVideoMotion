@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.worker
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -9,7 +10,6 @@ import androidx.work.workDataOf
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 
 abstract class MotionWorker(
@@ -17,6 +17,7 @@ abstract class MotionWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
+        private const val TAG = "MotionWorker"
         const val PROGRESS_KEY = "progress"
         const val TOTAL_FRAMES_KEY = "total_frames"
         const val KEY_OUTPUT_VIDEO_URI = "output_video"
@@ -34,7 +35,7 @@ abstract class MotionWorker(
     }
 
     override suspend fun doWork(): Result {
-        Timber.d("Worker ${this.id}: Starting video generation.")
+        Log.d(TAG, "Worker ${this.id}: Starting video generation.")
         return try {
             val videoFile: File =
                 generateVideo(
@@ -57,7 +58,8 @@ abstract class MotionWorker(
                     },
                 )
             this.onCompleted(videoFile = videoFile)
-            Timber.d(
+            Log.d(
+                TAG,
                 "Worker ${this.workId}: Video generation successful: ${videoFile.absolutePath}",
             )
             val outputData =
@@ -66,7 +68,7 @@ abstract class MotionWorker(
                 )
             Result.success(outputData)
         } catch (e: Exception) {
-            Timber.e(e, "Worker ${this.workId}: Error during video generation.")
+            Log.e(TAG, "Worker ${this.workId}: Error during video generation.", e)
             onFailed(e) // Optional: abstract method for specific failure handling
             Result.failure()
         }
@@ -118,7 +120,8 @@ abstract class MotionWorker(
     ): File =
         withContext(Dispatchers.IO) {
             val outputFile = getOutputFile()
-            Timber.d(
+            Log.d(
+                TAG,
                 "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}",
             )
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
+import android.util.Log
 import android.view.Surface
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -23,7 +24,6 @@ import com.google.android.filament.utils.Utils
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import timber.log.Timber
 import java.nio.ByteBuffer
 
 class Filament3dView(
@@ -35,6 +35,10 @@ class Filament3dView(
 ) : FrameLayout(context),
     MotionView {
     override val effects: List<MotionEffect> = emptyList()
+
+    companion object {
+        private const val TAG = "Filament3dView"
+    }
 
     private lateinit var engine: Engine
     private lateinit var swapChain: SwapChain
@@ -128,7 +132,7 @@ class Filament3dView(
     }
 
     private fun rotateModel(angle: Float) {
-        Timber.i("rotateModel: $angle")
+        Log.i(TAG, "rotateModel: $angle")
         val transformManager = engine.transformManager
         val instance = transformManager.getInstance(modelEntity)
         val matrix = FloatArray(16)
@@ -158,7 +162,7 @@ class Filament3dView(
             renderer.endFrame()
             return buffer
         } else {
-            Timber.e("Failed to begin frame rendering")
+            Log.e(TAG, "Failed to begin frame rendering")
             throw IllegalStateException("Failed to render frame")
         }
     }
@@ -186,7 +190,7 @@ class Filament3dView(
     }
 
     override fun forFrame(frame: Int): MotionView {
-        Timber.i("forFrame: $frame")
+        Log.i(TAG, "forFrame: $frame")
         // Update the model or camera based on the frame if needed
         // For example, you could animate the model or camera position
         rotateModel(frame.toFloat())

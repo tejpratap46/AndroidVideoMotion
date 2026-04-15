@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import timber.log.Timber
 import androidx.core.app.ActivityCompat
 import com.tejpratapsingh.animator.presentation.sampleMotionVideo
 import com.tejpratapsingh.animator.worker.SampleMotionWorker
@@ -18,7 +17,6 @@ class MotionPreviewActivity : PreviewActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.i("MotionPreviewActivity onCreate")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(

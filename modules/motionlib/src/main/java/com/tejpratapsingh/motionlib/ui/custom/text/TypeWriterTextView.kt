@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import timber.log.Timber
+import android.util.Log
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
@@ -21,6 +21,9 @@ class TypeWriterTextView(
     endFrame: Int,
     textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
+    private val TAG by lazy {
+        "TypeWriterTextView"
+    }
 
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
@@ -34,7 +37,7 @@ class TypeWriterTextView(
                     Pair(0f, text.length.toFloat()),
                 ).toInt()
 
-        Timber.d("visibleCharsCount: $visibleCharsCount")
+        Log.d(TAG, "visibleCharsCount: $visibleCharsCount")
 
         val spannableString = SpannableString(text)
         spannableString.setSpan(

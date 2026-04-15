@@ -3,7 +3,6 @@ package com.tejpratapsingh.ivi_demo
 import RenaultCar
 import android.os.Build
 import android.os.Bundle
-import timber.log.Timber
 import com.tejpratapsingh.ivi_demo.extension.enableSwipeSeekReverse
 import com.tejpratapsingh.motionlib.activities.PreviewActivity
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -40,7 +39,6 @@ class MainActivity : PreviewActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.i("MainActivity onCreate (ivi-demo)")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             motionVideoPlayer.seekBar.min = 1
         }

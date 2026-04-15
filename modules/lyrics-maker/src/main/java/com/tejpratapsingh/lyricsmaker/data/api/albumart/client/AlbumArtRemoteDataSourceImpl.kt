@@ -2,7 +2,7 @@ package com.tejpratapsingh.lyricsmaker.data.api.albumart.client
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import timber.log.Timber
+import android.util.Log
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.data.MusicBrainzResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -61,7 +61,7 @@ class AlbumArtRemoteDataSourceImpl(
                     "https://coverartarchive.org/release/$releaseId/front${size.suffix}"
                 }
             } catch (e: Exception) {
-                Timber.e(e, "fetchAlbumArtUrl failed")
+                Log.e("AlbumArtRemoteDataSource", "fetchAlbumArtUrl failed", e)
                 null
             }
         }

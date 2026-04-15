@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.graphics.Bitmap
-import timber.log.Timber
+import android.util.Log
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
@@ -22,13 +22,17 @@ open class MotionComposerView(
     IComposerView {
     override val effects: List<MotionEffect> = emptyList()
 
+    companion object {
+        private const val TAG = "MotionComposerView"
+    }
+
     init {
         val config: MotionConfig = provideCurrentConfig()
         this.layout(0, 0, config.aspectRatio.width, config.aspectRatio.height)
     }
 
     override fun forFrame(frame: Int): MotionView {
-        Timber.i("forFrame: $frame")
+        Log.i(TAG, "forFrame: $frame")
         for (i in 0..this.childCount) {
             val view = this.getChildAt(i)
 

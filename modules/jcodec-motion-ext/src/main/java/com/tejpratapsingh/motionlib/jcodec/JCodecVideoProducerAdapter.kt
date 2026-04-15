@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.jcodec
 
 import android.content.Context
 import android.graphics.Bitmap
-import timber.log.Timber
+import android.util.Log
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -13,6 +13,9 @@ import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
 class JCodecVideoProducerAdapter : VideoProducerAdapter {
+    companion object {
+        private const val TAG = "JCodecVideoProducerAdap"
+    }
 
     override suspend fun produceVideo(
         context: Context,
@@ -29,7 +32,7 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
         try {
             for (i in 1..totalFrames) {
-                Timber.d("produceVideo: frame $i")
+                Log.d(TAG, "produceVideo: frame $i")
                 val frameBitmap: Bitmap =
                     motionComposerView
                         .forFrame(i)

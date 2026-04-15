@@ -1,6 +1,6 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
-import timber.log.Timber
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -64,9 +64,13 @@ class ProjectsViewModel(
 
     fun syncProject(project: MotionProject) {
         viewModelScope.launch {
-            Timber.d("syncProject: Called")
+            Log.d(TAG, "syncProject: Called")
             _syncEvent.emit(project)
         }
+    }
+
+    companion object {
+        private const val TAG = "ProjectsViewModel"
     }
 }
 
