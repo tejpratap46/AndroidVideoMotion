@@ -95,13 +95,14 @@ class LyricsMotionWorker(
             applicationContext.createProjectFile(motionProject)
         }
 
-    override fun getMotionVideo(inputData: Data): MotionVideoProducer =
-        getLyricsVideoProducer(
+    override fun getMotionVideo(inputData: Data): MotionVideoProducer {
+        val projectId = inputData.getString(PROJECT_ID)!!
+        val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
+        return getLyricsVideoProducer(
             applicationContext = appContext,
-            song = inputData.getString(SONG) ?: "Unknown Song",
-            lyrics = Json.decodeFromString(inputData.getString(LYRICS)!!),
-            image = inputData.getString(IMAGE),
+            motionProject = motionProject,
         )
+    }
 
     override suspend fun onProgress(
         totalFrames: Int,
@@ -244,22 +245,16 @@ class LyricsMotionWorker(
     companion object {
         private const val TAG = "SampleMotionWorker"
 
-        private const val SONG = "song"
-        private const val LYRICS = "lyrics"
-        private const val IMAGE = "image"
+        private const val PROJECT_ID = "project_id"
 
         fun startWork(
             context: Context,
-            song: String,
-            lyrics: List<SyncedLyricFrame>,
-            image: String? = null,
+            projectId: String,
         ): UUID {
             val inputData =
                 Data
                     .Builder()
-                    .putString(SONG, song)
-                    .putString(LYRICS, Json.encodeToString(lyrics))
-                    .putString(IMAGE, image)
+                    .putString(PROJECT_ID, projectId)
                     .build()
 
             val workRequest =

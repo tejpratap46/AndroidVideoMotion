@@ -84,12 +84,7 @@ class SearchActivity : ComponentActivity() {
                         navController = navController,
                         projectsViewModel = projectsViewModel,
                         onProjectClick = { motionProject ->
-                            Log.i("AppNavHost", "AppNavHost: $motionProject")
-
-                            Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
-                            SyncWorker.scheduleImmediate(this@SearchActivity)
-
-                            shareProjectFile(motionProject)
+                            navController.navigate(Screen.ProjectDetails.createRoute(motionProject.id))
                         },
                         lyricsViewModel = lyricsViewModel,
                         modifier = Modifier.padding(innerPadding),
@@ -108,22 +103,24 @@ class SearchActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                lyricsViewModel.uiState.collect {
-                    handleLyricsSearch(it)
+                launch {
+                    lyricsViewModel.uiState.collect {
+                        handleLyricsSearch(it)
+                    }
                 }
-            }
 
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                projectsViewModel.shareEvent.collect {
-                    shareProjectFile(it)
+                launch {
+                    projectsViewModel.shareEvent.collect {
+                        shareProjectFile(it)
+                    }
                 }
-            }
 
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                projectsViewModel.syncEvent.collect {
-                    Log.d(TAG, "onCreate: syncEvent called")
-                    Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
-                    SyncWorker.scheduleImmediate(this@SearchActivity)
+                launch {
+                    projectsViewModel.syncEvent.collect {
+                        Log.d(TAG, "onCreate: syncEvent called")
+                        Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
+                        SyncWorker.scheduleImmediate(this@SearchActivity)
+                    }
                 }
             }
         }

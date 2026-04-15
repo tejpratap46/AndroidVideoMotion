@@ -7,15 +7,25 @@ import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
+import com.tejpratapsingh.motionstore.tables.MotionProject
 
 fun getLyricsVideoProducer(
     applicationContext: Context,
-    song: String,
-    lyrics: List<SyncedLyricFrame>,
-    image: String? = null,
+    motionProject: MotionProject,
 ): MotionVideoProducer {
+    val song = motionProject.name
+    val image = motionProject.metadata.get("image")?.takeIf { it.isJsonPrimitive }?.asString
+    val lyrics =
+        motionProject.metadata.get("lyrics")?.takeIf { it.isJsonArray }?.asJsonArray?.map {
+            SyncedLyricFrame(
+                frame = it.asJsonObject.get("frame")?.takeIf { f -> f.isJsonPrimitive }?.asInt ?: 0,
+                text = it.asJsonObject.get("text")?.takeIf { t -> t.isJsonPrimitive }?.asString ?: "",
+            )
+        } ?: emptyList()
+
     Log.d("MotionVideoProducer", "getLyricsVideoProducer: ${lyrics.size}")
 
     val motionConfig =
