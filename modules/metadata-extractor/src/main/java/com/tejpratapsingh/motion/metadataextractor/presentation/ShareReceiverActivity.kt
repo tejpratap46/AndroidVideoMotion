@@ -2,7 +2,7 @@ package com.tejpratapsingh.motion.metadataextractor.presentation
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import timber.log.Timber
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -20,8 +20,6 @@ import kotlinx.coroutines.launch
 
 class ShareReceiverActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "ShareReceiverActivity"
-
         const val EXTRA_METADATA = "extra_metadata"
         const val ACTIVITY_INTENT_ACTION = "com.tejpratapsingh.motion.metadataextractor.action.OPEN"
 
@@ -67,14 +65,14 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private fun handleSharedText(intent: Intent) {
         val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-        Log.d(TAG, "Received text: $sharedText")
+        Timber.d("Received text: $sharedText")
         val links = extractLinks(sharedText ?: "")
 
         links.firstOrNull()?.let { sharedLink ->
-            Log.d(TAG, "Received link: $sharedLink")
+            Timber.d("Received link: $sharedLink")
             metadataViewModel.getMetaData(sharedLink)
         } ?: run {
-            Log.w(TAG, "No links found in shared text")
+            Timber.w("No links found in shared text")
             Toast.makeText(this, "No link found in shared text", Toast.LENGTH_SHORT).show()
             finish()
         }
@@ -91,11 +89,11 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private fun observerMetaData() {
         metadataViewModel.metadata.observe(this) { result ->
-            Log.d("ShareReceiver", "Received result: $result")
+            Timber.d("Received result: $result")
             binding.loading.isVisible = false
             when (result) {
                 is MetaDataResult.Success -> {
-                    Log.d("ShareReceiver", "Received metadata: ${result.metaData}")
+                    Timber.d("Received metadata: ${result.metaData}")
                     result.metaData.image?.also {
                         loadImage(it)
                     }
@@ -128,7 +126,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                 }
 
                 is MetaDataResult.Error -> {
-                    Log.e(TAG, "Received error", result.error)
+                    Timber.e(result.error, "Received error")
                     Toast.makeText(this, "Failed to fetch metadata", Toast.LENGTH_SHORT).show()
                 }
             }

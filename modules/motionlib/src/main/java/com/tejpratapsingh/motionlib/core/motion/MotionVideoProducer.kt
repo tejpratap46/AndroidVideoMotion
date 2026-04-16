@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
+import timber.log.Timber
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -24,8 +25,6 @@ open class MotionVideoProducer(
         private set
 
     companion object {
-        private const val TAG = "MotionVideo"
-
         @JvmStatic
         fun with(
             context: Context,
@@ -47,6 +46,7 @@ open class MotionVideoProducer(
     }
 
     override fun <T> addMotionViewToSequence(motionView: T): MotionVideoProducer where T : MotionView, T : ViewGroup {
+        Timber.d("addMotionViewToSequence: adding ${motionView::class.simpleName} (frames: ${motionView.startFrame}-${motionView.endFrame})")
         totalFrames = maxOf(totalFrames, motionView.endFrame)
         motionComposerView.apply {
             motionView.layoutBy(
@@ -69,6 +69,7 @@ open class MotionVideoProducer(
         progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
         withContext(Dispatchers.IO) {
+            Timber.i("produceVideo: starting production (totalFrames: $totalFrames) to ${outputFile.absolutePath}")
             // Use Dispatchers.Default for CPU-bound work
             if (outputFile.exists()) {
                 outputFile.delete()
@@ -77,10 +78,8 @@ open class MotionVideoProducer(
             videoProducerAdapter.produceVideo(
                 context = context,
                 motionComposerViews =
-                    if (parallelMotionViews.isEmpty()) {
+                    parallelMotionViews.ifEmpty {
                         listOf(motionComposerView)
-                    } else {
-                        parallelMotionViews
                     },
                 motionAudio = motionAudio,
                 totalFrames = totalFrames,

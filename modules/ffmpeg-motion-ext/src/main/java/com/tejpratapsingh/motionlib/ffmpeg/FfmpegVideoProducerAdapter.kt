@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.ffmpeg
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
+import timber.log.Timber
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
 import com.tejpratapsingh.motionlib.core.MotionAudio
@@ -21,10 +21,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
-    companion object {
-        private const val TAG = "FfmpegVideoProducerAdap"
-    }
-
     private val subDirName by lazy { UUID.randomUUID().toString() }
 
     override suspend fun produceVideo(
@@ -64,7 +60,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
                     val endFrame = minOf(totalFrames, startFrame + chunkSize - 1)
 
                     for (frame in startFrame..endFrame) {
-                        Log.d(TAG, "produceVideo: frame $frame")
+                        Timber.d("produceVideo: frame $frame")
                         val capturedBitmap = captureFrameBitmap(motionComposerView, frame)
                         val frameBitmap: Bitmap =
                             capturedBitmap.compressToBitmap(motionConfig.outputQuality)
@@ -77,7 +73,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
                                 String.format(Locale.getDefault(), "%05d.png", frame),
                             )
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error saving frame $frame: ${e.message}", e)
+                            Timber.e(e, "Error saving frame $frame: ${e.message}")
                             throw IllegalStateException("Unable to save frame $frame", e)
                         }
 
@@ -109,15 +105,15 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
                 mixAudio = true, // Change to false if you want separate audio tracks
             ).joinToString(" ")
 
-        Log.d(TAG, "Executing FFmpeg query: $query")
+        Timber.d("Executing FFmpeg query: $query")
         val session = FFmpegKit.execute(query)
 
         val returnCode = session.returnCode
         if (ReturnCode.isSuccess(returnCode)) {
-            Log.d(TAG, "Video created successfully at ${outputFile.path}")
+            Timber.d("Video created successfully at ${outputFile.path}")
         } else {
-            Log.e(TAG, "FFmpeg execution failed with return code: $returnCode")
-            Log.e(TAG, "FFmpeg session logs: ${session.allLogsAsString}") // Crucial for debugging
+            Timber.e("FFmpeg execution failed with return code: $returnCode")
+            Timber.e("FFmpeg session logs: ${session.allLogsAsString}") // Crucial for debugging
             // Consider deleting the partially created (or empty) output file on failure
             if (outputFile.exists()) {
                 outputFile.delete()

@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
-import android.util.Log
+import timber.log.Timber
 import android.view.Surface
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -35,10 +35,6 @@ class Filament3dView(
 ) : FrameLayout(context),
     MotionView {
     override val effects: List<MotionEffect> = emptyList()
-
-    companion object {
-        private const val TAG = "Filament3dView"
-    }
 
     private lateinit var engine: Engine
     private lateinit var swapChain: SwapChain
@@ -132,7 +128,7 @@ class Filament3dView(
     }
 
     private fun rotateModel(angle: Float) {
-        Log.i(TAG, "rotateModel: $angle")
+        Timber.i("rotateModel: $angle")
         val transformManager = engine.transformManager
         val instance = transformManager.getInstance(modelEntity)
         val matrix = FloatArray(16)
@@ -162,7 +158,7 @@ class Filament3dView(
             renderer.endFrame()
             return buffer
         } else {
-            Log.e(TAG, "Failed to begin frame rendering")
+            Timber.e("Failed to begin frame rendering")
             throw IllegalStateException("Failed to render frame")
         }
     }
@@ -190,7 +186,7 @@ class Filament3dView(
     }
 
     override fun forFrame(frame: Int): MotionView {
-        Log.i(TAG, "forFrame: $frame")
+        Timber.v("forFrame: $frame")
         // Update the model or camera based on the frame if needed
         // For example, you could animate the model or camera position
         rotateModel(frame.toFloat())

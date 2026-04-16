@@ -16,8 +16,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
@@ -41,12 +44,16 @@ fun ProjectDetailsScreen(
     project: MotionProject,
     onBackClick: () -> Unit,
     onShareClick: (MotionProject) -> Unit,
+    onGenerateClick: (MotionProject) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val motionVideoProducer = remember(project.id) {
         getLyricsVideoProducer(context, project)
     }
+
+    val projectFile = remember(project.id) { context.createProjectFile(project) }
+    val videoExists = remember(project.id) { projectFile.exists() }
 
     // Use a fresh Box and ignore the passed 'modifier' (which contains Scaffold padding)
     // to fix the "extra space above" issue and make it truly immersive.
@@ -98,6 +105,34 @@ fun ProjectDetailsScreen(
                     )
                     
                     Spacer(modifier = Modifier.height(24.dp))
+
+                    if (!videoExists) {
+                        Button(
+                            onClick = { onGenerateClick(project) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Movie,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Generate Video",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
 
                     Button(
                         onClick = { onShareClick(project) },

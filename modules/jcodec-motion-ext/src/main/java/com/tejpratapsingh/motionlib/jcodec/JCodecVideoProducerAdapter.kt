@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.jcodec
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
+import timber.log.Timber
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -13,10 +13,6 @@ import org.jcodec.api.android.AndroidSequenceEncoder
 import java.io.File
 
 class JCodecVideoProducerAdapter : VideoProducerAdapter {
-    companion object {
-        private const val TAG = "JCodecVideoProducerAdap"
-    }
-
     override suspend fun produceVideo(
         context: Context,
         motionComposerViews: List<MotionView>,
@@ -25,16 +21,20 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
         outputFile: File,
         progressListener: (suspend (Int, Bitmap) -> Unit)?,
     ): File {
+        Timber.i("produceVideo: starting production with JCodec (totalFrames: $totalFrames)")
         if (outputFile.exists()) {
             outputFile.delete()
         }
         val motionComposerView = motionComposerViews.firstOrNull()
             ?: error("At least one MotionView is required")
         val motionConfig: MotionConfig = provideCurrentConfig()
+        Timber.d("produceVideo: Creating sequence encoder (fps: ${motionConfig.fps})")
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
         try {
             for (i in 1..totalFrames) {
-                Log.d(TAG, "produceVideo: frame $i")
+                if (i % 10 == 0) {
+                    Timber.v("produceVideo: frame $i/$totalFrames")
+                }
                 val frameBitmap: Bitmap =
                     motionComposerView
                         .forFrame(i)
@@ -49,6 +49,10 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
 
                 frameBitmap.recycle() // Be cautious with this, only if necessary.
             }
+            Timber.i("produceVideo: JCodec production complete")
+        } catch (e: Exception) {
+            Timber.e(e, "Error during JCodec production")
+            throw e
         } finally {
             encoder.finish()
         }

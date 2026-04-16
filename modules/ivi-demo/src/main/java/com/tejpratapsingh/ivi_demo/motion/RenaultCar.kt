@@ -1,6 +1,6 @@
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.util.Log
+import timber.log.Timber
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -20,7 +20,6 @@ class RenaultCar(
     endFrame: Int,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
     companion object {
-        private const val TAG = "RenaultCar"
         const val imageAssetSubFolder = "renault_kiger_bg"
         const val roadAssetSubFolder = "road"
     }
@@ -146,7 +145,7 @@ class RenaultCar(
             imageView.setImageBitmap(bitmap)
             inputStream.close()
         } catch (e: IOException) {
-            Log.e(TAG, "Error loading image from asset: $imageName", e)
+            Timber.e(e, "Error loading image from asset: $imageName")
         }
 
         return this

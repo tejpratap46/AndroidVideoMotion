@@ -5,7 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
-import android.util.Log
+import timber.log.Timber
 import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
@@ -24,8 +24,6 @@ class MotionVideoContainer(
     context: Context,
     motionVideoProducer: MotionVideoProducer,
 ) : ContourLayout(context) {
-    private val TAG = "MotionVideoContainer"
-
     private val toolbar: Toolbar =
         Toolbar(context).apply {
             title = "Video"
@@ -57,7 +55,7 @@ class MotionVideoContainer(
                             motionVideoProducer = motionVideoProducer,
                             progressListener = { progress, bitmap ->
                                 scope.launch {
-                                    Log.d(TAG, "Progress: $progress")
+                                    Timber.d("Progress: $progress")
                                     videoPlayer.seekBar.progress = progress
                                 }
                             },

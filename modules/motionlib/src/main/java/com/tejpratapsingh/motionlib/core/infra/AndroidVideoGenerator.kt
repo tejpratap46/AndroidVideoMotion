@@ -8,7 +8,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import android.util.Log
+import timber.log.Timber
 import androidx.core.graphics.scale
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -19,8 +19,6 @@ import java.nio.ByteBuffer
 
 class AndroidVideoGenerator {
     companion object {
-        private const val TAG = "VideoGenerator"
-
         private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_MPEG4 // H.264
         private const val I_FRAME_INTERVAL = 5 // Keyframe interval in seconds
         private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
@@ -66,12 +64,15 @@ class AndroidVideoGenerator {
         outputFile: File,
         motionAudio: List<MotionAudio> = emptyList(),
     ) {
-        if (bitmaps.isEmpty() && inputDir == null) {
-            Log.w(TAG, "No bitmaps provided. Cannot generate video.")
+        val frameCount = getBitmapCount(bitmaps, inputDir)
+        if (frameCount == 0) {
+            Timber.w("No bitmaps provided or found. Cannot generate video.")
             return
         }
 
         val motionConfig: MotionConfig = provideCurrentConfig()
+        Timber.i("generateVideo: Starting production of $frameCount frames at ${motionConfig.fps} fps")
+        Timber.d("generateVideo: Output file: ${outputFile.absolutePath}")
 
         var mediaCodec: MediaCodec? = null
         var mediaMuxer: MediaMuxer? = null
@@ -93,13 +94,16 @@ class AndroidVideoGenerator {
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
 
             mediaCodec = MediaCodec.createEncoderByType(MIME_TYPE)
+            Timber.d("generateVideo: Created encoder for $MIME_TYPE")
             mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val inputSurface = mediaCodec.createInputSurface()
             mediaCodec.start()
+            Timber.d("generateVideo: Encoder started")
 
             // Collect audio track formats beforehand (use original formats; no re-encode here)
             val audioTrackFormats = mutableListOf<MediaFormat>()
             for (audio in motionAudio) {
+                Timber.d("generateVideo: Extracting audio format from ${audio.file.name}")
                 val extractor = MediaExtractor()
                 extractor.setDataSource(audio.file.absolutePath)
                 for (i in 0 until extractor.trackCount) {
@@ -115,13 +119,17 @@ class AndroidVideoGenerator {
 
             mediaMuxer =
                 MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            Timber.d("generateVideo: MediaMuxer initialized")
             var videoTrackIndex = -1
             val muxerAudioTrackIndices = mutableListOf<Int>()
 
             val bufferInfo = MediaCodec.BufferInfo()
 
             // Encode frames
-            for (i in 0 until getBitmapCount(bitmaps, inputDir)) {
+            for (i in 0 until frameCount) {
+                if (i % 10 == 0) {
+                    Timber.v("generateVideo: Encoding frame $i/$frameCount")
+                }
                 val canvas = inputSurface.lockCanvas(null)
                 val bitmap = getBitmap(bitmaps, inputDir, i) ?: continue
 
@@ -146,22 +154,22 @@ class AndroidVideoGenerator {
                         encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                             if (muxerStarted) throw RuntimeException("format changed after muxer start")
                             val newFormat = mediaCodec.outputFormat
+                            Timber.d("generateVideo: Video output format changed: $newFormat")
                             videoTrackIndex = mediaMuxer.addTrack(newFormat)
 
                             // Add audio tracks BEFORE starting the muxer
                             for (fmt in audioTrackFormats) {
+                                Timber.d("generateVideo: Adding audio track to muxer: $fmt")
                                 muxerAudioTrackIndices.add(mediaMuxer.addTrack(fmt))
                             }
 
                             mediaMuxer.start()
                             muxerStarted = true
+                            Timber.d("generateVideo: MediaMuxer started")
                         }
 
                         encoderStatus < 0 -> {
-                            Log.w(
-                                TAG,
-                                "unexpected result from encoder.dequeueOutputBuffer: $encoderStatus",
-                            )
+                            Timber.w("unexpected result from encoder.dequeueOutputBuffer: $encoderStatus")
                         }
 
                         else -> {
@@ -189,7 +197,7 @@ class AndroidVideoGenerator {
                             mediaCodec.releaseOutputBuffer(encoderStatus, false)
 
                             if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                                Log.d(TAG, "End of stream reached for encoder output.")
+                                Timber.d("End of stream reached for encoder output.")
                                 break
                             }
                         }
@@ -214,13 +222,13 @@ class AndroidVideoGenerator {
 
             // Now copy audio samples into the muxer (timeline aligned by frames -> microseconds)
             if (motionAudio.isNotEmpty() && muxerAudioTrackIndices.isNotEmpty()) {
-                Log.d(TAG, "generateVideo: adding audio")
+                Timber.d("generateVideo: adding audio")
                 muxAudioTracks(mediaMuxer, motionAudio, motionConfig.fps, muxerAudioTrackIndices)
             }
 
-            Log.i(TAG, "Video generation complete: ${outputFile.absolutePath}")
+            Timber.i("Video generation complete: ${outputFile.absolutePath}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error generating video", e)
+            Timber.e(e, "Error generating video")
             if (outputFile.exists()) {
                 outputFile.delete()
             }
@@ -230,7 +238,7 @@ class AndroidVideoGenerator {
                 mediaCodec?.stop()
                 mediaCodec?.release()
             } catch (e: Exception) {
-                Log.e(TAG, "Error stopping/releasing MediaCodec", e)
+                Timber.e(e, "Error stopping/releasing MediaCodec")
             }
             try {
                 if (muxerStarted) {
@@ -238,7 +246,7 @@ class AndroidVideoGenerator {
                 }
                 mediaMuxer?.release()
             } catch (e: Exception) {
-                Log.e(TAG, "Error stopping/releasing MediaMuxer", e)
+                Timber.e(e, "Error stopping/releasing MediaMuxer")
             }
         }
     }
@@ -250,7 +258,7 @@ class AndroidVideoGenerator {
         fps: Int,
         audioTrackIndices: List<Int>,
     ) {
-        Log.d(TAG, "muxAudioTracks: adding audio")
+        Timber.d("muxAudioTracks: adding audio")
         val bufferSize = 1 * 1024 * 1024
         val buffer = ByteBuffer.allocate(bufferSize)
         val bufferInfo = MediaCodec.BufferInfo()
@@ -343,10 +351,7 @@ class AndroidVideoGenerator {
                 }
 
                 encoderStatus < 0 -> {
-                    Log.w(
-                        TAG,
-                        "unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus",
-                    )
+                    Timber.w("unexpected result from encoder.dequeueOutputBuffer (during drain): $encoderStatus")
                 }
 
                 else -> {
@@ -372,7 +377,7 @@ class AndroidVideoGenerator {
                     mediaCodec.releaseOutputBuffer(encoderStatus, false)
 
                     if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                        Log.d(TAG, "End of stream reached for encoder output (during drain).")
+                        Timber.d("End of stream reached for encoder output (during drain).")
                         break
                     }
                 }

@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.util.Log
+import timber.log.Timber
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
@@ -21,10 +21,6 @@ class WordWriterTextView(
     endFrame: Int = -1,
     textView: AppCompatTextView = CutoutTextView(context),
 ) : AbstractMotionTextView(context, text, startFrame, endFrame, textView) {
-    private val TAG by lazy {
-        "WordWriterTextView"
-    }
-
     private val wordArray = text.split(" ")
     private val wordCount: Int = wordArray.size
 
@@ -40,7 +36,7 @@ class WordWriterTextView(
                     Pair(0f, wordCount.toFloat()),
                 ).toInt()
 
-        Log.d(TAG, "visibleWordCount: $visibleWordCount")
+        Timber.d("visibleWordCount: $visibleWordCount")
         val visibleCharacters = wordArray.subList(0, visibleWordCount).joinToString(" ").length
 
         val spannableString = SpannableString(text)

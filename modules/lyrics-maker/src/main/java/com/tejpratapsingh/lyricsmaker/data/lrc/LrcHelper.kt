@@ -1,5 +1,7 @@
 package com.tejpratapsingh.lyricsmaker.data.lrc
 
+import timber.log.Timber
+
 object LrcHelper {
     fun getSyncedLyrics(
         lrcContent: String,
@@ -18,6 +20,7 @@ object LrcHelper {
         offsetFrames: Int = 0,
         parser: LrcParser = LrcParser(),
     ): List<SyncedLyricFrame> {
+        Timber.d("getSyncedLyricsWithFrameOffset: parsing LRC content (length: ${lrcContent.length})")
         val parsedResult = parser.parse(lrcContent)
 
         return parsedResult
@@ -29,6 +32,9 @@ object LrcHelper {
                     text = it.text,
                 )
             }.sortedBy { it.frame }
+            .also {
+                Timber.d("getSyncedLyricsWithFrameOffset: parsed ${it.size} lyric lines")
+            }
     }
 
     /**

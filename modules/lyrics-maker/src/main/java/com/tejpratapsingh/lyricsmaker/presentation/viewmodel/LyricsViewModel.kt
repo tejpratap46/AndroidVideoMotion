@@ -3,6 +3,8 @@ package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LrcLibApiService
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LrcLibApiServiceImpl
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LyricsRepository
@@ -13,11 +15,14 @@ import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
+import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
  * UI state for lyrics screen
@@ -60,6 +65,7 @@ class LyricsViewModel : ViewModel() {
         albumName: String? = null,
         query: String? = null,
     ) {
+        Timber.d("searchLyrics: track=$trackName, artist=$artistName, q=$query")
         viewModelScope.launch {
             _uiState.value = LyricsUiState.Loading
 
@@ -74,8 +80,10 @@ class LyricsViewModel : ViewModel() {
             repository
                 .searchLyrics(params)
                 .onSuccess { lyrics ->
+                    Timber.d("searchLyrics success: found ${lyrics.size} results")
                     _uiState.value = LyricsUiState.Success(lyrics)
                 }.onFailure { error ->
+                    Timber.e(error, "searchLyrics failure")
                     _uiState.value =
                         LyricsUiState.Error(
                             error.message ?: "Unknown error occurred",
@@ -104,11 +112,12 @@ class LyricsViewModel : ViewModel() {
     var selectedLyrics: List<SyncedLyricFrame> = emptyList()
         set(value) {
             field = value
-            selectedStartTimeInSeconds = if (value.isNotEmpty()) {
-                value.first().frame.toFloat() / provideCurrentConfig().fps
-            } else {
-                0f
-            }
+            selectedStartTimeInSeconds =
+                if (value.isNotEmpty()) {
+                    value.first().frame.toFloat() / provideCurrentConfig().fps
+                } else {
+                    0f
+                }
         }
         get() {
             if (field.isEmpty()) return emptyList()
@@ -121,4 +130,33 @@ class LyricsViewModel : ViewModel() {
                     )
                 }.sortedBy { it.frame }
         }
+
+    fun createMotionProject(): MotionProject {
+        val projectId = selectedSongName.md5()
+        val image = socialMeta.value.image
+
+        return MotionProject(
+            id = projectId,
+            name = selectedSongName,
+            path = "/$projectId",
+            metadata =
+                JsonObject().apply {
+                    addProperty("image", image)
+                    addProperty("startTime", selectedStartTimeInSeconds)
+                    add(
+                        "lyrics",
+                        JsonArray().apply {
+                            selectedLyrics.forEach { frame ->
+                                add(
+                                    JsonObject().apply {
+                                        addProperty("frame", frame.frame)
+                                        addProperty("text", frame.text)
+                                    },
+                                )
+                            }
+                        },
+                    )
+                },
+        )
+    }
 }
