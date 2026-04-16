@@ -99,8 +99,19 @@ class LyricsViewModel : ViewModel() {
             }
         }
 
+    var selectedStartTimeInSeconds: Float = 0f
+
     var selectedLyrics: List<SyncedLyricFrame> = emptyList()
+        set(value) {
+            field = value
+            selectedStartTimeInSeconds = if (value.isNotEmpty()) {
+                value.first().frame.toFloat() / provideCurrentConfig().fps
+            } else {
+                0f
+            }
+        }
         get() {
+            if (field.isEmpty()) return emptyList()
             val firstFrame = field.first().frame
             return field
                 .map {

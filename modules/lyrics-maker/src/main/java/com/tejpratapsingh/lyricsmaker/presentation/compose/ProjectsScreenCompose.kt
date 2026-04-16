@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.VideocamOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -237,8 +238,15 @@ private fun ProjectCard(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val projectFile = remember(project.id) { context.createProjectFile(project) }
     val thumbnail: Bitmap? =
-        remember(project.id) { extractFirstFrame(context.createProjectFile(project).path) }
+        remember(project.id) {
+            if (projectFile.exists()) {
+                extractFirstFrame(projectFile.path)
+            } else {
+                null
+            }
+        }
 
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
@@ -270,6 +278,18 @@ private fun ProjectCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.VideocamOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    )
+                }
             }
 
             // Scrim so text stays readable over any thumbnail
@@ -308,7 +328,7 @@ private fun ProjectCard(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.PlayCircle,
+                            imageVector = if (thumbnail != null) Icons.Rounded.PlayCircle else Icons.Rounded.VideocamOff,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(22.dp),

@@ -9,10 +9,15 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
-import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
+import com.tejpratapsingh.motionlib.core.extensions.md5
+import com.tejpratapsingh.motionstore.tables.MotionProject
 import org.hamcrest.Matchers.containsString
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,14 +31,43 @@ class LyricsActivityTest {
             SyncedLyricFrame(100, "Line 2"),
         )
     private val socialMeta = SocialMeta(title = "Social Title", image = "https://example.com/image.png")
+    private val projectId = songName.md5()
+
+    @Before
+    fun setup() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val project =
+            MotionProject(
+                id = projectId,
+                name = songName,
+                path = "/$projectId",
+                metadata =
+                    JsonObject().apply {
+                        addProperty("image", socialMeta.image)
+                        addProperty("startTime", 0f)
+                        add(
+                            "lyrics",
+                            JsonArray().apply {
+                                lyrics.forEach { frame ->
+                                    add(
+                                        JsonObject().apply {
+                                            addProperty("frame", frame.frame)
+                                            addProperty("text", frame.text)
+                                        },
+                                    )
+                                }
+                            },
+                        )
+                    },
+            )
+        context.asLyricsApp().motionStoreDao.upsert(project)
+    }
 
     @get:Rule
     val activityRule =
         ActivityScenarioRule<LyricsActivity>(
             Intent(ApplicationProvider.getApplicationContext<Context>(), LyricsActivity::class.java).apply {
-                putExtra(LyricsActivity.SONG, songName)
-                putExtra(ShareReceiverActivity.EXTRA_METADATA, socialMeta)
-                putParcelableArrayListExtra(LyricsActivity.LYRICS, lyrics)
+                putExtra(LyricsActivity.PROJECT_ID, projectId)
             },
         )
 
