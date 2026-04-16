@@ -74,6 +74,7 @@ class LyricsActivity : PreviewActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("LyricsActivity","onCreate")
+        val data = getdata()
         val start = lyrics.minBy { it.frame }.frame
         val end = lyrics.maxBy { it.frame }.frame
 
@@ -100,4 +101,6 @@ class LyricsActivity : PreviewActivity() {
     }
 
     override fun getMotionVideo(): MotionVideoProducer = video
+
+    fun getData() = "user data"
 }
