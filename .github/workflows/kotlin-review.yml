@@ -32,7 +32,7 @@ jobs:
           CI_COMMIT_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           pip install -q -r /home/rntbci/AIML/code-reviewer/requirements.txt
-          python /home/rntbci/AIML/code-reviewer/review_ci.py 2>&1 | tee review_output.log
+          python3 /home/rntbci/AIML/code-reviewer/review_ci.py 2>&1 | tee review_output.log
 
       - name: Upload review log
         uses: actions/upload-artifact@v4
