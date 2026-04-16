@@ -11,6 +11,10 @@ import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
 import com.tejpratapsingh.motionlib.core.infra.AndroidVideoGenerator
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.util.Locale
 import java.util.UUID
@@ -42,28 +46,40 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
 
         val motionConfig: MotionConfig = provideCurrentConfig()
 
-        for (i in 1..totalFrames) {
-            Timber.d("produceVideo: frame $i")
-            val frameBitmap: Bitmap =
-                motionComposerView
-                    .forFrame(i)
-                    .getViewBitmap()
-                    .compressToBitmap(motionConfig.outputQuality)
+        coroutineScope {
+            val semaphore = Semaphore(4) // Limit parallel storage tasks to avoid OOM
+            for (i in 1..totalFrames) {
+                Timber.d("produceVideo: frame $i")
+                val frameViewBitmap: Bitmap =
+                    motionComposerView
+                        .forFrame(i)
+                        .getViewBitmap()
 
-            try {
-                context.saveBitmapToCacheFolder(
-                    frameBitmap,
-                    subDirName,
-                    String.format(Locale.getDefault(), "%05d.png", i),
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Error saving frame $i: ${e.message}")
-                // Decide how to handle this error, e.g., stop processing, skip frame, etc.
-                return outputFile // Or throw a custom exception
-            }
+                launch {
+                    semaphore.withPermit {
+                        val frameBitmap: Bitmap =
+                            frameViewBitmap.compressToBitmap(motionConfig.outputQuality)
 
-            progressListener?.let {
-                it(i, frameBitmap)
+                        // Recycle the original bitmap from the view
+                        frameViewBitmap.recycle()
+
+                        try {
+                            context.saveBitmapToCacheFolder(
+                                frameBitmap,
+                                subDirName,
+                                String.format(Locale.getDefault(), "%05d.png", i),
+                            )
+                        } catch (e: Exception) {
+                            Timber.e(e, "Error saving frame $i: ${e.message}")
+                        }
+
+                        progressListener?.let {
+                            it(i, frameBitmap)
+                        }
+
+                        // Optional: frameBitmap.recycle() if not needed anymore
+                    }
+                }
             }
         }
 

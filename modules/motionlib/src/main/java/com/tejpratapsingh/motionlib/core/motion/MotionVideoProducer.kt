@@ -63,8 +63,7 @@ open class MotionVideoProducer(
         outputFile: File,
         progressListener: (suspend (progress: Int, bitmap: Bitmap) -> Unit)?,
     ): File =
-        withContext(Dispatchers.IO) {
-            // Use Dispatchers.Default for CPU-bound work
+        withContext(Dispatchers.Default) {
             if (outputFile.exists()) {
                 outputFile.delete()
             }
