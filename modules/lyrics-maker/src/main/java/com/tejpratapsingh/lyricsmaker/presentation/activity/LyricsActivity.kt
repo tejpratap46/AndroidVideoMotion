@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
@@ -30,6 +31,7 @@ class LyricsActivity : PreviewActivity() {
             lyrics: ArrayList<SyncedLyricFrame>,
             socialMeta: SocialMeta? = null,
         ) {
+            Log.d(TAG,"start")
             context.startActivity(
                 Intent(context, LyricsActivity::class.java).also {
                     it.putExtra(SONG, song)
@@ -40,6 +42,7 @@ class LyricsActivity : PreviewActivity() {
         }
     }
 
+    
     private val song: String
         get() = intent.getStringExtra(SONG) ?: ""
 
@@ -70,7 +73,8 @@ class LyricsActivity : PreviewActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d("LyricsActivity","onCreate")
+        val data = getdata()
         val start = lyrics.minBy { it.frame }.frame
         val end = lyrics.maxBy { it.frame }.frame
 
@@ -97,4 +101,6 @@ class LyricsActivity : PreviewActivity() {
     }
 
     override fun getMotionVideo(): MotionVideoProducer = video
+
+    fun getData() = "user data".toString()
 }
