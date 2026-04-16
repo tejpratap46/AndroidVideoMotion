@@ -15,6 +15,10 @@ import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.util.Locale
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
     companion object {
@@ -43,31 +47,43 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         subDir.mkdirs() // Create the directory if it doesn't exist
 
         val motionConfig: MotionConfig = provideCurrentConfig()
+        val workerCount =
+            minOf(
+                totalFrames.coerceAtLeast(1),
+                Runtime.getRuntime().availableProcessors().coerceAtLeast(1),
+            )
+        val chunkSize = ((totalFrames + workerCount) - 1) / workerCount
 
-        for (i in 1..totalFrames) {
-            Log.d(TAG, "produceVideo: frame $i")
-            val frameBitmap: Bitmap =
-                motionComposerView
-                    .forFrame(i)
-                    .getViewBitmap()
-                    .compressToBitmap(motionConfig.outputQuality)
+        coroutineScope {
+            (0 until workerCount).map { workerIndex ->
+                async(Dispatchers.Default) {
+                    val startFrame = (workerIndex * chunkSize) + 1
+                    val endFrame = minOf(totalFrames, startFrame + chunkSize - 1)
 
-            // It's good practice to handle potential IOExceptions when saving files
-            try {
-                context.saveBitmapToCacheFolder(
-                    frameBitmap,
-                    subDirName,
-                    String.format(Locale.getDefault(), "%05d.png", i),
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error saving frame $i: ${e.message}", e)
-                // Decide how to handle this error, e.g., stop processing, skip frame, etc.
-                return outputFile // Or throw a custom exception
-            }
+                    for (frame in startFrame..endFrame) {
+                        Log.d(TAG, "produceVideo: frame $frame")
+                        val frameBitmap: Bitmap =
+                            motionComposerView
+                                .forFrame(frame)
+                                .getViewBitmap()
+                                .compressToBitmap(motionConfig.outputQuality)
 
-            progressListener?.let {
-                it(i, frameBitmap)
-            }
+                        // It's good practice to handle potential IOExceptions when saving files
+                        try {
+                            context.saveBitmapToCacheFolder(
+                                frameBitmap,
+                                subDirName,
+                                String.format(Locale.getDefault(), "%05d.png", frame),
+                            )
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error saving frame $frame: ${e.message}", e)
+                            throw IllegalStateException("Unable to save frame $frame", e)
+                        }
+
+                        progressListener?.invoke(frame, frameBitmap)
+                    }
+                }
+            }.awaitAll()
         }
 
         val inputPattern = "${subDir.path}/%05d.png"
