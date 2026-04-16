@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -83,5 +85,37 @@ class LyricsActivityTest {
         // Verify that the OK and Cancel buttons are present
         onView(withText("OK")).check(matches(isDisplayed()))
         onView(withText("Cancel")).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun testDialogShowsLyricsLineCount() {
+        // Verify that the dialog message reports the correct number of lyrics lines.
+        onView(withText(containsString("${lyrics.size} lines of lyrics"))).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun testDialogMessageContainsStartFrame() {
+        // Start frame is the minimum frame from the lyrics list.
+        val startFrame = lyrics.minBy { it.frame }.frame
+        onView(withText(containsString("Start Frame: $startFrame"))).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun testCancelButtonDismissesDialog() {
+        // The dialog must be visible first.
+        onView(withText("Lyrics")).check(matches(isDisplayed()))
+
+        // Click the Cancel button.
+        onView(withText("Cancel")).perform(click())
+
+        // After dismissal the dialog title should no longer be in the view hierarchy.
+        onView(withText("Lyrics")).check(doesNotExist())
+    }
+
+    @Test
+    fun testProjectIdLoadsSongNameFromDatabase() {
+        // The dialog message should contain the song name sourced from the DB project,
+        // confirming that LyricsActivity reads the MotionProject via projectId.
+        onView(withText(containsString(songName))).check(matches(isDisplayed()))
     }
 }
