@@ -11,6 +11,7 @@ import com.tejpratapsingh.motionstore.infra.FirebaseAdapter
 import com.tejpratapsingh.motionstore.infra.SyncManager
 import com.tejpratapsingh.motionstore.worker.SyncWorker
 import com.tejpratapsingh.motionstore.worker.SyncWorkerFactory
+import timber.log.Timber
 
 class LyricsApp :
     Application(),
@@ -27,6 +28,8 @@ class LyricsApp :
 
     override fun onCreate() {
         super.onCreate()
+
+        Timber.plant(Timber.DebugTree())
 
         FirebaseApp.initializeApp(this)
         SyncWorker.scheduleImmediate(this)

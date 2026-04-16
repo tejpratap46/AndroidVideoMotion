@@ -23,8 +23,6 @@ open class MotionVideoProducer(
         private set
 
     companion object {
-        private const val TAG = "MotionVideo"
-
         @JvmStatic
         fun with(
             context: Context,
