@@ -10,7 +10,7 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
-import android.util.Log
+import timber.log.Timber
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -87,7 +87,7 @@ class SampleMotionWorker(
         currentProgress: Int,
         bitmap: Bitmap,
     ) {
-        Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
+        Timber.d("onProgress: $currentProgress / $totalFrames")
 
         val percentage = (currentProgress.toDouble() / totalFrames) * 100
         val progressText =
@@ -113,7 +113,7 @@ class SampleMotionWorker(
     }
 
     override suspend fun onCompleted(videoFile: File) {
-        Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
+        Timber.d("onCompleted: Video saved to ${videoFile.absolutePath}")
 
         // Cancel the progress notification
         notificationManager.cancel(progressNotificationId)
@@ -167,7 +167,7 @@ class SampleMotionWorker(
         } else {
             // Handle the case where permission is not granted.
             // Maybe log an error or inform the user in a different way.
-            Log.w(TAG, "POST_NOTIFICATIONS permission not granted. Cannot show notification.")
+            Timber.w("POST_NOTIFICATIONS permission not granted. Cannot show notification.")
         }
     }
 
@@ -200,8 +200,6 @@ class SampleMotionWorker(
     }
 
     companion object {
-        private const val TAG = "SampleMotionWorker"
-
         fun startWork(context: Context): UUID {
             val workRequest = OneTimeWorkRequest.from(SampleMotionWorker::class.java)
             WorkManager.getInstance(context).enqueue(workRequest)

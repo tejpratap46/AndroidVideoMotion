@@ -2,7 +2,7 @@ package com.tejpratapsingh.motionlib.worker
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
+import timber.log.Timber
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -17,7 +17,6 @@ abstract class MotionWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
-        private const val TAG = "MotionWorker"
         const val PROGRESS_KEY = "progress"
         const val TOTAL_FRAMES_KEY = "total_frames"
         const val KEY_OUTPUT_VIDEO_URI = "output_video"
@@ -35,7 +34,7 @@ abstract class MotionWorker(
     }
 
     override suspend fun doWork(): Result {
-        Log.d(TAG, "Worker ${this.id}: Starting video generation.")
+        Timber.d("Worker ${this.id}: Starting video generation.")
         return try {
             val videoFile: File =
                 generateVideo(
@@ -58,8 +57,7 @@ abstract class MotionWorker(
                     },
                 )
             this.onCompleted(videoFile = videoFile)
-            Log.d(
-                TAG,
+            Timber.d(
                 "Worker ${this.workId}: Video generation successful: ${videoFile.absolutePath}",
             )
             val outputData =
@@ -68,7 +66,7 @@ abstract class MotionWorker(
                 )
             Result.success(outputData)
         } catch (e: Exception) {
-            Log.e(TAG, "Worker ${this.workId}: Error during video generation.", e)
+            Timber.e(e, "Worker ${this.workId}: Error during video generation.")
             onFailed(e) // Optional: abstract method for specific failure handling
             Result.failure()
         }
@@ -120,8 +118,7 @@ abstract class MotionWorker(
     ): File =
         withContext(Dispatchers.IO) {
             val outputFile = getOutputFile()
-            Log.d(
-                TAG,
+            Timber.d(
                 "Worker ${this@MotionWorker.workId}: Generating video at ${outputFile.absolutePath}",
             )
 

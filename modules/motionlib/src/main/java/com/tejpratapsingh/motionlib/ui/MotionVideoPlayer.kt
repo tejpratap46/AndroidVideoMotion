@@ -24,7 +24,6 @@ class MotionVideoPlayer(
     private val motionVideoProducer: MotionVideoProducer,
 ) : ContourLayout(context) {
     companion object {
-        private const val TAG = "MotionVideoPlayer"
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())

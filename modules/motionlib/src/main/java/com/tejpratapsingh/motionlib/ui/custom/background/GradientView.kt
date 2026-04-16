@@ -33,7 +33,6 @@ class GradientView(
         endFrame = endFrame,
     ) {
     private companion object {
-        // const val TAG = "GradientView" // For logging if needed
     }
 
     private val paint: Paint =
@@ -96,9 +95,6 @@ class GradientView(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        // if (BuildConfig.DEBUG) {
-        //     Log.d(TAG, "onDraw: called : $currentFrame, width: $width, height: $height, valueRange: $valueRange")
-        // }
 
         val interpolatedValue: Float =
             MotionInterpolator.interpolateForRange(

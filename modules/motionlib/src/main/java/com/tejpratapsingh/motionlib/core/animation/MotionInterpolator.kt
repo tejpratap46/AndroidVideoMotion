@@ -6,7 +6,6 @@ import android.view.animation.Interpolator
 import androidx.annotation.ColorInt
 
 object MotionInterpolator {
-    private const val TAG = "MotionInterpolator"
     private val argbEvaluator = ArgbEvaluator() // Reuse ArgbEvaluator instance
 
     /**

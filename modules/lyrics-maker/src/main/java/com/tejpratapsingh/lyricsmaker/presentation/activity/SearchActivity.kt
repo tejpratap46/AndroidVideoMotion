@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import timber.log.Timber
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -117,7 +117,7 @@ class SearchActivity : ComponentActivity() {
 
                 launch {
                     projectsViewModel.syncEvent.collect {
-                        Log.d(TAG, "onCreate: syncEvent called")
+                        Timber.d("onCreate: syncEvent called")
                         Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
                         SyncWorker.scheduleImmediate(this@SearchActivity)
                     }
@@ -205,6 +205,5 @@ class SearchActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val TAG = "SearchActivity"
     }
 }

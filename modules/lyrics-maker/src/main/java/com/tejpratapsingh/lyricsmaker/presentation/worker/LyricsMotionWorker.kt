@@ -11,7 +11,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
-import android.util.Log
+import timber.log.Timber
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -109,7 +109,7 @@ class LyricsMotionWorker(
         currentProgress: Int,
         bitmap: Bitmap,
     ) {
-        Log.d(TAG, "onProgress: $currentProgress / $totalFrames")
+        Timber.d("onProgress: $currentProgress / $totalFrames")
 
         val percentage = (currentProgress.toDouble() / totalFrames) * 100
         val progressText =
@@ -141,10 +141,10 @@ class LyricsMotionWorker(
     }
 
     override suspend fun onCompleted(videoFile: File) {
-        Log.d(TAG, "onCompleted: Video saved to ${videoFile.absolutePath}")
+        Timber.d("onCompleted: Video saved to ${videoFile.absolutePath}")
 
         val motionProject = provideCurrentProject()
-        Log.i(TAG, "onCompleted: $motionProject")
+        Timber.i("onCompleted: $motionProject")
         applicationContext.asLyricsApp().motionStoreDao.upsert(motionProject)
 
         // Cancel the progress notification
@@ -196,7 +196,7 @@ class LyricsMotionWorker(
         } else {
             // Handle the case where permission is not granted.
             // Maybe log an error or inform the user in a different way.
-            Log.w(TAG, "POST_NOTIFICATIONS permission not granted. Cannot show notification.")
+            Timber.w("POST_NOTIFICATIONS permission not granted. Cannot show notification.")
         }
     }
 
@@ -243,8 +243,6 @@ class LyricsMotionWorker(
     }
 
     companion object {
-        private const val TAG = "SampleMotionWorker"
-
         private const val PROJECT_ID = "project_id"
 
         fun startWork(
