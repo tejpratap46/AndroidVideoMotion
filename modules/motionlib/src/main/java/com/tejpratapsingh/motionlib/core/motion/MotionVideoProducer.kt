@@ -17,6 +17,7 @@ open class MotionVideoProducer(
     val context: Context,
     val videoProducerAdapter: VideoProducerAdapter,
     val motionComposerView: MotionComposerView,
+    val parallelMotionViews: List<MotionView> = emptyList(),
     val motionAudio: List<MotionAudio> = emptyList(),
 ) : IMotionVideoProducer {
     var totalFrames: Int = 0
@@ -31,6 +32,7 @@ open class MotionVideoProducer(
             plugins: List<MotionPlugin> = emptyList(),
             motionAudio: List<MotionAudio> = emptyList(),
             videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
+            parallelMotionViews: List<MotionView> = emptyList(),
         ) = MotionVideoProducer(
             context = context,
             videoProducerAdapter = videoProducerAdapter,
@@ -39,6 +41,7 @@ open class MotionVideoProducer(
                     context = context,
                     plugins = plugins,
                 ),
+            parallelMotionViews = parallelMotionViews,
             motionAudio = motionAudio,
         )
     }
@@ -73,7 +76,12 @@ open class MotionVideoProducer(
 
             videoProducerAdapter.produceVideo(
                 context = context,
-                motionComposerView = motionComposerView,
+                motionComposerViews =
+                    if (parallelMotionViews.isEmpty()) {
+                        listOf(motionComposerView)
+                    } else {
+                        parallelMotionViews
+                    },
                 motionAudio = motionAudio,
                 totalFrames = totalFrames,
                 outputFile = outputFile,

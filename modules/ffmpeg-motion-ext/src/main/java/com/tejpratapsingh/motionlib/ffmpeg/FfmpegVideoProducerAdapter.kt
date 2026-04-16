@@ -15,6 +15,10 @@ import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import java.io.File
 import java.util.Locale
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
     companion object {
@@ -25,7 +29,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
     override suspend fun produceVideo(
         context: Context,
-        motionComposerView: MotionView,
+        motionComposerViews: List<MotionView>,
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
@@ -43,31 +47,44 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         subDir.mkdirs() // Create the directory if it doesn't exist
 
         val motionConfig: MotionConfig = provideCurrentConfig()
+        val safeMotionComposerViews = motionComposerViews.ifEmpty { error("At least one MotionView is required") }
+        val workerCount =
+            minOf(
+                totalFrames.coerceAtLeast(1),
+                safeMotionComposerViews.size.coerceAtLeast(1),
+                Runtime.getRuntime().availableProcessors().coerceAtLeast(1),
+            )
+        val chunkSize = ((totalFrames + workerCount) - 1) / workerCount
 
-        for (i in 1..totalFrames) {
-            Log.d(TAG, "produceVideo: frame $i")
-            val frameBitmap: Bitmap =
-                motionComposerView
-                    .forFrame(i)
-                    .getViewBitmap()
-                    .compressToBitmap(motionConfig.outputQuality)
+        coroutineScope {
+            (0 until workerCount).map { workerIndex ->
+                async(Dispatchers.Default) {
+                    val motionComposerView = safeMotionComposerViews[workerIndex % safeMotionComposerViews.size]
+                    val startFrame = (workerIndex * chunkSize) + 1
+                    val endFrame = minOf(totalFrames, startFrame + chunkSize - 1)
 
-            // It's good practice to handle potential IOExceptions when saving files
-            try {
-                context.saveBitmapToCacheFolder(
-                    frameBitmap,
-                    subDirName,
-                    String.format(Locale.getDefault(), "%05d.png", i),
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error saving frame $i: ${e.message}", e)
-                // Decide how to handle this error, e.g., stop processing, skip frame, etc.
-                return outputFile // Or throw a custom exception
-            }
+                    for (frame in startFrame..endFrame) {
+                        Log.d(TAG, "produceVideo: frame $frame")
+                        val capturedBitmap = captureFrameBitmap(motionComposerView, frame)
+                        val frameBitmap: Bitmap =
+                            capturedBitmap.compressToBitmap(motionConfig.outputQuality)
 
-            progressListener?.let {
-                it(i, frameBitmap)
-            }
+                        // It's good practice to handle potential IOExceptions when saving files
+                        try {
+                            context.saveBitmapToCacheFolder(
+                                frameBitmap,
+                                subDirName,
+                                String.format(Locale.getDefault(), "%05d.png", frame),
+                            )
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error saving frame $frame: ${e.message}", e)
+                            throw IllegalStateException("Unable to save frame $frame", e)
+                        }
+
+                        progressListener?.invoke(frame, frameBitmap)
+                    }
+                }
+            }.awaitAll()
         }
 
         val inputPattern = "${subDir.path}/%05d.png"
@@ -204,4 +221,14 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         frame: Int,
         fps: Int,
     ): Double = frame.toDouble() / fps.toDouble()
+
+    private fun captureFrameBitmap(
+        motionComposerView: MotionView,
+        frame: Int,
+    ): Bitmap =
+        synchronized(motionComposerView) {
+            motionComposerView
+                .forFrame(frame)
+                .getViewBitmap()
+        }
 }

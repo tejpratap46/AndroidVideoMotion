@@ -7,7 +7,7 @@ import java.io.File
 interface VideoProducerAdapter {
     suspend fun produceVideo(
         context: Context,
-        motionComposerView: MotionView,
+        motionComposerViews: List<MotionView>,
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,

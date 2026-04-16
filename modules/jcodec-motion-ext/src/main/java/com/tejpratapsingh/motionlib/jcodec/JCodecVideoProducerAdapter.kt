@@ -19,7 +19,7 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
 
     override suspend fun produceVideo(
         context: Context,
-        motionComposerView: MotionView,
+        motionComposerViews: List<MotionView>,
         motionAudio: List<MotionAudio>,
         totalFrames: Int,
         outputFile: File,
@@ -28,6 +28,8 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
         if (outputFile.exists()) {
             outputFile.delete()
         }
+        val motionComposerView = motionComposerViews.firstOrNull()
+            ?: error("At least one MotionView is required")
         val motionConfig: MotionConfig = provideCurrentConfig()
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
         try {
