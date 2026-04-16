@@ -43,6 +43,7 @@ class LyricsActivity : PreviewActivity() {
         }
     }
 
+    
     private val song: String
         get() = intent.getStringExtra(SONG) ?: ""
 
