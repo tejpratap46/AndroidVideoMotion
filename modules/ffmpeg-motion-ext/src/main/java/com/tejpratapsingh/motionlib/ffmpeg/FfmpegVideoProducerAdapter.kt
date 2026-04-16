@@ -62,11 +62,9 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
                     for (frame in startFrame..endFrame) {
                         Log.d(TAG, "produceVideo: frame $frame")
+                        val capturedBitmap = captureFrameBitmap(motionComposerView, frame)
                         val frameBitmap: Bitmap =
-                            motionComposerView
-                                .forFrame(frame)
-                                .getViewBitmap()
-                                .compressToBitmap(motionConfig.outputQuality)
+                            capturedBitmap.compressToBitmap(motionConfig.outputQuality)
 
                         // It's good practice to handle potential IOExceptions when saving files
                         try {
@@ -220,4 +218,14 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         frame: Int,
         fps: Int,
     ): Double = frame.toDouble() / fps.toDouble()
+
+    private fun captureFrameBitmap(
+        motionComposerView: MotionView,
+        frame: Int,
+    ): Bitmap =
+        synchronized(motionComposerView) {
+            motionComposerView
+                .forFrame(frame)
+                .getViewBitmap()
+        }
 }
