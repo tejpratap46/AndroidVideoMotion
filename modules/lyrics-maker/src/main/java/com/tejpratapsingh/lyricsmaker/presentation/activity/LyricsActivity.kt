@@ -102,5 +102,5 @@ class LyricsActivity : PreviewActivity() {
 
     override fun getMotionVideo(): MotionVideoProducer = video
 
-    fun getData() = "user data"
+    fun getData() = "user data".toString()
 }
