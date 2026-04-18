@@ -32,11 +32,11 @@ jobs:
           CI_COMMIT_AUTHOR: ${{ github.event.pull_request.user.login }}
       
         run: |
-          D:\AIML\code-reviewer\myvenv\Scripts\activate.ps1
+          call D:\AIML\code-reviewer\myvenv\Scripts\activate.bat
           pip install -q httpx python-dotenv pydantic pydantic-settings ollama loguru tenacity
           python D:\AIML\code-reviewer\review_ci.py > review_output.log 2>&1
           exit 0
-        shell: powershell
+        shell: cmd
 
 
       - name: Upload review log
