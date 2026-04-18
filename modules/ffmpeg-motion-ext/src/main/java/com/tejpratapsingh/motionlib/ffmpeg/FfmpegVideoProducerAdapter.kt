@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.ffmpeg
 
 import android.content.Context
 import android.graphics.Bitmap
-import timber.log.Timber
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
 import com.tejpratapsingh.motionlib.core.MotionAudio
@@ -12,12 +11,19 @@ import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import timber.log.Timber
 import java.io.File
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 
 class FfmpegVideoProducerAdapter : VideoProducerAdapter {
-
     private val subDirName by lazy { UUID.randomUUID().toString() }
 
     override suspend fun produceVideo(
@@ -41,30 +47,47 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
         val motionConfig: MotionConfig = provideCurrentConfig()
 
-        for (i in 1..totalFrames) {
-            Timber.d("produceVideo: frame $i")
-            val frameBitmap: Bitmap =
-                motionComposerView
-                    .forFrame(i)
-                    .getViewBitmap()
-                    .compressToBitmap(motionConfig.outputQuality)
+        val framesProcessed = AtomicInteger(0)
 
-            // It's good practice to handle potential IOExceptions when saving files
-            try {
-                context.saveBitmapToCacheFolder(
-                    frameBitmap,
-                    subDirName,
-                    String.format(Locale.getDefault(), "%05d.png", i),
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Error saving frame $i: ${e.message}")
-                // Decide how to handle this error, e.g., stop processing, skip frame, etc.
-                return outputFile // Or throw a custom exception
-            }
+        coroutineScope {
+            val semaphore = Semaphore(4) // Limit parallel storage tasks to avoid OOM
+            val jobs = mutableListOf<kotlinx.coroutines.Job>()
+            for (i in 1..totalFrames) {
+                Timber.d("produceVideo: frame $i")
+                val frameViewBitmap: Bitmap =
+                    motionComposerView
+                        .forFrame(i)
+                        .getViewBitmap()
 
-            progressListener?.let {
-                it(i, frameBitmap)
+                val job =
+                    launch(Dispatchers.IO) {
+                        semaphore.withPermit {
+                            val frameBitmap: Bitmap =
+                                frameViewBitmap.compressToBitmap(motionConfig.outputQuality)
+
+                            // Recycle the original bitmap from the view
+                            frameViewBitmap.recycle()
+
+                            try {
+                                context.saveBitmapToCacheFolder(
+                                    frameBitmap,
+                                    subDirName,
+                                    String.format(Locale.getDefault(), "%05d.png", i),
+                                )
+                            } catch (e: Exception) {
+                                Timber.e(e, "Error saving frame $i: ${e.message}")
+                            }
+
+                            progressListener?.let {
+                                it(framesProcessed.incrementAndGet(), frameBitmap)
+                            }
+
+                            frameBitmap.recycle()
+                        }
+                    }
+                jobs.add(job)
             }
+            jobs.joinAll()
         }
 
         val inputPattern = "${subDir.path}/%05d.png"
