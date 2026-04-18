@@ -34,7 +34,7 @@ jobs:
         run: |
           call D:\AIML\code-reviewer\myvenv\Scripts\activate.bat
           pip install -q httpx python-dotenv pydantic pydantic-settings ollama loguru tenacity
-          python D:\AIML\code-reviewer\review_ci.py > review_output.log 2>&1
+          python D:\AIML\code-reviewer\review_ci.py
           exit 0
         shell: cmd
 
