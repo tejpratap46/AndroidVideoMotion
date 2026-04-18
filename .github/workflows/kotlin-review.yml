@@ -35,7 +35,7 @@ jobs:
           D:\AIML\code-reviewer\myvenv\Scripts\activate.ps1
           pip install -q httpx python-dotenv pydantic pydantic-settings ollama loguru tenacity
           python D:\AIML\code-reviewer\review_ci.py 2>&1 | Tee-Object -FilePath review_output.log
-        shell: pwsh
+        shell: powershell
 
 
       - name: Upload review log
