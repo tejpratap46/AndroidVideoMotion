@@ -1,0 +1,48 @@
+name: Kotlin PR Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  kotlin_review:
+    runs-on: code-review          # ← matches the label you gave your runner
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history needed for git diff
+
+      - name: Run Kotlin Review Agent
+        env:
+          PLATFORM: github
+          REVIEWER_TOKEN: ${{ secrets.REVIEWER_TOKEN }}
+          OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+          OLLAMA_MODEL: ${{ secrets.OLLAMA_MODEL }}
+          # Map GitHub context vars to the names review_ci.py expects
+          CI_PROJECT_DIR: ${{ github.workspace }}
+          CI_PROJECT_ID: ${{ github.repository }}           # e.g. hemusimple/AndroidVideoMotion
+          CI_MERGE_REQUEST_IID: ${{ github.event.pull_request.number }}
+          CI_MERGE_REQUEST_TARGET_BRANCH_NAME: ${{ github.event.pull_request.base.ref }}
+          CI_MERGE_REQUEST_SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          CI_MERGE_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+          CI_COMMIT_AUTHOR: ${{ github.event.pull_request.user.login }}
+      
+        run: |
+          call D:\AIML\code-reviewer\myvenv\Scripts\activate.bat
+          pip install -q httpx python-dotenv pydantic pydantic-settings ollama loguru tenacity
+          python D:\AIML\code-reviewer\review_ci.py
+          exit 0
+        shell: cmd
+
+
+      - name: Upload review log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review-output
+          path: review_output.log
+          retention-days: 7
