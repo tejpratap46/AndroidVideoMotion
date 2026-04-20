@@ -7,8 +7,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import timber.log.Timber
 import android.widget.Toast
+import timber.log.Timber
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -51,8 +51,6 @@ class SearchActivity : ComponentActivity() {
 
     private val lyricsViewModel: LyricsViewModel by viewModels()
 
-    private var navigateTrigger: (() -> Unit)? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -72,16 +70,22 @@ class SearchActivity : ComponentActivity() {
             }
         }
 
+        val metadata = ShareReceiverActivity.readMetadataFromIntent(intent)
+        metadata?.let {
+            lyricsViewModel.socialMeta.value = it
+            lyricsViewModel.query.value = it.title ?: it.description ?: ""
+            lyricsViewModel.searchLyrics(it.title ?: it.description ?: "")
+        }
+
         setContent {
             val navController = rememberNavController()
-
-            // Assign the navigation logic to the local variable
-            navigateTrigger = { navController.navigate(Screen.Search.route) }
+            val startScreen = if (metadata != null) Screen.Search else Screen.Projects
 
             AnimatorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         navController = navController,
+                        currentScreen = startScreen,
                         projectsViewModel = projectsViewModel,
                         onProjectClick = { motionProject ->
                             navController.navigate(Screen.ProjectDetails.createRoute(motionProject.id))
@@ -91,14 +95,6 @@ class SearchActivity : ComponentActivity() {
                     )
                 }
             }
-        }
-
-        ShareReceiverActivity.readMetadataFromIntent(intent)?.let {
-            lyricsViewModel.socialMeta.value = it
-            lyricsViewModel.query.value = it.title ?: it.description ?: ""
-            lyricsViewModel.searchLyrics(it.title ?: it.description ?: "")
-
-            navigateTrigger?.invoke()
         }
 
         lifecycleScope.launch {
