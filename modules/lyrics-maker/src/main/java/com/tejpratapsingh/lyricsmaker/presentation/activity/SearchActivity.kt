@@ -15,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
@@ -79,13 +80,16 @@ class SearchActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val startScreen = if (metadata != null) Screen.Search else Screen.Projects
+            LaunchedEffect(metadata) {
+                if (metadata != null) {
+                    navController.navigate(Screen.Search.route)
+                }
+            }
 
             AnimatorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         navController = navController,
-                        currentScreen = startScreen,
                         projectsViewModel = projectsViewModel,
                         onProjectClick = { motionProject ->
                             navController.navigate(Screen.ProjectDetails.createRoute(motionProject.id))
