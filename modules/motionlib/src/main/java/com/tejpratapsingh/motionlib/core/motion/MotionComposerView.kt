@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.graphics.Bitmap
-import timber.log.Timber
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
@@ -10,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 
 open class MotionComposerView(
     context: Context,
@@ -29,7 +29,7 @@ open class MotionComposerView(
 
     override fun forFrame(frame: Int): MotionView {
         Timber.i("forFrame: $frame")
-        for (i in 0..this.childCount) {
+        for (i in 0 until this.childCount) {
             val view = this.getChildAt(i)
 
             if (view is MotionView) {

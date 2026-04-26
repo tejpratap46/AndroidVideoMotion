@@ -11,8 +11,16 @@ abstract class AbstractMotionTextView(
     startFrame: Int,
     endFrame: Int,
     val textView: AppCompatTextView,
+    writingSpeed: Float = 1f,
     fontUrl: String? = null,
 ) : BaseContourMotionView(context, startFrame, endFrame) {
+    protected val inferredEndFrame: Int =
+        if (endFrame != -1 && writingSpeed > 0) {
+            (startFrame + (endFrame - startFrame) / writingSpeed).toInt()
+        } else {
+            endFrame
+        }
+
     init {
         textView.apply {
             if (fontUrl != null) {

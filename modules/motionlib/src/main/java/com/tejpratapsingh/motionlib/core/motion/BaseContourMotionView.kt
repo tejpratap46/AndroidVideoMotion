@@ -1,13 +1,13 @@
 package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
-import timber.log.Timber
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import timber.log.Timber
 
 open class BaseContourMotionView(
     context: Context,
@@ -31,7 +31,7 @@ open class BaseContourMotionView(
 
         Timber.d("forFrame: isVisible: $isVisible")
 
-        for (i in 0..this.childCount) {
+        for (i in 0 until this.childCount) {
             val view = this.getChildAt(i)
 
             if (view is MotionView) {

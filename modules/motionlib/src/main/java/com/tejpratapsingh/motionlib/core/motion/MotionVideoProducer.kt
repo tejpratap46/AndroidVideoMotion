@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-open class MotionVideoProducer(
+open class MotionVideoProducer private constructor(
     val context: Context,
     val videoProducerAdapter: VideoProducerAdapter,
     val motionComposerView: MotionComposerView,
@@ -53,6 +53,7 @@ open class MotionVideoProducer(
                     centerVerticallyTo {
                         parent.centerY()
                     },
+                addToViewGroup = true,
             )
         }
         return this

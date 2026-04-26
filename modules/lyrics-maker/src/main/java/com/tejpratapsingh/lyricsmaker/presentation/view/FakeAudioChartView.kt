@@ -34,7 +34,7 @@ class FakeAudioChartView
         var seed: Long = 12345L
 
         /** Control how fast bars move (smaller = slower, larger = faster) */
-        var speedFactor: Float = 0.05f // try 0.01f for very slow, 0.1f for fast
+        var animationSpeed: Float = 0.05f // try 0.01f for very slow, 0.1f for fast
 
         private val rngs by lazy {
             List(bars) { Random(seed + it * 7919L) }
@@ -60,10 +60,10 @@ class FakeAudioChartView
                 val r = rngs[i]
 
                 // Make each bar evolve slower using speedFactor
-                val phase = (frame * speedFactor + i * 0.3f) % 1f
+                val phase = (frame * animationSpeed + i * 0.3f) % 1f
 
                 // Use seeded noise with smooth oscillation instead of raw random
-                val base = 0.5f + 0.5f * sin((frame * speedFactor + i) * 2.0)
+                val base = 0.5f + 0.5f * sin((frame * animationSpeed + i) * 2.0)
                 val noise = r.nextFloat() * 0.2f
                 val finalAmp = ((base + noise) * 0.9f).coerceIn(0.0, 1.0)
 

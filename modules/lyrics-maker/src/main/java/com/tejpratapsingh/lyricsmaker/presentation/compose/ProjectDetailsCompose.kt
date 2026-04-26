@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -33,7 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
@@ -44,30 +48,33 @@ fun ProjectDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val motionVideoProducer = remember(project.id) {
-        getLyricsVideoProducer(context, project)
-    }
+    val motionVideoProducer =
+        remember(project.id) {
+            getMultiLyricsVideoProducer(context, project)
+        }
 
     // Use a fresh Box and ignore the passed 'modifier' (which contains Scaffold padding)
     // to fix the "extra space above" issue and make it truly immersive.
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Video Player Area
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(Color.Black)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(Color.Black),
             ) {
                 AndroidView(
                     factory = { ctx ->
                         MotionVideoPlayer(ctx, motionVideoProducer)
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -75,47 +82,58 @@ fun ProjectDetailsScreen(
             Surface(
                 tonalElevation = 2.dp,
                 shadowElevation = 8.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                        .navigationBarsPadding() // Respect bottom navigation bar
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                            .navigationBarsPadding(), // Respect bottom navigation bar
                 ) {
                     Text(
                         text = project.name,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                    
+
                     val startTime = project.metadata.get("startTime")?.asInt ?: 0
                     Text(
                         text = "Starts at: ${startTime}s",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val projectFile = remember(project.id) { context.createProjectFile(project) }
+                    val isVideoGenerated = projectFile.exists()
+
                     Button(
-                        onClick = { onShareClick(project) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        onClick = {
+                            if (isVideoGenerated) {
+                                onShareClick(project)
+                            } else {
+                                LyricsMotionWorker.startWork(context, project.id)
+                            }
+                        },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            imageVector = if (isVideoGenerated) Icons.Rounded.Share else Icons.Rounded.PlayCircle,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Share Project",
+                            text = if (isVideoGenerated) "Share Project" else "Generate Video",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                     }
                 }
@@ -125,19 +143,20 @@ fun ProjectDetailsScreen(
         // Overlay Back Button - Positioned at top-left with status bar padding
         IconButton(
             onClick = onBackClick,
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(16.dp)
-                .align(Alignment.TopStart)
-                .background(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                    shape = CircleShape
-                )
+            modifier =
+                Modifier
+                    .statusBarsPadding()
+                    .padding(16.dp)
+                    .align(Alignment.TopStart)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        shape = CircleShape,
+                    ),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
