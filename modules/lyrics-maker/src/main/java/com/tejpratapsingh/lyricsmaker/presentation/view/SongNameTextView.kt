@@ -12,7 +12,14 @@ class SongNameTextView(
     endFrame: Int,
     textView: AppCompatTextView = AppCompatTextView(context),
     fontUrl: String? = null,
-) : AbstractMotionTextView(context, songName, startFrame, endFrame, textView, fontUrl) {
+) : AbstractMotionTextView(
+        context = context,
+        text = songName,
+        startFrame = startFrame,
+        endFrame = endFrame,
+        textView = textView,
+        fontUrl = fontUrl,
+    ) {
     init {
         textView.text = songName
     }

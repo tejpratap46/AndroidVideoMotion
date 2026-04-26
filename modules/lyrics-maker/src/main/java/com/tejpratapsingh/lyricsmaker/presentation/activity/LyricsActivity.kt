@@ -8,6 +8,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
@@ -22,8 +23,6 @@ import com.tejpratapsingh.motionstore.tables.setCurrentProject
 class LyricsActivity : PreviewActivity() {
     companion object {
         const val PROJECT_ID = "project_id"
-        const val SONG = "song"
-        const val LYRICS = "lyrics"
 
         fun start(
             context: Context,
@@ -32,22 +31,6 @@ class LyricsActivity : PreviewActivity() {
             context.startActivity(
                 Intent(context, LyricsActivity::class.java).also {
                     it.putExtra(PROJECT_ID, projectId)
-                },
-            )
-        }
-
-        @Deprecated("Use start(Context, String) instead")
-        fun start(
-            context: Context,
-            song: String,
-            lyrics: ArrayList<SyncedLyricFrame>,
-            socialMeta: SocialMeta? = null,
-        ) {
-            context.startActivity(
-                Intent(context, LyricsActivity::class.java).also {
-                    it.putExtra(SONG, song)
-                    it.putExtra(ShareReceiverActivity.EXTRA_METADATA, socialMeta)
-                    it.putParcelableArrayListExtra(LYRICS, lyrics)
                 },
             )
         }
@@ -61,7 +44,7 @@ class LyricsActivity : PreviewActivity() {
     }
 
     private val song: String
-        get() = project?.name ?: intent.getStringExtra(SONG) ?: ""
+        get() = project?.name ?: ""
 
     private val lyrics: List<SyncedLyricFrame>
         get() {
@@ -85,20 +68,14 @@ class LyricsActivity : PreviewActivity() {
                 }
             if (projectLyrics != null) return projectLyrics
 
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableArrayListExtra(LYRICS, SyncedLyricFrame::class.java)?.toList()
-                    ?: emptyList()
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableArrayListExtra(LYRICS) ?: emptyList()
-            }
+            return emptyList()
         }
 
     private val video by lazy {
         val currentProject = project ?: provideCurrentProject(id = song.md5()).copy(name = song)
         setCurrentProject(currentProject)
 
-        getLyricsVideoProducer(
+        getMultiLyricsVideoProducer(
             applicationContext = applicationContext,
             motionProject = currentProject,
         )

@@ -11,16 +11,12 @@ class TransparentTextView(
     startFrame: Int,
     endFrame: Int,
 ) : AbstractMotionTextView(
-        context,
-        text,
-        startFrame,
-        endFrame,
+        context = context,
+        text = text,
+        startFrame = startFrame,
+        endFrame = endFrame,
         textView = CutoutTextView(context),
     ) {
-    private val TAG by lazy {
-        "TransparentTextView"
-    }
-
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 

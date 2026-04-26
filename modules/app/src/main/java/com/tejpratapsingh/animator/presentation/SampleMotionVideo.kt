@@ -2,13 +2,19 @@ package com.tejpratapsingh.animator.presentation
 
 import RenaultCar
 import android.content.Context
+import android.graphics.Color
+import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.animator.ui.view.ContourDevice
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
+import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
+import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
@@ -23,19 +29,22 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 
     setCurrentConfig(motionConfig)
 
-    val assetManager = applicationContext.assets
-    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+//    val assetManager = applicationContext.assets
+//    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+//
+//    val motionView: BaseContourMotionView =
+//        RenaultCar(
+//            context = applicationContext,
+//            startFrame = 1,
+//            endFrame = files?.size ?: 1,
+//        )
 
-    val motionView: BaseContourMotionView =
-        RenaultCar(
+    val motionView =
+        ContourDevice(
             context = applicationContext,
             startFrame = 1,
-            endFrame = files?.size ?: 1,
+            endFrame = motionConfig.fps * 4,
         )
-
-//    val motionView = ContourDevice(
-//        context = applicationContext, startFrame = 1, endFrame = motionConfig.fps * 4
-//    )
 
     val file = File(applicationContext.cacheDir, "arijit.m4a")
 
@@ -45,7 +54,9 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
             try {
                 httpClient.downloadFile(
                     file = file,
-                    url = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/3d/be/de/3dbedeeb-4ef4-0b43-d23e-ed7b3ec0c034/mzaf_3312428321786187211.plus.aac.p.m4a",
+                    url =
+                        "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/" +
+                            "3d/be/de/3dbedeeb-4ef4-0b43-d23e-ed7b3ec0c034/mzaf_3312428321786187211.plus.aac.p.m4a",
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -96,17 +107,20 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 //        motionConfig = motionConfig
 //    )
 
-    /*val motionView2: MotionView = GradientView(
-        context = applicationContext,
-        startFrame = motionView.endFrame + 1,
-        endFrame = motionConfig.fps * 4,
-        orientation = Orientation.CIRCULAR,
-        intArrayOf(
-            "#2568ff".toColorInt(), "#7048ff".toColorInt(), "#ba28ff".toColorInt()
-        )
-    ).apply {
-        setBackgroundColor(Color.WHITE)
-    }*/
+    val motionView2: MotionView =
+        GradientView(
+            context = applicationContext,
+            startFrame = motionView.endFrame + 1,
+            endFrame = motionConfig.fps * 4,
+            orientation = Orientation.CIRCULAR,
+            intArrayOf(
+                "#2568ff".toColorInt(),
+                "#7048ff".toColorInt(),
+                "#ba28ff".toColorInt(),
+            ),
+        ).apply {
+            setBackgroundColor(Color.WHITE)
+        }
 
     return MotionVideoProducer
         .with(

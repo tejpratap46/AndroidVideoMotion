@@ -11,7 +11,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
-import timber.log.Timber
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -25,6 +24,7 @@ import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
@@ -33,6 +33,7 @@ import com.tejpratapsingh.motionstore.tables.provideCurrentProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 import java.io.File
 import java.net.URLConnection
 import java.util.Locale
@@ -91,14 +92,15 @@ class LyricsMotionWorker(
 
     override suspend fun getOutputFile(): File =
         withContext(Dispatchers.Unconfined) {
-            val motionProject = provideCurrentProject()
+            val projectId = inputData.getString(PROJECT_ID)!!
+            val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
             applicationContext.createProjectFile(motionProject)
         }
 
     override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         val projectId = inputData.getString(PROJECT_ID)!!
         val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
-        return getLyricsVideoProducer(
+        return getMultiLyricsVideoProducer(
             applicationContext = appContext,
             motionProject = motionProject,
         )
@@ -143,7 +145,8 @@ class LyricsMotionWorker(
     override suspend fun onCompleted(videoFile: File) {
         Timber.d("onCompleted: Video saved to ${videoFile.absolutePath}")
 
-        val motionProject = provideCurrentProject()
+        val projectId = inputData.getString(PROJECT_ID)!!
+        val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
         Timber.i("onCompleted: $motionProject")
         applicationContext.asLyricsApp().motionStoreDao.upsert(motionProject)
 
