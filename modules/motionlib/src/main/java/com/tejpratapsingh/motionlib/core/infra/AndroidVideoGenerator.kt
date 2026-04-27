@@ -8,11 +8,11 @@ import android.media.MediaCodecInfo
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import timber.log.Timber
 import androidx.core.graphics.scale
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -47,10 +47,8 @@ class AndroidVideoGenerator {
      *                 Defaults to null. If provided, this will be used as the source of frames.
      * @param outputFile The [File] object where the generated video will be saved.
      *                   If an error occurs during generation and this file exists, it will be deleted.
-     * @param motionConfig A [MotionConfig] object specifying video properties like
-     *                     width, height, and frames per second (fps).
-     * @param motionAudios A list of [MotionAudio] objects to be mixed into the video.
-     *                     Each [AudioSource] defines the audio file, start/end times for trimming,
+     * @param motionAudio A list of [MotionAudio] objects to be mixed into the video.
+     *                     Each [MotionAudio] defines the audio file, start/end times for trimming,
      *                     and the insertion point in the final video. Defaults to an empty list.
      * @throws IOException If there is an error during file I/O operations (e.g., creating the output file).
      * @throws RuntimeException If there is an unexpected error during the MediaCodec or MediaMuxer

@@ -2,17 +2,18 @@ package com.tejpratapsingh.lyricsmaker.presentation.motion
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
+import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.lyricsmaker.presentation.view.MultiLyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
-import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordWriterTextView
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import timber.log.Timber
@@ -74,7 +75,7 @@ fun getMultiLyricsVideoProducer(
 
     lyrics.zipWithNext().forEach { (current, next) ->
         producer.addMotionViewToSequence(
-            WordWriterTextView(
+            PopUpTextView(
                 context = applicationContext,
                 text = current.text,
                 startFrame = current.frame,
@@ -83,12 +84,25 @@ fun getMultiLyricsVideoProducer(
                 unwrittenTextAlpha = 0.3f,
                 textView =
                     AppCompatTextView(applicationContext).apply {
-                        textSize = 18f
+                        textSize = fontSizeH3
                         setTextColor(Color.WHITE)
                         setPadding(16, 16, 16, 16)
                         textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
                     },
-            ),
+            ).apply {
+                contourHeightOf {
+                    provideCurrentConfig()
+                        .aspectRatio.height
+                        .toYInt()
+                }
+                contourWidthOf {
+                    provideCurrentConfig()
+                        .aspectRatio.width
+                        .toXInt()
+                }
+
+                textView.gravity = Gravity.CENTER
+            },
         )
     }
 

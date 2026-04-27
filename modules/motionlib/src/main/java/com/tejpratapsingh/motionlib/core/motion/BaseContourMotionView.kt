@@ -17,17 +17,23 @@ open class BaseContourMotionView(
     override val effects: List<MotionEffect> = emptyList(),
 ) : ContourLayout(context),
     MotionView {
+    private val minStartFrame: Int =
+        minOf((effects.minOfOrNull { it.startFrame } ?: Int.MAX_VALUE), startFrame)
+
+    private val maxEndFrame: Int =
+        maxOf((effects.maxOfOrNull { it.endFrame } ?: Int.MIN_VALUE), endFrame)
+
     @CallSuper
     override fun forFrame(frame: Int): MotionView {
-        if (frame < startFrame) {
-            visibility = INVISIBLE
+        if (frame < minStartFrame) {
+            isVisible = false
             return this
         }
-        if (frame > endFrame) {
-            visibility = INVISIBLE
+        if (frame > maxEndFrame) {
+            isVisible = false
             return this
         }
-        visibility = VISIBLE
+        isVisible = true
 
         Timber.d("forFrame: isVisible: $isVisible")
 
@@ -39,8 +45,15 @@ open class BaseContourMotionView(
             }
         }
 
+        runEffects(frame)
+
         return this
     }
+
+    fun runEffects(frame: Int) =
+        effects.forEach { effect ->
+            effect.forFrame(frame)
+        }
 
     override fun getViewBitmap() = this.toBitmap()
 }
