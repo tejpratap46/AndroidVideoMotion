@@ -1,10 +1,25 @@
 package com.tejpratapsingh.motionstore.extensions
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import java.io.File
 
 const val PROJECTS_DIR = "projects"
+
+/**
+ * Copies the name of the provided [motionProject] to the system clipboard and shows a toast.
+ *
+ * @param motionProject The project whose name should be copied.
+ */
+fun Context.copyProjectNameToClipboard(motionProject: MotionProject) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText("Project Name", motionProject.name)
+    clipboard.setPrimaryClip(clip)
+    Toast.makeText(this, "Project name copied to clipboard", Toast.LENGTH_SHORT).show()
+}
 
 /**
  * Creates and returns a directory for a specific [com.tejpratapsingh.motionstore.tables.MotionProject] within the internal app storage.

@@ -33,7 +33,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer

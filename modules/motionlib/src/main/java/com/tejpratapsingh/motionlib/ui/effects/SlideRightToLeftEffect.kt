@@ -1,11 +1,13 @@
 package com.tejpratapsingh.motionlib.ui.effects
 
 import android.view.View
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 class SlideRightToLeftEffect(
     override val motionView: MotionView,
@@ -13,10 +15,12 @@ class SlideRightToLeftEffect(
     override val endFrame: Int,
 ) : MotionEffect {
     override fun forFrame(frame: Int): MotionView {
-        if (motionView !is View) motionView
-        if (frame !in startFrame..endFrame) motionView
+        if (motionView !is View) return motionView
+        if (frame !in startFrame..endFrame) return motionView
 
         val view = motionView as View
+
+        val motionConfig: MotionConfig = provideCurrentConfig()
 
         val progress =
             MotionInterpolator.interpolateForRange(
@@ -26,10 +30,10 @@ class SlideRightToLeftEffect(
                 valueRange = Pair(0f, 1f),
             )
 
-        val width = view.width.toFloat()
+        val width = motionConfig.aspectRatio.width.toFloat()
 
-        // Start outside right, move to original position
-        view.translationX = width * (1f - progress)
+        // Start at original position (0), move to the left (-width)
+        view.translationX = -width * progress
 
         return motionView
     }

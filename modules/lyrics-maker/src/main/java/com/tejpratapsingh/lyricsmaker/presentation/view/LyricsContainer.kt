@@ -14,8 +14,7 @@ import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositor
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
-import com.tejpratapsingh.motionlib.core.MotionEffect
-import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.*
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -62,6 +61,9 @@ class LyricsContainer(
         fakeChartView = view.findViewById(R.id.fake_chart_view)
 
         tvSongName.text = songName
+        tvSongName.textSize = fontSizeH5
+        tvLyricsLine1.textSize = fontSizeH3
+        tvLyricsLine2.textSize = fontSizeH3
 
         progress.progress = startFrame
         progress.max = endFrame

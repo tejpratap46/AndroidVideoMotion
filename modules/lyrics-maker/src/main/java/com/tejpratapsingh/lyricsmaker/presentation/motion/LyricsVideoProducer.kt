@@ -6,7 +6,6 @@ import com.tejpratapsingh.lyricsmaker.presentation.view.LyricsContainer
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionstore.tables.MotionProject

@@ -1,6 +1,7 @@
 package com.tejpratapsingh.lyricsmaker.presentation.activity
 
 import android.Manifest
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -36,6 +37,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModelFactory
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
+import com.tejpratapsingh.motionstore.extensions.copyProjectNameToClipboard
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.worker.SyncWorker
@@ -130,6 +132,8 @@ class SearchActivity : ComponentActivity() {
      * Share Project
      */
     private fun shareProjectFile(motionProject: MotionProject) {
+        copyProjectNameToClipboard(motionProject)
+
         val videoFile = createProjectFile(motionProject)
         val videoFileUri: Uri =
             FileProvider.getUriForFile(
