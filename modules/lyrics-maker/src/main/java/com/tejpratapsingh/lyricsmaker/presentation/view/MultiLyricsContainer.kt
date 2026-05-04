@@ -20,15 +20,14 @@ import timber.log.Timber
 
 class MultiLyricsContainer(
     context: Context,
-    songName: String,
+    val songName: String,
     startFrame: Int,
     endFrame: Int,
-    image: String? = null,
+    val image: String? = null,
+    effects: List<MotionEffect> = emptyList(),
 ) : BaseFrameMotionView(context) {
     private val ivAlbumArt: ImageView
     private val fakeChartView: FakeAudioChartView
-
-    override val effects: List<MotionEffect> = emptyList()
 
     private val okHttp = OkHttpProvider.httpClient
     private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
@@ -37,6 +36,7 @@ class MultiLyricsContainer(
     init {
         super.startFrame = startFrame
         super.endFrame = endFrame
+        effects.forEach { addEffect(it) }
 
         setBackgroundColor(Color.BLACK)
 

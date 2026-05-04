@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.container
 
 import android.content.Context
 import android.view.View
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
@@ -10,8 +11,9 @@ class RotatingMotionView(
     startFrame: Int,
     endFrame: Int,
     view: View,
-    private val degreePerSecond: Float = 6f,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    val degreePerSecond: Float = 6f,
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     init {
         view.layoutBy(
             x =

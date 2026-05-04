@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
@@ -22,6 +23,12 @@ abstract class BaseFrameMotionView
         override var startFrame: Int = 0
         override var endFrame: Int = 0
         override var loop: Pair<Int, Int> = Pair(0, 0)
+        override val effects: MutableList<MotionEffect> = mutableListOf()
+
+        override fun addEffect(effect: MotionEffect) {
+            effect.motionView = this
+            effects.add(effect)
+        }
 
         companion object {
         }
@@ -67,6 +74,8 @@ abstract class BaseFrameMotionView
                     view.forFrame(frame)
                 }
             }
+
+            effects.forEach { it.forFrame(frame) }
 
             return this
         }

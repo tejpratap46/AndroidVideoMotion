@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.audio
 
 import android.content.Context
 import android.graphics.Canvas
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import kotlin.math.PI
 import kotlin.math.abs
@@ -12,10 +13,11 @@ import kotlin.math.sin
 
 class RadialAudioWaveformView(
     context: Context,
-    private val amplitudes: List<Float> = emptyList(),
+    val amplitudes: List<Float> = emptyList(),
     override var startFrame: Int,
     override var endFrame: Int,
-) : BaseAudioWaveformView(context, startFrame, endFrame) {
+    effects: List<MotionEffect> = emptyList(),
+) : BaseAudioWaveformView(context, startFrame, endFrame, effects = effects) {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (amplitudes.isEmpty() || startFrame >= endFrame) return

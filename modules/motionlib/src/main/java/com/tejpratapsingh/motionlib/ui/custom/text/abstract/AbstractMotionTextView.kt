@@ -2,18 +2,20 @@ package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
 abstract class AbstractMotionTextView(
     context: Context,
-    text: String,
+    val text: String,
     startFrame: Int,
     endFrame: Int,
     val textView: AppCompatTextView,
-    writingSpeed: Float = 1f,
-    fontUrl: String? = null,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    val writingSpeed: Float = 1f,
+    val fontUrl: String? = null,
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     protected val inferredEndFrame: Int =
         if (endFrame != -1 && writingSpeed > 0) {
             (startFrame + (endFrame - startFrame) / writingSpeed).toInt()

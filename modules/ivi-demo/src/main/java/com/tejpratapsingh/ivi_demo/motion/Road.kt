@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import timber.log.Timber
 import android.widget.ImageView
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
@@ -14,7 +15,8 @@ class Road(
     context: Context,
     startFrame: Int,
     endFrame: Int,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     companion object {
         const val imageAssetSubFolder = "road"
     }

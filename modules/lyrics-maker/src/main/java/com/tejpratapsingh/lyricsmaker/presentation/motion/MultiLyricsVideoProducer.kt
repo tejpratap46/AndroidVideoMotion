@@ -4,9 +4,12 @@ import android.content.Context
 import android.graphics.Color
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.view.MultiLyricsContainer
+import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
@@ -14,7 +17,6 @@ import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
-import com.tejpratapsingh.motionlib.ui.custom.text.WordWriterTextView
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import timber.log.Timber
 
@@ -52,7 +54,7 @@ fun getMultiLyricsVideoProducer(
 
     val motionConfig =
         MotionConfig(
-            aspectRatio = VideoAspectRatio.Ratio9x16_480,
+            aspectRatio = VideoAspectRatio.Ratio9x16_720,
             fps = 24,
         )
 
@@ -105,6 +107,27 @@ fun getMultiLyricsVideoProducer(
             },
         )
     }
+
+    val views = mutableListOf<MotionView>()
+    for (i in 0 until producer.motionComposerView.childCount) {
+        val child = producer.motionComposerView.getChildAt(i)
+        if (child is MotionView) {
+            views.add(child)
+        }
+    }
+
+    val sdui =
+        createMotionSDUIJson(
+            views = views,
+            audios = producer.motionAudio,
+        )
+
+    motionProject.metadata.add("sdui", sdui)
+
+    Timber.d("Generated SDUI: %s", sdui.toString())
+
+    val updatedProject = motionProject.copy(sdui = sdui)
+    applicationContext.asLyricsApp().motionStoreDao.upsert(updatedProject)
 
     return producer
 }

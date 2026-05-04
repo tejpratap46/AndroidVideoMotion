@@ -6,6 +6,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -22,6 +23,7 @@ class WordBlinkTextView(
     endFrame: Int = -1,
     writingSpeed: Float = 0f,
     textView: AppCompatTextView = CutoutTextView(context),
+    effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
         text = text,
@@ -29,6 +31,7 @@ class WordBlinkTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        effects = effects,
     ) {
     init {
         textView.maxLines = 1

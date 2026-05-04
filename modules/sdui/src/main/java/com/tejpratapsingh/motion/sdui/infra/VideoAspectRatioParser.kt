@@ -43,22 +43,25 @@ private val allRatios =
         Ratio21x9_2160,
     )
 
-fun VideoAspectRatio.toJsonObject(): JsonObject = Gson().toJsonTree(this).asJsonObject
+private val gsonWithAspectRatio =
+    GsonBuilder()
+        .registerTypeAdapter(
+            VideoAspectRatio::class.java,
+            JsonDeserializer { element, _, _ ->
+                val obj = element.asJsonObject
+                val width = if (obj.has("width")) obj.get("width").asInt else 0
+                val height = if (obj.has("height")) obj.get("height").asInt else 0
+                val label = if (obj.has("label")) obj.get("label").asString else "Custom"
+
+                allRatios.find { it.width == width && it.height == height }
+                    ?: Custom(width, height, label)
+            },
+        ).create()
+
+private val gsonDefault = Gson()
+
+fun VideoAspectRatio.toJson(): JsonObject = gsonDefault.toJsonTree(this).asJsonObject
 
 fun JsonObject.toVideoAspectRatio(): VideoAspectRatio {
-    val gson =
-        GsonBuilder()
-            .registerTypeAdapter(
-                VideoAspectRatio::class.java,
-                JsonDeserializer { element, _, _ ->
-                    val obj = element.asJsonObject
-                    val width = obj.get("width").asInt
-                    val height = obj.get("height").asInt
-                    val label = obj.get("label").asString
-
-                    allRatios.find { it.width == width && it.height == height }
-                        ?: Custom(width, height, label)
-                },
-            ).create()
-    return gson.fromJson(this, VideoAspectRatio::class.java)
+    return gsonWithAspectRatio.fromJson(this, VideoAspectRatio::class.java)
 }

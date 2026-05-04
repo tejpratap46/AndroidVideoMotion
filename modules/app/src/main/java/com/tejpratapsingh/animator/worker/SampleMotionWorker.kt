@@ -10,7 +10,6 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
-import timber.log.Timber
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,6 +25,7 @@ import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.File
 import java.net.URLConnection
 import java.util.Locale
@@ -109,7 +109,7 @@ class SampleMotionWorker(
         updateNotification(progressNotificationId, notification)
 
         // If you need to update the foreground notification specifically (often handled by the initial setForegroundAsync)
-        setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
+        setForeground(createForegroundInfo(progressNotificationId, notification))
     }
 
     override suspend fun onCompleted(videoFile: File) {

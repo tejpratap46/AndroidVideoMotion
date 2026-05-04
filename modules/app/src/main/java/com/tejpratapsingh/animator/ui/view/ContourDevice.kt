@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Gravity
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -18,7 +19,8 @@ class ContourDevice(
     context: Context,
     startFrame: Int,
     endFrame: Int,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     private val typeWriterWriterTextView: TypeWriterTextView =
         TypeWriterTextView(
             context = context,
