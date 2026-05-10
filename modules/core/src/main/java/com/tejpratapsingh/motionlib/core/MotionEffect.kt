@@ -1,7 +1,7 @@
 package com.tejpratapsingh.motionlib.core
 
 interface MotionEffect : OnMotionFrameListener {
-    val motionView: MotionView
+    var motionView: MotionView
     val startFrame: Int
     val endFrame: Int
 }

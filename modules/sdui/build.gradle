@@ -20,6 +20,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -41,11 +44,14 @@ afterEvaluate {
 
 dependencies {
     implementation project(path: ':modules:core')
+    implementation project(path: ':modules:motion-store')
     implementation libs.androidx.appcompat
 
     implementation project(path: ':modules:motionlib')
 
     testImplementation libs.junit
+    testImplementation libs.robolectric
+    testImplementation "org.mockito:mockito-core:5.11.0"
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.androidx.test.espresso.core
 }

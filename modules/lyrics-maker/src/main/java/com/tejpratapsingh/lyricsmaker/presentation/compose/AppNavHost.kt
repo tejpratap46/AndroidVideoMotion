@@ -1,7 +1,6 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -11,7 +10,6 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
-import com.tejpratapsingh.lyricsmaker.presentation.activity.LyricsActivity
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.motionlib.core.extensions.md5
@@ -105,10 +103,9 @@ fun AppNavHost(
                         .motionStoreDao
                         .upsert(project)
 
-                    LyricsActivity.start(
-                        context = navController.context,
-                        projectId = projectId,
-                    )
+                    projectsViewModel.loadProjects()
+
+                    navController.navigate(Screen.ProjectDetails.createRoute(projectId))
                 },
             )
         }

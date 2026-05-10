@@ -14,14 +14,25 @@ open class BaseContourMotionView(
     override val startFrame: Int,
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0),
-    override val effects: List<MotionEffect> = emptyList(),
+    effects: List<MotionEffect> = emptyList(),
 ) : ContourLayout(context),
     MotionView {
-    private val minStartFrame: Int =
-        minOf((effects.minOfOrNull { it.startFrame } ?: Int.MAX_VALUE), startFrame)
+    override val effects: MutableList<MotionEffect> = mutableListOf()
 
-    private val maxEndFrame: Int =
-        maxOf((effects.maxOfOrNull { it.endFrame } ?: Int.MIN_VALUE), endFrame)
+    init {
+        effects.forEach { addEffect(it) }
+    }
+
+    private val minStartFrame: Int
+        get() = minOf((effects.minOfOrNull { it.startFrame } ?: Int.MAX_VALUE), startFrame)
+
+    private val maxEndFrame: Int
+        get() = maxOf((effects.maxOfOrNull { it.endFrame } ?: Int.MIN_VALUE), endFrame)
+
+    override fun addEffect(effect: MotionEffect) {
+        effect.motionView = this
+        effects.add(effect)
+    }
 
     @CallSuper
     override fun forFrame(frame: Int): MotionView {

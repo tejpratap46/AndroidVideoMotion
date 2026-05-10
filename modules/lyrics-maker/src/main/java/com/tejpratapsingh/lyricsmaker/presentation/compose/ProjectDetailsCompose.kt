@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +55,7 @@ fun ProjectDetailsScreen(
     // to fix the "extra space above" issue and make it truly immersive.
     Box(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
     ) {
@@ -144,7 +143,6 @@ fun ProjectDetailsScreen(
             onClick = onBackClick,
             modifier =
                 Modifier
-                    .statusBarsPadding()
                     .padding(16.dp)
                     .align(Alignment.TopStart)
                     .background(

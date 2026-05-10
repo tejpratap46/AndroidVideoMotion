@@ -33,6 +33,7 @@ class LyricsContainer(
     endFrame: Int,
     val lyrics: List<SyncedLyricFrame>,
     image: String? = null,
+    effects: List<MotionEffect> = emptyList(),
 ) : BaseFrameMotionView(context) {
     private val cvLyrics: ViewGroup
     private val tvSongName: TextView
@@ -41,7 +42,6 @@ class LyricsContainer(
     private val tvLyricsLine2: TextView
     private val progress: SeekBar
     private val fakeChartView: FakeAudioChartView
-    override val effects: List<MotionEffect> = emptyList()
 
     private val okHttp = OkHttpProvider.httpClient
     private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
@@ -50,6 +50,7 @@ class LyricsContainer(
     init {
         super.startFrame = startFrame
         super.endFrame = endFrame
+        effects.forEach { addEffect(it) }
 
         val view = inflate(getContext(), R.layout.lyrics_container, this)
         cvLyrics = view.findViewById(R.id.cv_lyrics)

@@ -17,9 +17,19 @@ class FFMpegVideoFrameView(
     override val startFrame: Int,
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0),
+    effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
-    override val effects: List<MotionEffect> = emptyList()
+    override val effects: MutableList<MotionEffect> = mutableListOf()
+
+    override fun addEffect(effect: MotionEffect) {
+        effect.motionView = this
+        effects.add(effect)
+    }
+
+    init {
+        effects.forEach { addEffect(it) }
+    }
 
     val imageView =
         ImageView(context).apply {
@@ -47,6 +57,7 @@ class FFMpegVideoFrameView(
         imageView.setImageBitmap(
             currentFrameBitmap,
         )
+        effects.forEach { it.forFrame(frame) }
         return this
     }
 

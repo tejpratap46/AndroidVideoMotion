@@ -56,11 +56,6 @@ class MotionVideoPlayer(
                             motionVideoProducer.motionComposerView.forFrame(progress)
                         }
                         currentTimeTextView.text = formatTime(progress)
-                        overlayImageView.setImageBitmap(
-                            motionVideoProducer
-                                .motionComposerView
-                                .getViewBitmap(),
-                        )
                     }
 
                     override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -109,11 +104,6 @@ class MotionVideoPlayer(
             gravity = android.view.Gravity.CENTER_VERTICAL // Center items in controls
         }
 
-    val overlayImageView: ImageView =
-        ImageView(context).apply {
-            scaleType = ImageView.ScaleType.FIT_XY
-        }
-
     private val previewLayout: FrameLayout =
         FrameLayout(context)
 
@@ -145,9 +135,6 @@ class MotionVideoPlayer(
                 android.view.Gravity.CENTER,
             )
         previewLayout.addView(motionVideoProducer.motionComposerView, previewLayoutParams)
-        previewLayout.addView(overlayImageView, previewLayoutParams)
-
-        overlayImageView.setBackgroundColor(Color.WHITE)
 
         previewLayout.layoutBy(
             x = leftTo { parent.left() }.rightTo { parent.right() },

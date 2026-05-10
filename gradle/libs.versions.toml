@@ -18,6 +18,7 @@ tensorflowLiteVersion = "2.17.0"
 timberVersion = "5.0.1"
 work_version = "2.11.2"
 junit_version = "4.13.2"
+robolectric_version = "4.16.1"
 androidx_test_ext_junit_version = "1.3.0"
 espresso_core_version = "3.7.0"
 agpVersion = "9.1.1"
@@ -32,6 +33,7 @@ ktlint = "14.2.0"
 runtimeVersion = "1.10.6"
 crashlyticsVersion = "3.0.7"
 googleServicesVersion = "4.4.4"
+media3Version = "1.10.0"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -52,6 +54,7 @@ jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodecVersion" }
 jcodec-android = { module = "org.jcodec:jcodec-android", version.ref = "jcodecVersion" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoupVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit_version" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric_version" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx_test_ext_junit_version" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso_core_version" }
 ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
@@ -91,6 +94,9 @@ supabase-realtime-kt = { module = "io.github.jan-tennert.supabase:realtime-kt" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+
+androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3Version" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Version" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

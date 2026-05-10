@@ -10,10 +10,11 @@ import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 class SlideRightToLeftEffect(
-    override val motionView: MotionView,
     override val startFrame: Int,
     override val endFrame: Int,
 ) : MotionEffect {
+    override lateinit var motionView: MotionView
+
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) return motionView
         if (frame !in startFrame..endFrame) return motionView

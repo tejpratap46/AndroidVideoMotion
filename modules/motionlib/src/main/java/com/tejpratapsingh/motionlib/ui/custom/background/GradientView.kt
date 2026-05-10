@@ -7,6 +7,7 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -25,12 +26,14 @@ class GradientView(
     context: Context,
     startFrame: Int,
     endFrame: Int,
-    private val orientation: Orientation,
-    private val colors: IntArray,
+    val orientation: Orientation,
+    val colors: IntArray,
+    effects: List<MotionEffect> = emptyList(),
 ) : OrientedMotionView(
         context = context,
         startFrame = startFrame,
         endFrame = endFrame,
+        effects = effects,
     ) {
     private companion object {
     }

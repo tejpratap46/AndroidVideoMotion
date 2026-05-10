@@ -32,9 +32,19 @@ class Filament3dView(
     override val startFrame: Int,
     override val endFrame: Int,
     override val loop: Pair<Int, Int> = Pair(0, 0),
+    effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
-    override val effects: List<MotionEffect> = emptyList()
+    override val effects: MutableList<MotionEffect> = mutableListOf()
+
+    override fun addEffect(effect: MotionEffect) {
+        effect.motionView = this
+        effects.add(effect)
+    }
+
+    init {
+        effects.forEach { addEffect(it) }
+    }
 
     private lateinit var engine: Engine
     private lateinit var swapChain: SwapChain
@@ -192,6 +202,9 @@ class Filament3dView(
         rotateModel(frame.toFloat())
         val buffer = renderAndCapture()
         imageView.setImageBitmap(getModelBitmap(buffer))
+
+        effects.forEach { it.forFrame(frame) }
+
         return this
     }
 

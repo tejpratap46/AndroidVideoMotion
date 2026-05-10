@@ -3,6 +3,7 @@ import android.graphics.BitmapFactory
 import timber.log.Timber
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -16,7 +17,8 @@ class RenaultCar(
     context: Context,
     startFrame: Int,
     endFrame: Int,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     companion object {
         const val imageAssetSubFolder = "renault_kiger_bg"
     }

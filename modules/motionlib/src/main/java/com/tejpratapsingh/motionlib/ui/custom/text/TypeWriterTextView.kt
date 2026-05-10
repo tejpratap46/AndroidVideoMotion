@@ -7,6 +7,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -18,12 +19,13 @@ import timber.log.Timber
 
 class TypeWriterTextView(
     context: Context,
-    private val text: String,
+    text: String,
     startFrame: Int,
     endFrame: Int,
     writingSpeed: Float = 0f,
-    private val unwrittenTextAlpha: Float = 0f,
+    val unwrittenTextAlpha: Float = 0f,
     textView: AppCompatTextView = CutoutTextView(context),
+    effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
         text = text,
@@ -31,6 +33,7 @@ class TypeWriterTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        effects = effects,
     ) {
     init {
         contourHeightOf {

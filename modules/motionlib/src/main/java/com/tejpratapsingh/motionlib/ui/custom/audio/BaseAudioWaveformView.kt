@@ -2,13 +2,15 @@ package com.tejpratapsingh.motionlib.ui.custom.audio
 
 import android.content.Context
 import android.graphics.Paint
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 
 open class BaseAudioWaveformView(
     context: Context,
     override var startFrame: Int,
     override var endFrame: Int,
-) : BaseContourMotionView(context, startFrame, endFrame) {
+    effects: List<MotionEffect> = emptyList(),
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     protected var currentFrame: Int = 0
 
     protected val paint =

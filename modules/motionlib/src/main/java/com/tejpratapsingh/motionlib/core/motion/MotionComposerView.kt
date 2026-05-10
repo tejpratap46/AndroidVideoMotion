@@ -20,7 +20,12 @@ open class MotionComposerView(
 ) : ContourLayout(context),
     MotionView,
     IComposerView {
-    override val effects: List<MotionEffect> = emptyList()
+    override val effects: MutableList<MotionEffect> = mutableListOf()
+
+    override fun addEffect(effect: MotionEffect) {
+        effect.motionView = this
+        effects.add(effect)
+    }
 
     init {
         val config: MotionConfig = provideCurrentConfig()

@@ -4,19 +4,29 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.core.MotionConfig
 
-fun MotionConfig.toJsonObject(): JsonObject =
-    Gson()
+private val gson = Gson()
+
+fun MotionConfig.toJson(): JsonObject =
+    gson
         .toJsonTree(
             mapOf(
-                "aspectRatio" to aspectRatio.toJsonObject(),
+                "aspectRatio" to aspectRatio.toJson(),
                 "fps" to fps,
                 "outputQuality" to outputQuality,
             ),
         ).asJsonObject
 
-fun JsonObject.toMotionConfig(): MotionConfig =
-    MotionConfig(
-        aspectRatio = get("aspectRatio").asJsonObject.toVideoAspectRatio(),
-        fps = get("fps").asInt,
-        outputQuality = get("outputQuality").asInt,
+fun JsonObject.toMotionConfig(): MotionConfig {
+    val aspectRatio =
+        if (has("aspectRatio") && get("aspectRatio").isJsonObject) {
+            get("aspectRatio").asJsonObject.toVideoAspectRatio()
+        } else {
+            MotionConfig().aspectRatio
+        }
+
+    return MotionConfig(
+        aspectRatio = aspectRatio,
+        fps = if (has("fps")) get("fps").asInt else 24,
+        outputQuality = if (has("outputQuality")) get("outputQuality").asInt else 100,
     )
+}
