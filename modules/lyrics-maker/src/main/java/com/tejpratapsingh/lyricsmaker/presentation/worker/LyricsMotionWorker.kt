@@ -8,9 +8,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
-import android.os.PowerManager
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -22,17 +23,16 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
-import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
-import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
+import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
+import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
+import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
-import com.tejpratapsingh.motionstore.tables.provideCurrentProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import timber.log.Timber
 import java.io.File
 import java.net.URLConnection
@@ -52,13 +52,6 @@ class LyricsMotionWorker(
     private val completedNotificationBuilder: NotificationCompat.Builder by lazy {
         NotificationFactory.getRenderCompleteNotification(appContext)
     }
-
-    private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-    private val wakeLock: PowerManager.WakeLock =
-        powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "MyApp::MyWakelockTag",
-        )
 
     private fun createForegroundInfo(
         progressNotificationId: Int,
@@ -100,10 +93,19 @@ class LyricsMotionWorker(
     override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         val projectId = inputData.getString(PROJECT_ID)!!
         val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
-        return getMultiLyricsVideoProducer(
-            applicationContext = appContext,
-            motionProject = motionProject,
-        )
+        return SDUIMotionVideoProducerFactory(
+            context = appContext,
+            videoProducerAdapter = FfmpegVideoProducerAdapter(),
+        ).createFromProject(motionProject) { views ->
+            views.filterIsInstance<AbstractMotionTextView>().forEach {
+                it.textView.apply {
+                    textSize = fontSizeH3
+                    setTextColor(Color.WHITE)
+                    setPadding(16, 16, 16, 16)
+                    textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                }
+            }
+        }
     }
 
     override suspend fun onProgress(
@@ -259,11 +261,16 @@ class LyricsMotionWorker(
                     .build()
 
             val workRequest =
-                OneTimeWorkRequestBuilder<LyricsMotionWorker>().setInputData(inputData).build()
+                OneTimeWorkRequestBuilder<LyricsMotionWorker>()
+                    .addTag(getWorkTag(projectId))
+                    .setInputData(inputData)
+                    .build()
 
             WorkManager.getInstance(context).enqueue(workRequest)
             return workRequest.id
         }
+
+        fun getWorkTag(projectId: String): String = "project_$projectId"
 
         fun cancelAllWork(context: Context) {
             WorkManager.getInstance(context).cancelAllWork()

@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.worker
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.PowerManager
 import timber.log.Timber
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
@@ -25,6 +26,15 @@ abstract class MotionWorker(
     protected val progressNotificationId = id.hashCode()
     protected val completedNotificationId = progressNotificationId + 1
 
+    private val wakeLock: PowerManager.WakeLock by lazy {
+        val powerManager =
+            applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "${this.javaClass.simpleName}::WakeLock",
+        )
+    }
+
     private val mMotionVideoProducer: MotionVideoProducer by lazy {
         getMotionVideo(inputData)
     }
@@ -35,6 +45,7 @@ abstract class MotionWorker(
 
     override suspend fun doWork(): Result {
         Timber.d("Worker ${this.id}: Starting video generation.")
+        wakeLock.acquire(10 * 60 * 60 * 1000L /* 1 hour */)
         return try {
             val videoFile: File =
                 generateVideo(
@@ -69,6 +80,10 @@ abstract class MotionWorker(
             Timber.e(e, "Worker ${this.workId}: Error during video generation.")
             onFailed(e) // Optional: abstract method for specific failure handling
             Result.failure()
+        } finally {
+            if (wakeLock.isHeld) {
+                wakeLock.release()
+            }
         }
     }
 

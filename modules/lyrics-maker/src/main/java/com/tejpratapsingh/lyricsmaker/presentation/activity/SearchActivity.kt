@@ -9,15 +9,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import timber.log.Timber
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
@@ -43,12 +42,14 @@ import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.worker.SyncWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.net.URLConnection
 
 class SearchActivity : ComponentActivity() {
     private val projectsViewModel: ProjectsViewModel by viewModels {
         ProjectsViewModelFactory(
             applicationContext.asLyricsApp().motionStoreDao,
+            applicationContext.asLyricsApp().preferenceManager,
         )
     }
 
@@ -165,12 +166,6 @@ class SearchActivity : ComponentActivity() {
             }
 
             is LyricsUiState.Success -> {
-                Toast
-                    .makeText(
-                        this@SearchActivity,
-                        "Success ${lyricsState.lyrics.size}",
-                        Toast.LENGTH_LONG,
-                    ).show()
             }
         }
     }

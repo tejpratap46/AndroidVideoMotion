@@ -24,6 +24,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +34,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
@@ -49,6 +53,15 @@ fun ProjectDetailsScreen(
     val motionVideoProducer =
         remember(project.id) {
             getMultiLyricsVideoProducer(context, project)
+        }
+
+    val workInfos by WorkManager.getInstance(context)
+        .getWorkInfosByTagFlow(LyricsMotionWorker.getWorkTag(project.id))
+        .collectAsState(initial = emptyList())
+
+    val isRendering =
+        remember(workInfos) {
+            workInfos.any { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
         }
 
     // Use a fresh Box and ignore the passed 'modifier' (which contains Scaffold padding)
@@ -116,6 +129,7 @@ fun ProjectDetailsScreen(
                                 LyricsMotionWorker.startWork(context, project.id)
                             }
                         },
+                        enabled = !isRendering,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -129,7 +143,14 @@ fun ProjectDetailsScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = if (isVideoGenerated) "Share Project" else "Generate Video",
+                            text =
+                                if (isVideoGenerated) {
+                                    "Share Project"
+                                } else if (isRendering) {
+                                    "Rendering..."
+                                } else {
+                                    "Generate Video"
+                                },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )

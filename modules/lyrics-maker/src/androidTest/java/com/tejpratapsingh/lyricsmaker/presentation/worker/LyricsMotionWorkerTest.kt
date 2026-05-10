@@ -93,6 +93,20 @@ class LyricsMotionWorkerTest {
     }
 
     @Test
+    fun startWork_enqueuedWorkHasCorrectTag() {
+        val workId: UUID = LyricsMotionWorker.startWork(context, projectId)
+        val workInfo: WorkInfo? = WorkManager.getInstance(context).getWorkInfoById(workId).get()
+
+        assertNotNull(workInfo)
+        val expectedTag = LyricsMotionWorker.getWorkTag(projectId)
+        assert(workInfo!!.tags.contains(expectedTag)) {
+            "Work should be tagged with $expectedTag, but tags were ${workInfo.tags}"
+        }
+
+        WorkManager.getInstance(context).cancelWorkById(workId)
+    }
+
+    @Test
     fun startWork_enqueuedWorkIsInQueuedOrRunningState() {
         val workId: UUID = LyricsMotionWorker.startWork(context, projectId)
 

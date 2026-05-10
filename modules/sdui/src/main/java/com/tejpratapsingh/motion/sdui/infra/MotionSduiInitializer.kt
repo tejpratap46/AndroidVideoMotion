@@ -1,8 +1,13 @@
 package com.tejpratapsingh.motion.sdui.infra
 
+import android.graphics.Color
+import android.view.Gravity
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.google.gson.JsonArray
+import com.tejpratapsingh.motionlib.core.fontSizeH3
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.audio.CircularAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.audio.RadialAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView

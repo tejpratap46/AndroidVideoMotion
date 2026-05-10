@@ -24,7 +24,7 @@ class WordWriterTextView(
     endFrame: Int = -1,
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
-    textView: AppCompatTextView = CutoutTextView(context),
+    textView: AppCompatTextView = AppCompatTextView(context),
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
