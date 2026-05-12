@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.ViewGroup
 import com.tejpratapsingh.motionlib.core.MotionAudio
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter

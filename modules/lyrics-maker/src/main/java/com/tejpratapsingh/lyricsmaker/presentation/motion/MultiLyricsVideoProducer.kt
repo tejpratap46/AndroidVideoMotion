@@ -7,7 +7,13 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.view.MultiLyricsContainer
+import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
+import com.tejpratapsingh.motion.sdui.infra.getMotionAudios
+import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
+import com.tejpratapsingh.motion.sdui.infra.getMotionPlugins
+import com.tejpratapsingh.motion.sdui.infra.getMotionViews
+import com.tejpratapsingh.motion.sdui.infra.toMotionView
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
@@ -54,7 +60,7 @@ fun getMultiLyricsVideoProducer(
 
     val motionConfig =
         MotionConfig(
-            aspectRatio = VideoAspectRatio.Ratio9x16_720,
+            aspectRatio = VideoAspectRatio.Ratio9x16_480,
             fps = 24,
         )
 
@@ -120,11 +126,11 @@ fun getMultiLyricsVideoProducer(
         createMotionSDUIJson(
             views = views,
             audios = producer.motionAudio,
+            plugins = producer.motionComposerView.plugins,
+            config = provideCurrentConfig(),
         )
 
     motionProject.metadata.add("sdui", sdui)
-
-    Timber.d("Generated SDUI: %s", sdui.toString())
 
     val updatedProject = motionProject.copy(sdui = sdui)
     applicationContext.asLyricsApp().motionStoreDao.upsert(updatedProject)

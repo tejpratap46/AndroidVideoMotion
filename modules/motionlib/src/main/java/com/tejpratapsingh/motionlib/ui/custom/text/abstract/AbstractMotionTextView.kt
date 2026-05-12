@@ -1,9 +1,11 @@
 package com.tejpratapsingh.motionlib.ui.custom.text.abstract
 
 import android.content.Context
+import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
 abstract class AbstractMotionTextView(
@@ -24,6 +26,19 @@ abstract class AbstractMotionTextView(
         }
 
     init {
+        contourHeightOf {
+            provideCurrentConfig()
+                .aspectRatio.height
+                .toYInt()
+        }
+        contourWidthOf {
+            provideCurrentConfig()
+                .aspectRatio.width
+                .toXInt()
+        }
+
+        textView.gravity = Gravity.CENTER
+
         textView.apply {
             if (fontUrl != null) {
                 typeface = getWebFont(fontUrl)

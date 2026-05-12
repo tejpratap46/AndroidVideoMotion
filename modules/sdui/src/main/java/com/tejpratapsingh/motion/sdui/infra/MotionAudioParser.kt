@@ -39,12 +39,12 @@ fun JsonObject.toMotionAudio(context: Context): MotionAudio {
         val startFrame = get("startFrame")?.asInt ?: 0
         val endFrame = get("endFrame")?.asInt ?: 0
         val delayFrame = get("delayFrame")?.asInt ?: 0
-        
+
         MotionAudio(
             file = File(filePath),
             startFrame = startFrame,
             endFrame = endFrame,
-            delayFrame = delayFrame
+            delayFrame = delayFrame,
         )
     }
 }

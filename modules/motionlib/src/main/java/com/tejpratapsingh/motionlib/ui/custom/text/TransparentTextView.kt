@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
+import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.ui.custom.CutoutTextView
@@ -17,7 +18,7 @@ class TransparentTextView(
         text = text,
         startFrame = startFrame,
         endFrame = endFrame,
-        textView = CutoutTextView(context),
+        textView = AppCompatTextView(context),
         effects = effects,
     ) {
     override fun forFrame(frame: Int): MotionView {

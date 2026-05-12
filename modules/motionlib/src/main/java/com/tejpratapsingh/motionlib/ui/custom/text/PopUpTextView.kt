@@ -31,17 +31,17 @@ class PopUpTextView(
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
     val maxTranslationY: Float = 50f,
-    textView: AppCompatTextView = CutoutTextView(context),
+    textView: AppCompatTextView = AppCompatTextView(context),
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
-    context = context,
-    text = text,
-    startFrame = startFrame,
-    endFrame = endFrame,
-    textView = textView,
-    writingSpeed = writingSpeed,
-    effects = effects,
-) {
+        context = context,
+        text = text,
+        startFrame = startFrame,
+        endFrame = endFrame,
+        textView = textView,
+        writingSpeed = writingSpeed,
+        effects = effects,
+    ) {
     private val wordArray = text.split(" ")
     private val wordCount: Int = wordArray.size
 
@@ -74,29 +74,30 @@ class PopUpTextView(
                 )
 
         val spannableString = SpannableString(text)
-        
+
         var currentIdx = 0
         wordArray.forEachIndexed { index, word ->
             val wordProgress = (progress - index).coerceIn(0f, 1f)
-            
-            val span = PopUpSpan(
-                progress = wordProgress,
-                unwrittenAlpha = unwrittenTextAlpha,
-                maxTranslationY = maxTranslationY,
-            )
-            
+
+            val span =
+                PopUpSpan(
+                    progress = wordProgress,
+                    unwrittenAlpha = unwrittenTextAlpha,
+                    maxTranslationY = maxTranslationY,
+                )
+
             val start = currentIdx
             val end = currentIdx + word.length
-            
+
             if ((start < end) && (end <= text.length)) {
                 spannableString.setSpan(
                     span,
                     start,
                     end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
-            
+
             currentIdx += word.length + 1 // +1 for the space
         }
 
@@ -114,16 +115,13 @@ class PopUpTextView(
         private val unwrittenAlpha: Float,
         private val maxTranslationY: Float,
     ) : ReplacementSpan() {
-
         override fun getSize(
             paint: Paint,
             text: CharSequence?,
             start: Int,
             end: Int,
-            fm: Paint.FontMetricsInt?
-        ): Int {
-            return paint.measureText(text, start, end).toInt()
-        }
+            fm: Paint.FontMetricsInt?,
+        ): Int = paint.measureText(text, start, end).toInt()
 
         override fun draw(
             canvas: Canvas,
@@ -134,7 +132,7 @@ class PopUpTextView(
             top: Int,
             y: Int,
             bottom: Int,
-            paint: Paint
+            paint: Paint,
         ) {
             if (progress <= 0f) {
                 return
@@ -142,14 +140,14 @@ class PopUpTextView(
 
             val alpha = (unwrittenAlpha + (1f - unwrittenAlpha) * progress) * 255
             val translationY = maxTranslationY * (1f - progress)
-            
+
             val oldAlpha = paint.alpha
             paint.alpha = alpha.toInt()
-            
+
             canvas.withTranslation(y = translationY) {
                 drawText(text!!, start, end, x, y.toFloat(), paint)
             }
-            
+
             paint.alpha = oldAlpha
         }
     }

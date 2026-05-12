@@ -22,7 +22,7 @@ class WordBlinkTextView(
     startFrame: Int = 0,
     endFrame: Int = -1,
     writingSpeed: Float = 0f,
-    textView: AppCompatTextView = CutoutTextView(context),
+    textView: AppCompatTextView = AppCompatTextView(context),
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
