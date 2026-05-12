@@ -5,5 +5,49 @@ body {
 }
 
 input[type="range"] {
-  accent-color: #2ed573;
+  accent-color: #2563eb;
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.player-btn {
+  background: transparent;
+  border: none;
+  color: #9898b0;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.player-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+.player-btn:active {
+  transform: scale(0.95);
+}
+
+.player-btn.primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.player-btn.primary:hover {
+  background: #1d4ed8;
 }
