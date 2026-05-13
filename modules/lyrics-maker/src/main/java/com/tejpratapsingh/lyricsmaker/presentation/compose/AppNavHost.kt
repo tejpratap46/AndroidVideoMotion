@@ -64,6 +64,7 @@ fun AppNavHost(
             SyncedLyricsSelector(
                 viewModel = lyricsViewModel,
                 modifier = modifier,
+                onBack = { navController.popBackStack() },
                 onSelectionChanged = { selectedLyrics ->
                     lyricsViewModel.selectedLyrics = selectedLyrics
                 },

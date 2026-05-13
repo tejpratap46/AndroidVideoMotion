@@ -2,7 +2,7 @@ package com.tejpratapsingh.motion.metadataextractor.presentation
 
 import android.content.Intent
 import android.os.Bundle
-import timber.log.Timber
+import android.util.Patterns
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -13,10 +13,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tejpratapsingh.motion.metadataextractor.R
 import com.tejpratapsingh.motion.metadataextractor.data.MetaDataResult
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motion.metadataextractor.databinding.ActivityShareReceiverBinding
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ShareReceiverActivity : AppCompatActivity() {
     companion object {
@@ -29,95 +32,86 @@ class ShareReceiverActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityShareReceiverBinding
     private val metadataViewModel by viewModels<MetaDataViewModel>()
+    private var sharedLink: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityShareReceiverBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setupWindowInsets()
+        handleIntent(intent)
+        observeMetaData()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        binding.loading.isVisible = true
-        findSharedUrl()
-        observerMetaData()
     }
 
-    private fun findSharedUrl() {
-        when (intent?.action) {
-            Intent.ACTION_SEND -> {
-                when (intent.type) {
-                    "text/plain" -> {
-                        handleSharedText(intent)
-                    }
-
-                    else -> {
-                        // Handle other types if needed
-                        finish() // Close the activity if the type is unsupported
-                    }
-                }
-            }
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            handleSharedText(intent)
+        } else if (intent != null) {
+            // Unsupported action or type
+            finish()
         }
     }
 
     private fun handleSharedText(intent: Intent) {
-        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
         Timber.d("Received text: $sharedText")
-        val links = extractLinks(sharedText ?: "")
 
-        links.firstOrNull()?.let { sharedLink ->
-            Timber.d("Received link: $sharedLink")
-            metadataViewModel.getMetaData(sharedLink)
+        // Suggestion: Move extractLinks to MetaDataViewModel
+        val links = extractLinks(sharedText)
+
+        sharedLink = links.firstOrNull()
+        sharedLink?.let { link ->
+            Timber.d("Received link: $link")
+            binding.loading.isVisible = true
+            metadataViewModel.getMetaData(link)
         } ?: run {
             Timber.w("No links found in shared text")
-            Toast.makeText(this, "No link found in shared text", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.no_link_found, Toast.LENGTH_SHORT).show()
             finish()
         }
     }
 
     private fun extractLinks(text: String): List<String> {
-        // A robust regex for URLs that includes http, https, or ftp protocols
-        val urlRegex = Regex("""\b(?:https?|ftp)://\S+\b""")
-
-        // Find all matches and map them to their string values
-        val matches = urlRegex.findAll(text).map { it.value }.toList()
-        return matches
+        // Use Android's built-in Patterns for robust URL matching
+        val matcher = Patterns.WEB_URL.matcher(text)
+        val links = mutableListOf<String>()
+        while (matcher.find()) {
+            links.add(matcher.group())
+        }
+        return links
     }
 
-    private fun observerMetaData() {
+    private fun observeMetaData() {
         metadataViewModel.metadata.observe(this) { result ->
             Timber.d("Received result: $result")
             binding.loading.isVisible = false
             when (result) {
                 is MetaDataResult.Success -> {
-                    Timber.d("Received metadata: ${result.metaData}")
-                    result.metaData.image?.also {
-                        loadImage(it)
-                    }
-
-                    binding.tvTitle.setText(result.metaData.title ?: "No Title Found")
+                    val meta = result.metaData
+                    binding.tvTitle.setText(meta.title ?: getString(R.string.no_title_found))
+                    meta.image?.let { loadImage(it) }
 
                     binding.btnNext.isEnabled = true
-                    val onDone = {
-                        startActivity(
-                            Intent(ACTIVITY_INTENT_ACTION).apply {
-                                putExtra(
-                                    EXTRA_METADATA,
-                                    result.metaData.copy(title = binding.tvTitle.text.toString()),
-                                )
-                            },
-                        )
-                        finish()
-                    }
-
-                    binding.btnNext.setOnClickListener { onDone() }
+                    binding.btnNext.setOnClickListener { navigateToNext(meta) }
 
                     binding.tvTitle.setOnEditorActionListener { _, actionId, _ ->
                         if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
-                            onDone()
+                            navigateToNext(meta)
                             true
                         } else {
                             false
@@ -126,11 +120,39 @@ class ShareReceiverActivity : AppCompatActivity() {
                 }
 
                 is MetaDataResult.Error -> {
-                    Timber.e(result.error, "Received error")
-                    Toast.makeText(this, "Failed to fetch metadata", Toast.LENGTH_SHORT).show()
+                    handleFetchError(result.error)
                 }
             }
         }
+    }
+
+    private fun navigateToNext(metaData: SocialMeta) {
+        val updatedMeta = metaData.copy(title = binding.tvTitle.text.toString())
+        val intent =
+            Intent(ACTIVITY_INTENT_ACTION).apply {
+                putExtra(EXTRA_METADATA, updatedMeta)
+            }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun handleFetchError(error: Exception) {
+        Timber.e(error, "Received error")
+        binding.btnNext.isEnabled = false
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.error_fetching_metadata)
+            .setMessage(R.string.failed_to_fetch_metadata_message)
+            .setPositiveButton(R.string.retry) { dialog, _ ->
+                dialog.dismiss()
+                sharedLink?.let {
+                    binding.loading.isVisible = true
+                    metadataViewModel.getMetaData(it)
+                }
+            }.setNegativeButton(R.string.close) { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }.setCancelable(false)
+            .show()
     }
 
     private fun loadImage(url: String) {
