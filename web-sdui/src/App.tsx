@@ -207,6 +207,7 @@ function App() {
   const [isEncoding, setIsEncoding] = useState(false);
   const [encodeStatus, setEncodeStatus] = useState('');
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const frameWaiterRef = useRef<((value: void | PromiseLike<void>) => void) | null>(null);
 
   useEffect(() => {
     if (sdui && sdui.views) {
@@ -238,8 +239,18 @@ function App() {
     setCurrentFrame(prev => Math.max(0, Math.min(maxFrames, prev + delta)));
   };
 
-  const waitForNextPaint = () =>
-    new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+  useEffect(() => {
+    if (frameWaiterRef.current) {
+      frameWaiterRef.current();
+      frameWaiterRef.current = null;
+    }
+  }, [currentFrame]);
+
+  const setFrameAndWaitForRender = (frame: number) =>
+    new Promise<void>((resolve) => {
+      frameWaiterRef.current = resolve;
+      setCurrentFrame(frame);
+    });
 
   const renderNodeToCanvas = async (node: HTMLElement, canvas: HTMLCanvasElement, width: number, height: number) => {
     const serialized = new XMLSerializer().serializeToString(node);
@@ -325,9 +336,8 @@ function App() {
     try {
       encoder.configure({ codec: 'vp8', width, height, bitrate: 4_000_000, framerate: fps });
       for (let frame = 0; frame <= maxFrames; frame += 1) {
-        setCurrentFrame(frame);
+        await setFrameAndWaitForRender(frame);
         setEncodeStatus(`Encoding frame ${frame + 1}/${maxFrames + 1}...`);
-        await waitForNextPaint();
         await renderNodeToCanvas(previewRef.current, exportCanvas, width, height);
         const videoFrame = new VideoFrame(exportCanvas, { timestamp: Math.round((frame / fps) * 1_000_000) });
         encoder.encode(videoFrame, { keyFrame: frame % fps === 0 });
