@@ -5,9 +5,10 @@ import { MotionViewRenderer } from '../views/ViewRegistry';
 interface MotionCanvasProps {
   sdui: MotionSDUI;
   currentFrame: number;
+  previewRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export const MotionCanvas: React.FC<MotionCanvasProps> = ({ sdui, currentFrame }) => {
+export const MotionCanvas: React.FC<MotionCanvasProps> = ({ sdui, currentFrame, previewRef }) => {
   const config = sdui.config || {
     aspectRatio: { width: 1080, height: 1920, label: "9:16 Full HD" },
     fps: 24,
@@ -29,6 +30,7 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({ sdui, currentFrame }
       }}
     >
       <div
+        ref={previewRef}
         style={{
           position: 'absolute',
           top: 0,

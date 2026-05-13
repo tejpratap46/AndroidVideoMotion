@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MotionCanvas } from './components/MotionCanvas';
 import JsonFinder from './components/JsonFinder';
 import type { MotionSDUI } from './infra/types';
@@ -204,6 +204,9 @@ function App() {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [maxFrames, setMaxFrames] = useState(100);
+  const [isEncoding, setIsEncoding] = useState(false);
+  const [encodeStatus, setEncodeStatus] = useState('');
+  const previewRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (sdui && sdui.views) {
@@ -235,6 +238,112 @@ function App() {
     setCurrentFrame(prev => Math.max(0, Math.min(maxFrames, prev + delta)));
   };
 
+  const waitForNextPaint = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+  const renderNodeToCanvas = async (node: HTMLElement, canvas: HTMLCanvasElement, width: number, height: number) => {
+    const serialized = new XMLSerializer().serializeToString(node);
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+        <foreignObject x="0" y="0" width="100%" height="100%">${serialized}</foreignObject>
+      </svg>
+    `;
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.decoding = 'sync';
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Failed to render frame.'));
+      img.src = url;
+    });
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      throw new Error('Could not create canvas context.');
+    }
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadIvf = (chunks: EncodedVideoChunk[], width: number, height: number, fps: number) => {
+    const fourcc = 'VP80';
+    const frameCount = chunks.length;
+    const header = new ArrayBuffer(32);
+    const dv = new DataView(header);
+    dv.setUint8(0, 'D'.charCodeAt(0)); dv.setUint8(1, 'K'.charCodeAt(0)); dv.setUint8(2, 'I'.charCodeAt(0)); dv.setUint8(3, 'F'.charCodeAt(0));
+    dv.setUint16(4, 0, true); dv.setUint16(6, 32, true);
+    for (let i = 0; i < 4; i += 1) dv.setUint8(8 + i, fourcc.charCodeAt(i));
+    dv.setUint16(12, width, true); dv.setUint16(14, height, true);
+    dv.setUint32(16, fps, true); dv.setUint32(20, 1, true);
+    dv.setUint32(24, frameCount, true); dv.setUint32(28, 0, true);
+
+    const parts: BlobPart[] = [header];
+    for (const chunk of chunks) {
+      const frameHeader = new ArrayBuffer(12);
+      const fh = new DataView(frameHeader);
+      fh.setUint32(0, chunk.byteLength, true);
+      const timestamp = BigInt(Math.round(chunk.timestamp / 1000));
+      fh.setUint32(4, Number(timestamp & BigInt(0xffffffff)), true);
+      fh.setUint32(8, Number((timestamp >> BigInt(32)) & BigInt(0xffffffff)), true);
+      const chunkData = new Uint8Array(chunk.byteLength);
+      chunk.copyTo(chunkData);
+      parts.push(frameHeader, chunkData);
+    }
+
+    const blob = new Blob(parts, { type: 'video/x-ivf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `motion-${Date.now()}.ivf`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!('VideoEncoder' in window)) {
+      setEncodeStatus('VideoEncoder is not supported in this browser.');
+      return;
+    }
+    if (!previewRef.current) {
+      setEncodeStatus('Preview element is not available.');
+      return;
+    }
+    setIsEncoding(true);
+    setEncodeStatus('Starting encoding...');
+    const fps = sdui?.config?.fps || 24;
+    const width = sdui?.config?.aspectRatio?.width || 480;
+    const height = sdui?.config?.aspectRatio?.height || 854;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = width;
+    exportCanvas.height = height;
+    const chunks: EncodedVideoChunk[] = [];
+    const encoder = new VideoEncoder({
+      output: (chunk) => chunks.push(chunk),
+      error: (error) => setEncodeStatus(`Encoding error: ${error.message}`)
+    });
+    try {
+      encoder.configure({ codec: 'vp8', width, height, bitrate: 4_000_000, framerate: fps });
+      for (let frame = 0; frame <= maxFrames; frame += 1) {
+        setCurrentFrame(frame);
+        setEncodeStatus(`Encoding frame ${frame + 1}/${maxFrames + 1}...`);
+        await waitForNextPaint();
+        await renderNodeToCanvas(previewRef.current, exportCanvas, width, height);
+        const videoFrame = new VideoFrame(exportCanvas, { timestamp: Math.round((frame / fps) * 1_000_000) });
+        encoder.encode(videoFrame, { keyFrame: frame % fps === 0 });
+        videoFrame.close();
+      }
+      await encoder.flush();
+      downloadIvf(chunks, width, height, fps);
+      setEncodeStatus(`Done. Downloaded ${chunks.length} encoded frames as IVF.`);
+    } catch (error: any) {
+      setEncodeStatus(`Failed: ${error?.message || 'Unknown error'}`);
+    } finally {
+      encoder.close();
+      setIsEncoding(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#111114', color: '#fff', overflow: 'hidden' }}>
       {/* Editor Side */}
@@ -248,7 +357,7 @@ function App() {
       {/* Preview Side */}
       <div style={{ width: '450px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', backgroundColor: '#161619' }}>
         <div style={{ width: '100%', maxWidth: '320px', marginBottom: '32px' }}>
-          {sdui && <MotionCanvas sdui={sdui} currentFrame={currentFrame} />}
+          {sdui && <MotionCanvas sdui={sdui} currentFrame={currentFrame} previewRef={previewRef} />}
         </div>
 
         {/* Professional Player Controls */}
@@ -312,6 +421,12 @@ function App() {
               <div style={{ fontSize: '10px', color: '#58586a', fontWeight: 'bold', marginBottom: '4px' }}>DURATION</div>
               <div style={{ fontSize: '13px', color: '#9898b0' }}>{((maxFrames) / (sdui?.config?.fps || 24)).toFixed(1)}s</div>
             </div>
+          </div>
+          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button className="player-btn" onClick={handleGenerateVideo} disabled={isEncoding}>
+              {isEncoding ? 'Generating Video…' : 'Generate Video (VideoEncoder)'}
+            </button>
+            {encodeStatus && <div style={{ fontSize: '12px', color: '#9898b0' }}>{encodeStatus}</div>}
           </div>
         </div>
       </div>
