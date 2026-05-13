@@ -52,6 +52,8 @@ export const MultiLyricsContainer: React.FC<{ props: MotionViewProps; currentFra
       {props.image && (
         <img
           src={props.image}
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
           alt="Album Art"
           style={{
             position: 'absolute',

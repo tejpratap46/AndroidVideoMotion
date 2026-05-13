@@ -236,6 +236,7 @@ function App() {
   };
 
   const skipFrames = (delta: number) => {
+    if (isEncoding) return;
     setCurrentFrame(prev => Math.max(0, Math.min(maxFrames, prev + delta)));
   };
 
@@ -248,12 +249,46 @@ function App() {
 
   const setFrameAndWaitForRender = (frame: number) =>
     new Promise<void>((resolve) => {
+      if (frame === currentFrame) {
+        resolve();
+        return;
+      }
       frameWaiterRef.current = resolve;
       setCurrentFrame(frame);
     });
 
+  const imageToDataUrl = async (src: string): Promise<string | null> => {
+    try {
+      const response = await fetch(src, { mode: 'cors' });
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  };
+
   const renderNodeToCanvas = async (node: HTMLElement, canvas: HTMLCanvasElement, width: number, height: number) => {
-    const serialized = new XMLSerializer().serializeToString(node);
+    const clonedNode = node.cloneNode(true) as HTMLElement;
+    const clonedImages = Array.from(clonedNode.querySelectorAll('img'));
+    for (const image of clonedImages) {
+      const originalSrc = image.getAttribute('src');
+      if (!originalSrc) continue;
+      const inlined = await imageToDataUrl(originalSrc);
+      if (inlined) {
+        image.setAttribute('src', inlined);
+      } else {
+        image.style.visibility = 'hidden';
+        console.warn('[VideoEncoder] Hiding non-CORS image during export', { src: originalSrc });
+      }
+    }
+
+    const serialized = new XMLSerializer().serializeToString(clonedNode);
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
         <foreignObject x="0" y="0" width="100%" height="100%">${serialized}</foreignObject>
@@ -328,6 +363,7 @@ function App() {
       return;
     }
     setIsEncoding(true);
+    setIsPlaying(false);
     setEncodeStatus('Starting encoding...');
     const fps = sdui?.config?.fps || 24;
     const width = sdui?.config?.aspectRatio?.width || 480;
@@ -426,6 +462,7 @@ function App() {
               max={maxFrames}
               value={currentFrame}
               onChange={(e) => setCurrentFrame(parseInt(e.target.value))}
+              disabled={isEncoding}
               style={{ width: '100%', cursor: 'pointer', margin: 0 }}
             />
           </div>
@@ -433,7 +470,7 @@ function App() {
           {/* Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
             {/* Step Back */}
-            <button className="player-btn" onClick={() => skipFrames(-1)} title="Previous Frame (Left Arrow)">
+            <button className="player-btn" onClick={() => skipFrames(-1)} title="Previous Frame (Left Arrow)" disabled={isEncoding}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
 
@@ -441,6 +478,7 @@ function App() {
             <button
               className="player-btn primary"
               onClick={() => setIsPlaying(!isPlaying)}
+              disabled={isEncoding}
               style={{ width: '48px', height: '48px' }}
             >
               {isPlaying ? (
@@ -451,7 +489,7 @@ function App() {
             </button>
 
             {/* Step Forward */}
-            <button className="player-btn" onClick={() => skipFrames(1)} title="Next Frame (Right Arrow)">
+            <button className="player-btn" onClick={() => skipFrames(1)} title="Next Frame (Right Arrow)" disabled={isEncoding}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
@@ -468,8 +506,27 @@ function App() {
             </div>
           </div>
           <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button className="player-btn" onClick={handleGenerateVideo} disabled={isEncoding}>
-              {isEncoding ? 'Generating Video…' : 'Generate Video (VideoEncoder)'}
+            <button
+              onClick={handleGenerateVideo}
+              disabled={isEncoding}
+              style={{
+                width: '100%',
+                border: 0,
+                borderRadius: '12px',
+                padding: '12px 14px',
+                fontWeight: 700,
+                fontSize: '13px',
+                letterSpacing: '0.2px',
+                color: '#fff',
+                cursor: isEncoding ? 'not-allowed' : 'pointer',
+                background: isEncoding
+                  ? 'linear-gradient(90deg, #4b5563 0%, #374151 100%)'
+                  : 'linear-gradient(90deg, #7c3aed 0%, #2563eb 100%)',
+                boxShadow: isEncoding ? 'none' : '0 8px 24px rgba(59,130,246,0.35)',
+                transition: 'all 180ms ease'
+              }}
+            >
+              {isEncoding ? `Generating… ${currentFrame + 1}/${maxFrames + 1}` : 'Generate Video'}
             </button>
             {encodeStatus && <div style={{ fontSize: '12px', color: '#9898b0' }}>{encodeStatus}</div>}
           </div>
