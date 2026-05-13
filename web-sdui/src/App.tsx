@@ -257,35 +257,36 @@ function App() {
       setCurrentFrame(frame);
     });
 
-  const imageToDataUrl = async (src: string): Promise<string | null> => {
-    try {
-      const response = await fetch(src, { mode: 'cors' });
-      if (!response.ok) return null;
-      const blob = await response.blob();
-      return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      return null;
+  const TRANSPARENT_PIXEL =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+  const stripUrlBackgrounds = (element: HTMLElement) => {
+    if (element.style?.backgroundImage?.includes('url(')) {
+      element.style.backgroundImage = 'none';
+    }
+    if (element.style?.maskImage?.includes('url(')) {
+      element.style.maskImage = 'none';
+    }
+    if (element.style?.webkitMaskImage?.includes('url(')) {
+      element.style.webkitMaskImage = 'none';
     }
   };
 
   const renderNodeToCanvas = async (node: HTMLElement, canvas: HTMLCanvasElement, width: number, height: number) => {
     const clonedNode = node.cloneNode(true) as HTMLElement;
-    const clonedImages = Array.from(clonedNode.querySelectorAll('img'));
+    const clonedElements = Array.from(clonedNode.querySelectorAll<HTMLElement>('*'));
+    stripUrlBackgrounds(clonedNode);
+    for (const element of clonedElements) {
+      stripUrlBackgrounds(element);
+    }
+
+    const clonedImages = Array.from(clonedNode.querySelectorAll<HTMLImageElement>('img'));
     for (const image of clonedImages) {
       const originalSrc = image.getAttribute('src');
-      if (!originalSrc) continue;
-      const inlined = await imageToDataUrl(originalSrc);
-      if (inlined) {
-        image.setAttribute('src', inlined);
-      } else {
-        image.style.visibility = 'hidden';
-        console.warn('[VideoEncoder] Hiding non-CORS image during export', { src: originalSrc });
-      }
+      image.setAttribute('src', TRANSPARENT_PIXEL);
+      image.removeAttribute('srcset');
+      image.setAttribute('crossorigin', 'anonymous');
+      console.warn('[VideoEncoder] Replaced image with transparent pixel for safe export', { src: originalSrc });
     }
 
     const serialized = new XMLSerializer().serializeToString(clonedNode);
