@@ -312,12 +312,19 @@ function App() {
   };
 
   const handleGenerateVideo = async () => {
+    console.info('[VideoEncoder] Export requested', {
+      currentFrame,
+      maxFrames,
+      fps: sdui?.config?.fps || 24
+    });
     if (!('VideoEncoder' in window)) {
       setEncodeStatus('VideoEncoder is not supported in this browser.');
+      console.warn('[VideoEncoder] Browser does not support VideoEncoder API');
       return;
     }
     if (!previewRef.current) {
       setEncodeStatus('Preview element is not available.');
+      console.warn('[VideoEncoder] Preview ref is unavailable');
       return;
     }
     setIsEncoding(true);
@@ -330,26 +337,54 @@ function App() {
     exportCanvas.height = height;
     const chunks: EncodedVideoChunk[] = [];
     const encoder = new VideoEncoder({
-      output: (chunk) => chunks.push(chunk),
-      error: (error) => setEncodeStatus(`Encoding error: ${error.message}`)
+      output: (chunk) => {
+        chunks.push(chunk);
+        if (chunks.length % Math.max(1, Math.floor(fps / 2)) === 0) {
+          console.debug('[VideoEncoder] Chunk emitted', {
+            chunkCount: chunks.length,
+            timestampUs: chunk.timestamp,
+            byteLength: chunk.byteLength,
+            type: chunk.type
+          });
+        }
+      },
+      error: (error) => {
+        console.error('[VideoEncoder] Encoder callback error', error);
+        setEncodeStatus(`Encoding error: ${error.message}`);
+      }
     });
     try {
+      console.info('[VideoEncoder] Configuring encoder', { codec: 'vp8', width, height, fps });
       encoder.configure({ codec: 'vp8', width, height, bitrate: 4_000_000, framerate: fps });
       for (let frame = 0; frame <= maxFrames; frame += 1) {
         await setFrameAndWaitForRender(frame);
         setEncodeStatus(`Encoding frame ${frame + 1}/${maxFrames + 1}...`);
+        console.debug('[VideoEncoder] Frame render synchronized', {
+          frame,
+          previewReady: Boolean(previewRef.current),
+          pendingQueue: encoder.encodeQueueSize
+        });
         await renderNodeToCanvas(previewRef.current, exportCanvas, width, height);
+        console.debug('[VideoEncoder] Frame rendered to canvas', {
+          frame,
+          canvasWidth: exportCanvas.width,
+          canvasHeight: exportCanvas.height
+        });
         const videoFrame = new VideoFrame(exportCanvas, { timestamp: Math.round((frame / fps) * 1_000_000) });
         encoder.encode(videoFrame, { keyFrame: frame % fps === 0 });
         videoFrame.close();
       }
+      console.info('[VideoEncoder] Waiting for flush', { encodeQueueSize: encoder.encodeQueueSize });
       await encoder.flush();
       downloadIvf(chunks, width, height, fps);
       setEncodeStatus(`Done. Downloaded ${chunks.length} encoded frames as IVF.`);
+      console.info('[VideoEncoder] Export complete', { chunkCount: chunks.length, width, height, fps });
     } catch (error: any) {
+      console.error('[VideoEncoder] Export failed', error);
       setEncodeStatus(`Failed: ${error?.message || 'Unknown error'}`);
     } finally {
       encoder.close();
+      console.info('[VideoEncoder] Encoder closed');
       setIsEncoding(false);
     }
   };
