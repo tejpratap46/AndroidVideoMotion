@@ -21,13 +21,13 @@ export const AudioWaveformView: React.FC<{ props: MotionViewProps; currentFrame:
         ...style,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '50%' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '100%' }}>
         {amplitudes.slice(0, 50).map((amp, i) => (
           <div
             key={i}
             style={{
               width: '4px',
-              height: `${amp * 100}%`,
+              height: `${amp * 200}%`,
               backgroundColor: '#2ed573',
               borderRadius: '2px',
             }}
