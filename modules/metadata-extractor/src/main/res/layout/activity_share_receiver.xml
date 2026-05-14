@@ -19,16 +19,19 @@
         android:id="@+id/iv_image"
         android:layout_width="match_parent"
         android:layout_height="400dp"
+        android:layout_marginTop="32dp"
         android:padding="16dp"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout"
         style="@style/ThemeOverlay.Material3.TextInputEditText.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/iv_image">
@@ -36,23 +39,28 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textCapWords"
+            android:layout_height="100dp"
+            android:fontFamily="monospace"
             android:imeOptions="actionNext"
-            android:lines="1"
-            android:padding="16dp" />
+            android:inputType="textCapWords"
+            android:lines="3"
+            android:layout_margin="16dp"
+            android:padding="16dp"
+            android:gravity="center" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
         android:layout_margin="16dp"
         android:enabled="false"
         android:text="@string/next"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
+        app:layout_constraintVertical_bias="1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
