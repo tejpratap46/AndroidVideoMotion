@@ -1,67 +1,199 @@
+import { useEffect, useId, useState } from 'react';
+
 const featureCards = [
   {
-    title: 'MotionConfig',
-    description: 'Define render presets, output ratio, duration and quality profiles once and reuse them for every project.',
-    snippet: `import { MotionConfig } from 'motionlib';\n\nconst config = new MotionConfig({\n  width: 1080,\n  height: 1920,\n  fps: 30,\n  durationMs: 12000\n});`
+    title: 'MotionConfig class + usage',
+    description: 'Core Kotlin config model from modules/core and how it is instantiated for a render pipeline.',
+    snippet: `// modules/core/src/main/java/.../MotionConfig.kt
+package com.tejpratapsingh.motionlib.core
+
+data class MotionConfig(
+    val aspectRatio: Pair<Int, Int> = Pair(9, 16),
+    val fps: Int = 24,
+    val outputQuality: Int = 100,
+)
+
+// usage
+val config = MotionConfig(
+    aspectRatio = Pair(9, 16),
+    fps = 30,
+    outputQuality = 90,
+)`
   },
   {
-    title: 'MotionView',
-    description: 'Compose layered visuals, text and media with timeline-aware declarative views.',
-    snippet: `import { MotionView } from 'motionlib/view';\n\n<MotionView\n  id="title-layer"\n  startMs={600}\n  endMs={6200}\n  style={{ x: 48, y: 140 }}\n/>`
+    title: 'MotionAudio class + usage',
+    description: 'Audio timeline model from modules/core and how to attach audio clips to a project.',
+    snippet: `// modules/core/src/main/java/.../MotionAudio.kt
+package com.tejpratapsingh.motionlib.core
+
+data class MotionAudio(
+    val file: File,
+    var startFrame: Int = 0,
+    var endFrame: Int = 0,
+    var delayFrame: Int = 0,
+)
+
+// usage
+val narration = MotionAudio(
+    file = File("/storage/emulated/0/Download/narration.mp3"),
+    startFrame = 0,
+    endFrame = 360,
+)
+project.audios.add(narration)`
   },
   {
-    title: 'MotionEffect',
-    description: 'Attach transition and visual effects such as blur, glitch, color grading and keyframe curves.',
-    snippet: `import { MotionEffect } from 'motionlib/effects';\n\nMotionEffect.fadeIn('title-layer', {\n  durationMs: 450,\n  easing: 'easeOutCubic'\n});`
+    title: 'MotionVideoProducer usage',
+    description: 'Concrete Kotlin pipeline assembly from modules/motionlib and app module sample usage.',
+    snippet: `val motionVideo = MotionVideoProducer
+  .with(
+    context = applicationContext,
+    videoProducerAdapter = FfmpegVideoProducerAdapter(),
+  )
+  .addMotionViewToSequence(rootContainer)
+
+// later in PreviewActivity/Worker
+override fun getMotionVideo(): MotionVideoProducer = motionVideo`
   },
   {
-    title: 'MotionPlugin',
-    description: 'Extend the runtime with custom render nodes, encoders and AI pipelines as reusable modules.',
-    snippet: `import { MotionPlugin } from 'motionlib/plugin';\n\nMotionPlugin.register({\n  id: 'lower-third-v1',\n  setup(ctx) {\n    ctx.registerTemplate('lower-third');\n  }\n});`
+    title: 'SDUIMotionVideoProducerFactory class',
+    description: 'Kotlin class from modules/sdui for turning MotionProject/JSON into a MotionVideoProducer.',
+    snippet: `class SDUIMotionVideoProducerFactory(
+  private val context: Context,
+  private val motionSduiAdapter: MotionSduiAdapter,
+) {
+  fun createFromProject(
+    project: MotionProject,
+    onViewsCreated: (List<MotionView>) -> Unit = {},
+  ): MotionVideoProducer = createFromSdui(project.sdui, onViewsCreated)
+}
+
+// usage
+val factory = SDUIMotionVideoProducerFactory(applicationContext, adapter)
+val producer = factory.createFromProject(motionProject)`
   },
   {
-    title: 'MotionAudio',
-    description: 'Sync narration, music and sound effects with ducking, waveform analysis and beat-aware markers.',
-    snippet: `import { MotionAudio } from 'motionlib/audio';\n\nconst audio = new MotionAudio('narration.mp3');\naudio.duck('bgm-track', { fromDb: -4, toDb: -14 });`
+    title: 'Full video producer flow (MultiLyrics)',
+    description: 'Important bits to build a full renderable video producer from project metadata, timeline views and SDUI persistence.',
+    snippet: `fun getMultiLyricsVideoProducer(context: Context, project: MotionProject): MotionVideoProducer {
+  // 1) Parse lyrics metadata to frame-timed entries
+  val lyrics = project.metadata["lyrics"].asJsonArray.map { ... }
+
+  // 2) Define output profile and make it current
+  setCurrentConfig(MotionConfig(aspectRatio = VideoAspectRatio.Ratio9x16_480, fps = 24))
+
+  // 3) Build base producer with FFmpeg adapter + container
+  val producer = MotionVideoProducer
+    .with(context = context, videoProducerAdapter = FfmpegVideoProducerAdapter())
+    .addMotionViewToSequence(MultiLyricsContainer(...))
+
+  // 4) Add each lyric segment as timed PopUpTextView
+  lyrics.zipWithNext().forEach { (current, next) ->
+    producer.addMotionViewToSequence(PopUpTextView(
+      context = context,
+      text = current.text,
+      startFrame = current.frame,
+      endFrame = next.frame,
+    ))
+  }
+
+  // 5) Serialize timeline -> SDUI and persist MotionProject
+  val sdui = createMotionSDUIJson(
+    views = collectMotionViews(producer),
+    audios = producer.motionAudio,
+    plugins = producer.motionComposerView.plugins,
+    config = provideCurrentConfig(),
+  )
+  app.motionStoreDao.upsert(project.copy(sdui = sdui))
+
+  // 6) Return producer ready for preview/render/export
+  return producer
+}`
   }
 ];
 
-const integrationFeatures = [
-  'Encoders: Android Native Media implementation, FFMPEG, and JCodec',
-  'AI capability with PyTorch and TensorFlow inference pipelines',
-  'Project management and sync workflows with MotionStore',
-  'SDUI JSON serialization to recreate projects deterministically',
-  'Prebuild templates for rapid video generation (upcoming)'
-];
+const kotlinKeywords = new Set([
+  'package', 'import', 'class', 'data', 'val', 'var', 'fun', 'private', 'override', 'return', 'object'
+]);
 
-function CodeBlock({ code }: { code: string }) {
+function KotlinCodeBlock({ code }: { code: string }) {
+  const lines = code.split('\n');
+
   return (
-    <pre className="mt-4 overflow-x-auto rounded-lg border border-cyan-400/20 bg-slate-900 p-4 text-xs text-cyan-200">
-      <code>{code}</code>
+    <pre className="mt-4 overflow-x-auto rounded-lg border border-cyan-400/20 bg-slate-900 p-4 text-xs leading-6 text-slate-100">
+      <code>
+        {lines.map((line, index) => {
+          const parts = line.split(/(\/\/.*$|\"[^\"]*\"|\b[\w.]+\b)/g).filter(Boolean);
+          return (
+            <div key={`${line}-${index}`}>
+              {parts.map((part, partIndex) => {
+                if (part.startsWith('//')) return <span key={partIndex} className="text-slate-500">{part}</span>;
+                if (part.startsWith('"') && part.endsWith('"')) return <span key={partIndex} className="text-emerald-300">{part}</span>;
+                if (kotlinKeywords.has(part)) return <span key={partIndex} className="text-fuchsia-300">{part}</span>;
+                if (/^[A-Z][A-Za-z0-9_]*$/.test(part)) return <span key={partIndex} className="text-cyan-300">{part}</span>;
+                if (/^\d+$/.test(part)) return <span key={partIndex} className="text-amber-300">{part}</span>;
+                return <span key={partIndex}>{part}</span>;
+              })}
+            </div>
+          );
+        })}
+      </code>
     </pre>
   );
+}
+
+const sequenceDiagram = `sequenceDiagram
+  participant Client as LyricsMotionWorker/App
+  participant Store as MotionStoreDao
+  participant Builder as MultiLyricsVideoProducer
+  participant Producer as MotionVideoProducer
+  participant Renderer as FFmpeg Adapter
+
+  Client->>Store: load MotionProject(projectId)
+  Store-->>Client: MotionProject(metadata + sdui)
+  Client->>Builder: getMultiLyricsVideoProducer(context, project)
+  Builder->>Producer: with(FfmpegVideoProducerAdapter)
+  Builder->>Producer: add MultiLyricsContainer + PopUpTextView timeline
+  Builder->>Store: upsert(project.copy(sdui = createMotionSDUIJson(...)))
+  Builder-->>Client: MotionVideoProducer
+  Client->>Renderer: render/export frames
+  Renderer-->>Client: mp4 output + progress callbacks`;
+
+function MermaidDiagram({ chart }: { chart: string }) {
+  const id = useId().replace(/:/g, '-');
+  const [svg, setSvg] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    async function render() {
+      const dynamicImport = new Function('u', 'return import(/* -ignore */ u)') as (u: string) => Promise<any>;
+      const mermaidModule = await dynamicImport('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs');
+      const mermaid = mermaidModule.default;
+      mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'dark' });
+      const { svg: renderedSvg } = await mermaid.render(`mermaid-${id}`, chart);
+      if (active) setSvg(renderedSvg);
+    }
+
+    render().catch(() => {
+      if (active) setSvg('');
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [chart, id]);
+
+  if (!svg) return <KotlinCodeBlock code={chart} />;
+
+  return <div className="mt-4 overflow-x-auto rounded-lg border border-violet-400/20 bg-slate-950 p-4" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
 
 export default function App() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <section className="mx-auto max-w-6xl px-6 py-14">
-        <p className="mb-3 inline-flex rounded-full border border-cyan-400/40 px-3 py-1 text-xs uppercase tracking-[0.2em] text-cyan-300">
-          web-motion-lib
-        </p>
-        <h1 className="text-4xl font-bold leading-tight md:text-5xl">MotionLib Feature Showcase</h1>
-        <p className="mt-4 max-w-3xl text-slate-300">
-          A React + Vite + Tailwind web app that demonstrates how to build advanced motion video workflows using
-          MotionConfig, MotionView, MotionEffect, MotionPlugin and MotionAudio.
-        </p>
-
-        <div className="mt-10 grid gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-6 md:grid-cols-2">
-          {integrationFeatures.map((item) => (
-            <div key={item} className="rounded-lg border border-slate-800 bg-slate-950/60 p-4 text-sm text-slate-200">
-              {item}
-            </div>
-          ))}
-        </div>
+        <h1 className="text-4xl font-bold leading-tight md:text-5xl">MotionLib Kotlin API Showcase</h1>
+        <p className="mt-4 max-w-3xl text-slate-300">Kotlin-first examples sourced from /modules with render-flow documentation.</p>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-6 pb-16 md:grid-cols-2">
@@ -69,19 +201,16 @@ export default function App() {
           <article key={feature.title} className="rounded-xl border border-slate-800 bg-slate-900/70 p-6">
             <h2 className="text-xl font-semibold text-cyan-200">{feature.title}</h2>
             <p className="mt-2 text-sm text-slate-300">{feature.description}</p>
-            <CodeBlock code={feature.snippet} />
+            <KotlinCodeBlock code={feature.snippet} />
           </article>
         ))}
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-6 text-amber-100">
-          <h3 className="text-lg font-semibold">Upcoming: Prebuild Templates</h3>
-          <p className="mt-2 text-sm text-amber-50/90">
-            Template packs will allow one-click generation for reels, shorts, lyric cards and social promos by combining
-            SDUI JSON + MotionStore assets + preferred encoder target.
-          </p>
-        </div>
+      <section className="mx-auto max-w-6xl px-6 pb-16">
+        <article className="rounded-xl border border-violet-400/40 bg-violet-500/10 p-6">
+          <h3 className="text-lg font-semibold text-violet-100">Video pipeline sequence diagram (Mermaid.js)</h3>
+          <MermaidDiagram chart={sequenceDiagram} />
+        </article>
       </section>
     </main>
   );
