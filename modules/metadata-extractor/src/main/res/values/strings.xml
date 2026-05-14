@@ -1,4 +1,11 @@
 <resources>
     <string name="motion_video">Motion Video</string>
     <string name="next">Next</string>
+    <string name="page_title">Page Title</string>
+    <string name="error_fetching_metadata">Error Fetching Metadata</string>
+    <string name="failed_to_fetch_metadata_message">Failed to fetch metadata for the provided URL. Please try again.</string>
+    <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="no_link_found">No Link Found</string>
+    <string name="no_title_found">No Title found in Metadata</string>
 </resources>
