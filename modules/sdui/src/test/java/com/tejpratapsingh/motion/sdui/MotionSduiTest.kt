@@ -2,11 +2,14 @@ package com.tejpratapsingh.motion.sdui
 
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.toJson
+import com.tejpratapsingh.motion.sdui.infra.toLayoutInfo
 import com.tejpratapsingh.motion.sdui.infra.toMotionConfig
 import com.tejpratapsingh.motion.sdui.infra.toMotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import android.view.Gravity
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import android.graphics.Bitmap
@@ -55,5 +58,31 @@ class MotionSduiTest {
 
         assertEquals(MockPlugin::class.java.simpleName, json.get("type").asString)
         assertEquals("test-plugin", (restoredPlugin as MockPlugin).value)
+    }
+
+    @Test
+    fun testMotionLayoutInfoSerialization() {
+        val layoutInfo = MotionLayoutInfo(
+            width = MotionLayoutInfo.MATCH_PARENT,
+            height = 500,
+            padding = MotionLayoutInfo.Padding(10, 20, 30, 40),
+            margin = MotionLayoutInfo.Margin(5, 5, 5, 5),
+            gravity = Gravity.CENTER_HORIZONTAL or Gravity.TOP
+        )
+
+        val json = layoutInfo.toJson()
+        val restored = json.toLayoutInfo()
+
+        assertEquals(MotionLayoutInfo.MATCH_PARENT, restored.width)
+        assertEquals(500, restored.height)
+        assertEquals(10, restored.padding.left)
+        assertEquals(20, restored.padding.top)
+        assertEquals(30, restored.padding.right)
+        assertEquals(40, restored.padding.bottom)
+        assertEquals(5, restored.margin.left)
+        assertEquals(Gravity.CENTER_HORIZONTAL or Gravity.TOP, restored.gravity)
+        
+        assertEquals("match_parent", json.get("width").asString)
+        assertEquals("center_horizontal|top", json.get("gravity").asString)
     }
 }

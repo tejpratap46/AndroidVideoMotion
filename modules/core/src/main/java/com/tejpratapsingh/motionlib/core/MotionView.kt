@@ -10,6 +10,9 @@ interface MotionView : OnMotionFrameListener {
 
     val effects: List<MotionEffect>
 
+    val layoutInfo: MotionLayoutInfo
+        get() = MotionLayoutInfo()
+
     fun addEffect(effect: MotionEffect)
 
     fun getViewBitmap(): Bitmap

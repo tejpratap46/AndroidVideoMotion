@@ -1,10 +1,12 @@
 package com.tejpratapsingh.motion.sdui.infra
 
 import android.content.Context
+import android.view.Gravity
 import android.view.ViewGroup
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.IComposerView
@@ -22,6 +24,8 @@ fun MotionView.toJson(): JsonObject {
     loopJson.addProperty("start", loop.first)
     loopJson.addProperty("end", loop.second)
     json.add("loop", loopJson)
+
+    json.add("layout", layoutInfo.toJson())
 
     if (effects.isNotEmpty()) {
         val effectsArray = JsonArray()
@@ -108,7 +112,14 @@ fun JsonObject.parseMotionViewProps(): MotionViewProps {
         }
     }
 
-    return MotionViewProps(startFrame, endFrame, loop, effects)
+    val layoutInfo =
+        if (has("layout")) {
+            get("layout").asJsonObject.toLayoutInfo()
+        } else {
+            MotionLayoutInfo()
+        }
+
+    return MotionViewProps(startFrame, endFrame, loop, effects, layoutInfo)
 }
 
 data class MotionViewProps(
@@ -116,4 +127,157 @@ data class MotionViewProps(
     val endFrame: Int,
     val loop: Pair<Int, Int>,
     val effects: List<MotionEffect>,
+    val layoutInfo: MotionLayoutInfo,
 )
+
+/**
+ * Serialization for [MotionLayoutInfo].
+ */
+fun MotionLayoutInfo.toJson(): JsonObject {
+    val json = JsonObject()
+
+    val widthStr =
+        when (width) {
+            MotionLayoutInfo.MATCH_PARENT -> "match_parent"
+            MotionLayoutInfo.WRAP_CONTENT -> "wrap_content"
+            else -> width.toString()
+        }
+    json.addProperty("width", widthStr)
+
+    val heightStr =
+        when (height) {
+            MotionLayoutInfo.MATCH_PARENT -> "match_parent"
+            MotionLayoutInfo.WRAP_CONTENT -> "wrap_content"
+            else -> height.toString()
+        }
+    json.addProperty("height", heightStr)
+
+    val paddingJson = JsonObject()
+    paddingJson.addProperty("left", padding.left)
+    paddingJson.addProperty("top", padding.top)
+    paddingJson.addProperty("right", padding.right)
+    paddingJson.addProperty("bottom", padding.bottom)
+    json.add("padding", paddingJson)
+
+    val marginJson = JsonObject()
+    marginJson.addProperty("left", margin.left)
+    marginJson.addProperty("top", margin.top)
+    marginJson.addProperty("right", margin.right)
+    marginJson.addProperty("bottom", margin.bottom)
+    json.add("margin", marginJson)
+
+    if (gravity != Gravity.NO_GRAVITY) {
+        json.addProperty("gravity", gravity.toGravityString())
+    }
+
+    return json
+}
+
+/**
+ * Deserialization for [MotionLayoutInfo].
+ */
+fun JsonObject.toLayoutInfo(): MotionLayoutInfo {
+    val width =
+        if (has("width")) {
+            val w = get("width").asString
+            when (w) {
+                "match_parent" -> MotionLayoutInfo.MATCH_PARENT
+                "wrap_content" -> MotionLayoutInfo.WRAP_CONTENT
+                else -> w.toIntOrNull() ?: MotionLayoutInfo.WRAP_CONTENT
+            }
+        } else {
+            MotionLayoutInfo.WRAP_CONTENT
+        }
+
+    val height =
+        if (has("height")) {
+            val h = get("height").asString
+            when (h) {
+                "match_parent" -> MotionLayoutInfo.MATCH_PARENT
+                "wrap_content" -> MotionLayoutInfo.WRAP_CONTENT
+                else -> h.toIntOrNull() ?: MotionLayoutInfo.WRAP_CONTENT
+            }
+        } else {
+            MotionLayoutInfo.WRAP_CONTENT
+        }
+
+    val padding =
+        if (has("padding")) {
+            val p = get("padding").asJsonObject
+            MotionLayoutInfo.Padding(
+                left = p.get("left")?.asInt ?: 0,
+                top = p.get("top")?.asInt ?: 0,
+                right = p.get("right")?.asInt ?: 0,
+                bottom = p.get("bottom")?.asInt ?: 0,
+            )
+        } else {
+            MotionLayoutInfo.Padding()
+        }
+
+    val margin =
+        if (has("margin")) {
+            val m = get("margin").asJsonObject
+            MotionLayoutInfo.Margin(
+                left = m.get("left")?.asInt ?: 0,
+                top = m.get("top")?.asInt ?: 0,
+                right = m.get("right")?.asInt ?: 0,
+                bottom = m.get("bottom")?.asInt ?: 0,
+            )
+        } else {
+            MotionLayoutInfo.Margin()
+        }
+
+    val gravity =
+        if (has("gravity")) {
+            get("gravity").asString.toGravityInt()
+        } else {
+            Gravity.NO_GRAVITY
+        }
+
+    return MotionLayoutInfo(width, height, padding, margin, gravity)
+}
+
+private fun Int.toGravityString(): String {
+    val parts = mutableListOf<String>()
+    if (this and Gravity.AXIS_PULL_BEFORE == Gravity.AXIS_PULL_BEFORE) {
+        if (this and Gravity.RELATIVE_LAYOUT_DIRECTION == Gravity.RELATIVE_LAYOUT_DIRECTION) {
+            parts.add("start")
+        } else {
+            parts.add("left")
+        }
+    }
+    if (this and Gravity.AXIS_PULL_AFTER == Gravity.AXIS_PULL_AFTER) {
+        if (this and Gravity.RELATIVE_LAYOUT_DIRECTION == Gravity.RELATIVE_LAYOUT_DIRECTION) {
+            parts.add("end")
+        } else {
+            parts.add("right")
+        }
+    }
+    if (this and Gravity.TOP == Gravity.TOP) parts.add("top")
+    if (this and Gravity.BOTTOM == Gravity.BOTTOM) parts.add("bottom")
+    if (this and Gravity.CENTER == Gravity.CENTER) {
+        parts.add("center")
+    } else {
+        if (this and Gravity.CENTER_HORIZONTAL == Gravity.CENTER_HORIZONTAL) parts.add("center_horizontal")
+        if (this and Gravity.CENTER_VERTICAL == Gravity.CENTER_VERTICAL) parts.add("center_vertical")
+    }
+    return parts.joinToString("|")
+}
+
+private fun String.toGravityInt(): Int {
+    var gravity = Gravity.NO_GRAVITY
+    this.split("|").forEach { part ->
+        when (part.trim().lowercase()) {
+            "top" -> gravity = gravity or Gravity.TOP
+            "bottom" -> gravity = gravity or Gravity.BOTTOM
+            "left" -> gravity = gravity or Gravity.LEFT
+            "right" -> gravity = gravity or Gravity.RIGHT
+            "start" -> gravity = gravity or Gravity.START
+            "end" -> gravity = gravity or Gravity.END
+            "center" -> gravity = gravity or Gravity.CENTER
+            "center_horizontal" -> gravity = gravity or Gravity.CENTER_HORIZONTAL
+            "center_vertical" -> gravity = gravity or Gravity.CENTER_VERTICAL
+        }
+    }
+    return gravity
+}

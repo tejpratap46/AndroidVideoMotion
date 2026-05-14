@@ -7,7 +7,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayer
 
 abstract class PreviewActivity : ComponentActivity() {
     val motionVideoPlayer by lazy { MotionVideoPlayer(applicationContext, getMotionVideo()) }

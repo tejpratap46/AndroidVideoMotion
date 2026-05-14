@@ -1,4 +1,4 @@
-package com.tejpratapsingh.motionlib.ui.custom
+package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
 import android.graphics.Canvas

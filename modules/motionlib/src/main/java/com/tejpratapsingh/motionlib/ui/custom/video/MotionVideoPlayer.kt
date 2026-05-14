@@ -1,13 +1,14 @@
-package com.tejpratapsingh.motionlib.ui
+package com.tejpratapsingh.motionlib.ui.custom.video
 
+import android.R
 import android.content.Context
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.SystemClock
+import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -74,7 +75,7 @@ class MotionVideoPlayer(
 
     private val playPauseButton: ImageButton =
         ImageButton(context).apply {
-            setImageResource(android.R.drawable.ic_media_play)
+            setImageResource(R.drawable.ic_media_play)
             setOnClickListener {
                 if (isPlaying) {
                     pausePlayback()
@@ -101,7 +102,7 @@ class MotionVideoPlayer(
     private val controlsLayout: LinearLayoutCompat =
         LinearLayoutCompat(context).apply {
             orientation = LinearLayoutCompat.HORIZONTAL
-            gravity = android.view.Gravity.CENTER_VERTICAL // Center items in controls
+            gravity = Gravity.CENTER_VERTICAL // Center items in controls
         }
 
     private val previewLayout: FrameLayout =
@@ -132,7 +133,7 @@ class MotionVideoPlayer(
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                android.view.Gravity.CENTER,
+                Gravity.CENTER,
             )
         previewLayout.addView(motionVideoProducer.motionComposerView, previewLayoutParams)
 
@@ -154,7 +155,7 @@ class MotionVideoPlayer(
                 if (player == null) {
                     // First time: create player
                     val mediaPlayer =
-                        android.media.MediaPlayer().apply {
+                        MediaPlayer().apply {
                             setDataSource(audio.file.absolutePath)
                             prepare()
                             start()
@@ -197,7 +198,7 @@ class MotionVideoPlayer(
         if (isPlaying) return
 
         isPlaying = true
-        playPauseButton.setImageResource(android.R.drawable.ic_media_pause)
+        playPauseButton.setImageResource(R.drawable.ic_media_pause)
 
         val frameDurationMs = 1000.0 / motionConfig.fps
 
@@ -243,7 +244,7 @@ class MotionVideoPlayer(
         if (!isPlaying && playbackJob == null) return
 
         isPlaying = false
-        playPauseButton.setImageResource(android.R.drawable.ic_media_play)
+        playPauseButton.setImageResource(R.drawable.ic_media_play)
         playbackJob?.cancel()
         playbackJob = null
         pauseAllAudio() // ✅ pause, not release
@@ -260,6 +261,6 @@ class MotionVideoPlayer(
         val totalSeconds = frames / motionConfig.fps
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
-        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        return String.Companion.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 }

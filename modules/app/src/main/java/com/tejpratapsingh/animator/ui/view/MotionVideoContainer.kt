@@ -5,26 +5,25 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
-import timber.log.Timber
 import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.animator.R
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.File
 
 class MotionVideoContainer(
     context: Context,
     motionVideoProducer: MotionVideoProducer,
 ) : ContourLayout(context) {
-
     private val toolbar: Toolbar =
         Toolbar(context).apply {
             title = "Video"
