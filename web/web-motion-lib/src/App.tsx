@@ -2,27 +2,57 @@ const featureCards = [
   {
     title: 'MotionConfig',
     description: 'Define render presets, output ratio, duration and quality profiles once and reuse them for every project.',
-    snippet: `import { MotionConfig } from 'motionlib';\n\nconst config = new MotionConfig({\n  width: 1080,\n  height: 1920,\n  fps: 30,\n  durationMs: 12000\n});`
+    snippet: `import com.google.gson.JsonObject
+import com.tejpratapsingh.motion.sdui.infra.toMotionConfig
+
+val configJson = JsonObject().apply {
+  addProperty("fps", 30)
+  addProperty("outputQuality", 100)
+}
+
+val config = configJson.toMotionConfig()`
   },
   {
     title: 'MotionView',
     description: 'Compose layered visuals, text and media with timeline-aware declarative views.',
-    snippet: `import { MotionView } from 'motionlib/view';\n\n<MotionView\n  id="title-layer"\n  startMs={600}\n  endMs={6200}\n  style={{ x: 48, y: 140 }}\n/>`
+    snippet: `import com.tejpratapsingh.motion.sdui.infra.parseMotionViewProps
+import com.tejpratapsingh.motion.sdui.infra.toMotionView
+
+val motionView = jsonObject.toMotionView(context)
+val props = jsonObject.parseMotionViewProps()
+
+motionView.startFrame = props.startFrame
+motionView.endFrame = props.endFrame`
   },
   {
     title: 'MotionEffect',
     description: 'Attach transition and visual effects such as blur, glitch, color grading and keyframe curves.',
-    snippet: `import { MotionEffect } from 'motionlib/effects';\n\nMotionEffect.fadeIn('title-layer', {\n  durationMs: 450,\n  easing: 'easeOutCubic'\n});`
+    snippet: `import com.tejpratapsingh.motion.sdui.infra.toMotionEffect
+
+val effect = effectJson.toMotionEffect()
+motionView.addEffect(effect)
+
+val effectJsonRoundTrip = effect.toJson()`
   },
   {
     title: 'MotionPlugin',
     description: 'Extend the runtime with custom render nodes, encoders and AI pipelines as reusable modules.',
-    snippet: `import { MotionPlugin } from 'motionlib/plugin';\n\nMotionPlugin.register({\n  id: 'lower-third-v1',\n  setup(ctx) {\n    ctx.registerTemplate('lower-third');\n  }\n});`
+    snippet: `import com.tejpratapsingh.motion.sdui.infra.toMotionPlugin
+
+val plugin = pluginJson.toMotionPlugin(context)
+
+composerView.plugins.add(plugin)
+val pluginJsonRoundTrip = plugin.toJson()`
   },
   {
     title: 'MotionAudio',
     description: 'Sync narration, music and sound effects with ducking, waveform analysis and beat-aware markers.',
-    snippet: `import { MotionAudio } from 'motionlib/audio';\n\nconst audio = new MotionAudio('narration.mp3');\naudio.duck('bgm-track', { fromDb: -4, toDb: -14 });`
+    snippet: `import com.tejpratapsingh.motion.sdui.infra.toMotionAudio
+
+val audio = audioJson.toMotionAudio(context)
+project.audios.add(audio)
+
+val serializedAudio = audio.toJson()`
   }
 ];
 
