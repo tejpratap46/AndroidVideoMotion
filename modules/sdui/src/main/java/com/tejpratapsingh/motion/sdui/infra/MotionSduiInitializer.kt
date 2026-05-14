@@ -1,18 +1,14 @@
 package com.tejpratapsingh.motion.sdui.infra
 
-import android.graphics.Color
-import android.view.Gravity
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.google.gson.JsonArray
-import com.tejpratapsingh.motionlib.core.fontSizeH3
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.audio.CircularAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.audio.RadialAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
-import com.tejpratapsingh.motionlib.ui.custom.container.RotatingMotionView
+import com.tejpratapsingh.motionlib.ui.custom.image.CircularMotionImageView
+import com.tejpratapsingh.motionlib.ui.custom.image.MotionImageView
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
@@ -134,6 +130,44 @@ object MotionSduiInitializer {
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
+        }
+
+        // Register CircularMotionImageView
+        MotionSdui.registerView(CircularMotionImageView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps()
+            val imageUriStr =
+                json.get("imageUri")?.asString
+                    ?: throw IllegalArgumentException("imageUri required for CircularMotionImageView")
+            CircularMotionImageView(
+                context = context,
+                imageUri = imageUriStr.toUri(),
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(CircularMotionImageView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("imageUri", view.imageUri.toString())
+        }
+
+        // Register MotionImageView
+        MotionSdui.registerView(MotionImageView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps()
+            val imageUriStr =
+                json.get("imageUri")?.asString
+                    ?: throw IllegalArgumentException("imageUri required for MotionImageView")
+            MotionImageView(
+                context = context,
+                imageUri = imageUriStr.toUri(),
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(MotionImageView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("imageUri", view.imageUri.toString())
         }
 
         // Register VideoFrameView

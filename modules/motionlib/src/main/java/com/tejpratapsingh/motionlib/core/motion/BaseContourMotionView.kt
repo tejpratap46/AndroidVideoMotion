@@ -5,6 +5,7 @@ import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import timber.log.Timber
@@ -18,6 +19,7 @@ open class BaseContourMotionView(
 ) : ContourLayout(context),
     MotionView {
     override val effects: MutableList<MotionEffect> = mutableListOf()
+    override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
 
     init {
         effects.forEach { addEffect(it) }

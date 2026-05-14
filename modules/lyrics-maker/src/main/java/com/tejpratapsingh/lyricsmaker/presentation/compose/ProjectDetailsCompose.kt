@@ -38,7 +38,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
-import com.tejpratapsingh.motionlib.ui.MotionVideoPlayer
+import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayer
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
@@ -55,7 +55,8 @@ fun ProjectDetailsScreen(
             getMultiLyricsVideoProducer(context, project)
         }
 
-    val workInfos by WorkManager.getInstance(context)
+    val workInfos by WorkManager
+        .getInstance(context)
         .getWorkInfosByTagFlow(LyricsMotionWorker.getWorkTag(project.id))
         .collectAsState(initial = emptyList())
 

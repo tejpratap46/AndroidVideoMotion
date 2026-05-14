@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.widget.ImageView
+import com.squareup.picasso.Picasso
 import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
@@ -53,10 +54,12 @@ class MultiLyricsContainer(
         ivAlbumArt.apply {
             runBlocking {
                 if (image != null) {
-                    val client = HttpClient(CIO)
-                    Timber.i("Using image from social meta: $image")
-                    setImageBitmap(client.fetchBitmap(image))
-                    client.close()
+                    val bitmap =
+                        Picasso
+                            .get()
+                            .load(image)
+                            .get()
+                    setImageBitmap(bitmap)
                     return@runBlocking
                 } else {
                     Timber.i("Fetching from musicbrainz")

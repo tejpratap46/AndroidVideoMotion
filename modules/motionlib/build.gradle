@@ -55,5 +55,7 @@ dependencies {
 
     api libs.bundles.contour
 
+    implementation libs.picasso
+
     testImplementation libs.junit
 }

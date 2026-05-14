@@ -2,7 +2,8 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.FrameLayout
+import timber.log.Timber
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
@@ -11,15 +12,14 @@ import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import timber.log.Timber
 
-abstract class BaseFrameMotionView
+abstract class BaseLinearMotionView
     @JvmOverloads
     constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0,
-    ) : FrameLayout(context, attrs, defStyleAttr),
+    ) : LinearLayoutCompat(context, attrs, defStyleAttr),
         MotionView {
         override var startFrame: Int = 0
         override var endFrame: Int = 0
@@ -34,7 +34,7 @@ abstract class BaseFrameMotionView
 
         companion object;
 
-        init {
+    init {
             context.theme
                 .obtainStyledAttributes(
                     attrs,
@@ -89,11 +89,12 @@ abstract class BaseFrameMotionView
         ) {
             val desiredWidth = provideCurrentConfig().aspectRatio.width
             val desiredHeight = provideCurrentConfig().aspectRatio.height
+            
+            val widthSpec = MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY)
+            val heightSpec = MeasureSpec.makeMeasureSpec(desiredHeight, MeasureSpec.EXACTLY)
+            
+            super.onMeasure(widthSpec, heightSpec)
             setMeasuredDimension(desiredWidth, desiredHeight)
-            getChildAt(0)?.measure(
-                MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(desiredHeight, MeasureSpec.EXACTLY),
-            )
         }
 
         override fun onLayout(
@@ -103,6 +104,6 @@ abstract class BaseFrameMotionView
             r: Int,
             b: Int,
         ) {
-            getChildAt(0)?.layout(0, 0, r - l, b - t)
+            super.onLayout(changed, l, t, r, b)
         }
     }
