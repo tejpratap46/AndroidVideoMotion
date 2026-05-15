@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionPlugin
+import com.tejpratapsingh.motionlib.core.MotionTransition
 import com.tejpratapsingh.motionlib.core.MotionView
 
 /**
@@ -16,6 +17,9 @@ object MotionSdui {
 
     private val effectFactories = mutableMapOf<String, MotionEffectFactory>()
     private val effectSerializers = mutableMapOf<Class<out MotionEffect>, MotionEffectSerializer<out MotionEffect>>()
+
+    private val transitionFactories = mutableMapOf<String, MotionTransitionFactory>()
+    private val transitionSerializers = mutableMapOf<Class<out MotionTransition>, MotionTransitionSerializer<out MotionTransition>>()
 
     private val pluginFactories = mutableMapOf<String, MotionPluginFactory>()
     private val pluginSerializers = mutableMapOf<Class<out MotionPlugin>, MotionPluginSerializer<out MotionPlugin>>()
@@ -49,6 +53,20 @@ object MotionSdui {
      */
     fun <T : MotionEffect> registerEffectSerializer(clazz: Class<T>, serializer: MotionEffectSerializer<T>) {
         effectSerializers[clazz] = serializer
+    }
+
+    /**
+     * Register a [MotionTransition] for deserialization.
+     */
+    fun registerTransition(type: String, factory: MotionTransitionFactory) {
+        transitionFactories[type] = factory
+    }
+
+    /**
+     * Register a [MotionTransition] for serialization.
+     */
+    fun <T : MotionTransition> registerTransitionSerializer(clazz: Class<T>, serializer: MotionTransitionSerializer<T>) {
+        transitionSerializers[clazz] = serializer
     }
 
     /**
@@ -91,6 +109,12 @@ object MotionSdui {
     internal fun <T : MotionEffect> getEffectSerializer(clazz: Class<out T>): MotionEffectSerializer<T>? =
         effectSerializers[clazz] as? MotionEffectSerializer<T>
 
+    internal fun getTransitionFactory(type: String): MotionTransitionFactory? = transitionFactories[type]
+
+    @Suppress("UNCHECKED_CAST")
+    internal fun <T : MotionTransition> getTransitionSerializer(clazz: Class<out T>): MotionTransitionSerializer<T>? =
+        transitionSerializers[clazz] as? MotionTransitionSerializer<T>
+
     internal fun getPluginFactory(type: String): MotionPluginFactory? = pluginFactories[type]
 
     @Suppress("UNCHECKED_CAST")
@@ -118,6 +142,14 @@ fun interface MotionEffectFactory {
 
 fun interface MotionEffectSerializer<T : MotionEffect> {
     fun serialize(effect: T, json: JsonObject)
+}
+
+fun interface MotionTransitionFactory {
+    fun create(json: JsonObject): MotionTransition
+}
+
+fun interface MotionTransitionSerializer<T : MotionTransition> {
+    fun serialize(transition: T, json: JsonObject)
 }
 
 fun interface MotionPluginFactory {

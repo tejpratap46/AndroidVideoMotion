@@ -1,0 +1,91 @@
+package com.tejpratapsingh.lyricsmaker.presentation.templates
+
+import android.view.Gravity
+import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
+import com.tejpratapsingh.motionlib.core.MotionTextVariant
+import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
+import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
+import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
+import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
+import com.tejpratapsingh.motionlib.templates.extensions.popUpTextView
+import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
+
+val PopupLyricsTemplate: MotionTemplate =
+    motionTemplate("Multi Lyrics Template") {
+        parameters {
+            string("songName")
+            string("image", defaultValue = null)
+            // Lyrics are passed as a list of SyncedLyricFrame in TemplateData
+        }
+
+        content {
+            val songName = data.getString("songName") ?: ""
+            val image = data.getString("image")
+            val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
+
+            if (lyrics.isNotEmpty()) {
+                multiLyricsContainer(
+                    songName = songName,
+                    startFrame = lyrics.first().frame,
+                    endFrame = lyrics.last().frame,
+                    image = image,
+                )
+
+                lyrics.zipWithNext().slice(0..1).forEach { (current, next) ->
+                    popUpTextView(
+                        text = current.text,
+                        startFrame = current.frame,
+                        endFrame = next.frame,
+                        writingSpeed = 1.5f,
+                        unwrittenTextAlpha = 0.3f,
+                        textSizeVariant = MotionTextVariant.H3,
+                        textColor = "#FFFFFF",
+                        textView =
+                            AppCompatTextView(context).apply {
+                                setPadding(16, 16, 16, 16)
+                                textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                                gravity = Gravity.CENTER
+                            },
+                    )
+                    transition(SlideTransition(SlideDirection.BOTTOM_TO_TOP), duration = 10)
+                }
+            }
+        }
+
+        preview {
+            val songName = data.getString("songName") ?: ""
+            val image = data.getString("image")
+            val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
+
+            if (lyrics.isNotEmpty()) {
+                val previewLyrics = lyrics.take(3)
+                val endFrame = previewLyrics.last().frame
+                multiLyricsContainer(
+                    songName = songName,
+                    startFrame = lyrics.first().frame,
+                    endFrame = endFrame,
+                    image = image,
+                )
+
+                previewLyrics.zipWithNext().forEach { (current, next) ->
+                    popUpTextView(
+                        text = current.text,
+                        startFrame = current.frame,
+                        endFrame = next.frame,
+                        writingSpeed = 1.5f,
+                        unwrittenTextAlpha = 0.3f,
+                        textSizeVariant = MotionTextVariant.H3,
+                        textColor = "#FFFFFF",
+                        textView =
+                            AppCompatTextView(context).apply {
+                                setPadding(16, 16, 16, 16)
+                                textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                                gravity = Gravity.CENTER
+                            },
+                    )
+                    transition(SlideTransition(SlideDirection.BOTTOM_TO_TOP), duration = 10)
+                }
+            }
+        }
+    }

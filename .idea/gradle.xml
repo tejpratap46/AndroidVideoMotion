@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/modules/lyrics-maker" />
             <option value="$PROJECT_DIR$/modules/metadata-extractor" />
             <option value="$PROJECT_DIR$/modules/motion-store" />
+            <option value="$PROJECT_DIR$/modules/motion-video-player" />
             <option value="$PROJECT_DIR$/modules/motionlib" />
             <option value="$PROJECT_DIR$/modules/pytorch-motion-ext" />
             <option value="$PROJECT_DIR$/modules/sdui" />

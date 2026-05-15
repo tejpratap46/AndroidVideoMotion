@@ -53,10 +53,12 @@ dependencies {
     implementation libs.picasso
 
     implementation project(path: ':modules:motionlib')
+    implementation project(path: ':modules:motion-video-player')
     implementation project(path: ':modules:motion-store')
     implementation project(path: ':modules:metadata-extractor')
     implementation project(path: ':modules:ffmpeg-motion-ext')
     implementation project(path: ':modules:sdui')
+    implementation project(path: ':modules:templates')
 
     implementation platform(libs.androidx.compose.bom)
     implementation libs.bundles.compose

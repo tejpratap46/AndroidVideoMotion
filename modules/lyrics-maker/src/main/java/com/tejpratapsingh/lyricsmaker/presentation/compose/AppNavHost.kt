@@ -24,6 +24,10 @@ sealed class Screen(
 
     object Lyrics : Screen("lyrics")
 
+    object TemplateSelector : Screen("template_selector/{projectId}") {
+        fun createRoute(projectId: String) = "template_selector/$projectId"
+    }
+
     object ProjectDetails : Screen("project_details/{projectId}") {
         fun createRoute(projectId: String) = "project_details/$projectId"
     }
@@ -106,9 +110,36 @@ fun AppNavHost(
 
                     projectsViewModel.loadProjects()
 
-                    navController.navigate(Screen.ProjectDetails.createRoute(projectId))
+                    navController.navigate(Screen.TemplateSelector.createRoute(projectId))
                 },
             )
+        }
+
+        composable(route = Screen.TemplateSelector.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")
+            val projects = projectsViewModel.projects.collectAsStateWithLifecycle()
+            val project = projects.value.find { it.id == projectId }
+
+            project?.let {
+                LyricsTemplateSelector(
+                    project = it,
+                    onBack = { navController.popBackStack() },
+                    onTemplateSelected = { template ->
+                        it.metadata.addProperty("template", template.name)
+                        // Clear old SDUI if any
+                        it.metadata.remove("sdui")
+                        
+                        navController.context.asLyricsApp().motionStoreDao.upsert(it)
+                        projectsViewModel.loadProjects()
+                        
+                        navController.navigate(Screen.ProjectDetails.createRoute(it.id)) {
+                            // Pop the template selector so back from details goes to lyrics
+                            popUpTo(Screen.TemplateSelector.route) { inclusive = true }
+                        }
+                    },
+                    modifier = modifier,
+                )
+            }
         }
 
         composable(route = Screen.ProjectDetails.route) { backStackEntry ->

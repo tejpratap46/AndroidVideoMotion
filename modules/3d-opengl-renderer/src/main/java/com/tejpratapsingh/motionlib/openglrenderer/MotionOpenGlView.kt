@@ -13,7 +13,7 @@ class MotionOpenGlView(
     modelAssetPath: String,
     override val startFrame: Int,
     override val endFrame: Int,
-    override val loop: Pair<Int, Int> = Pair(0, 0),
+    override var loop: Pair<Int, Int> = Pair(0, 0),
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {

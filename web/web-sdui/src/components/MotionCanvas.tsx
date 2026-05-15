@@ -40,7 +40,7 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({ sdui, currentFrame, 
         }}
       >
         {sdui.views.map((view, index) => (
-          <MotionViewRenderer key={index} props={view} currentFrame={currentFrame} />
+          <MotionViewRenderer key={index} props={view} currentFrame={currentFrame} config={config} />
         ))}
       </div>
     </div>

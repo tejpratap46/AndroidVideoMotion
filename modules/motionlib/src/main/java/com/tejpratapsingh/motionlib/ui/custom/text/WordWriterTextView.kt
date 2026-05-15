@@ -4,10 +4,13 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -25,6 +28,9 @@ class WordWriterTextView(
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    textSizeVariant: MotionTextVariant? = null,
+    textColor: String? = null,
+    highlightColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
@@ -33,6 +39,9 @@ class WordWriterTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        textSizeVariant = textSizeVariant,
+        textColor = textColor,
+        highlightColor = highlightColor,
         effects = effects,
     ) {
     private val wordArray = text.split(" ")
@@ -70,6 +79,16 @@ class WordWriterTextView(
         val visibleCharacters = wordArray.subList(0, visibleWordCount).joinToString(" ").length
 
         val spannableString = SpannableString(text)
+
+        if (highlightColor != null && visibleCharacters > 0) {
+            spannableString.setSpan(
+                BackgroundColorSpan(highlightColor.toColorInt()),
+                0,
+                visibleCharacters,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+
         val unwrittenColor =
             Color.argb(
                 (unwrittenTextAlpha * 255).toInt(),

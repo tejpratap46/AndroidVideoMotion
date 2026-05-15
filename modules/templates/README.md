@@ -1,107 +1,276 @@
-# Motion Template System
+# Motion Template Module
 
-The `templates` module provides a way to define `MotionView` structures using JSON templates with placeholders. This allows for decoupling the design of a motion view from the dynamic data it displays.
+The `templates` module provides a powerful, type-safe Kotlin DSL for defining motion video templates. It is designed to be extensible, allowing other modules to contribute custom view components to the DSL.
 
-## Core Components
+## Core Concepts
 
-- **`MotionTemplate`**: Holds the SDUI JSON definition with `{{placeholder}}` markers.
-- **`MotionTemplateApplier`**: Replaces placeholders in the JSON with actual values from a `Map<String, Any>`.
-- **`MotionTemplateViewGenerator`**: Combines the applier and SDUI parsers to create `MotionView` instances.
+- **`MotionTemplate`**: A blueprint for a video sequence.
+- **`TemplateParameter`**: Inputs required by the template (e.g., text, colors, durations).
+- **`ContentScope`**: The context where you define the layout and behavior of the video using the DSL.
 
-## Usage Example
+---
 
-### 1. Define a Template
+## Examples
 
-You can define your SDUI JSON with placeholders for any value (strings, numbers, etc.).
+### 1. Easy: Simple Text Overlay
+A basic template that takes a title and displays it.
 
+```kotlin
+val simpleTitleTemplate = motionTemplate("Simple Title") {
+    parameters {
+        string("title", defaultValue = "Welcome")
+        color("textColor", defaultValue = Color.WHITE)
+    }
+
+    content {
+        val titleText = data.getString("title") ?: "Hello"
+        val color = data.getInt("textColor") ?: Color.WHITE
+
+        // Assuming a 'textView' extension exists in your project
+        textView {
+            text = titleText
+            textColor = color
+            startFrame = 0
+            endFrame = 100
+        }
+    }
+}
+```
+
+### 2. Medium: Animated Lower Third
+A template with multiple parameters and basic animation logic.
+
+```kotlin
+val lowerThirdTemplate = motionTemplate("Lower Third") {
+    parameters {
+        string("name", description = "Person's Name")
+        string("role", description = "Title/Role")
+        int("duration", defaultValue = 150)
+    }
+
+    content {
+        val name = data.getString("name") ?: ""
+        val role = data.getString("role") ?: ""
+        val duration = data.getInt("duration") ?: 150
+
+        // Background Box
+        boxView {
+            color = Color.parseColor("#80000000") // Semi-transparent black
+            startFrame = 0
+            endFrame = duration
+            // Slide in animation
+            animateX(from = -500, to = 0, duration = 20)
+        }
+
+        // Name Text
+        textView {
+            text = name
+            textSize = 24f
+            startFrame = 10
+            endFrame = duration
+        }
+
+        // Role Text
+        textView {
+            text = role
+            textSize = 14f
+            startFrame = 15
+            endFrame = duration
+        }
+    }
+}
+```
+
+### 3. Hard: Dynamic Lyrics Video with Background
+A complex template using replication or list-based data to generate a sequence of synchronized views.
+
+```kotlin
+val lyricsVideoTemplate = motionTemplate("Lyrics Master") {
+    parameters {
+        string("songTitle")
+        video("backgroundVideo")
+        // Parameters can represent complex data structures passed via TemplateData
+    }
+
+    content {
+        val bgVideo = data.getString("backgroundVideo")
+        
+        // Background Video Layer
+        videoView {
+            path = bgVideo
+            startFrame = 0
+            endFrame = 1000 // Total length
+        }
+
+        // Fetch list of lyrics from data
+        val lyrics = data.get<List<LyricLine>>("lyricLines") ?: emptyList()
+
+        lyrics.forEach { line ->
+            textView {
+                text = line.text
+                startFrame = line.startFrame
+                endFrame = line.endFrame
+                
+                // Complex effects
+                applyEffect(FadeIn(10))
+                applyEffect(PopUp(5))
+                
+                layout {
+                    centerInParent()
+                }
+            }
+        }
+        
+        // Overlay Song Title at the start
+        textView {
+            text = data.getString("songTitle")
+            startFrame = 0
+            endFrame = 60
+            applyEffect(SlideOutToTop(20))
+        }
+    }
+}
+```
+
+## JSON Templates
+
+You can also define templates using JSON. This is useful for storing templates in a database or fetching them from a server. The JSON content follows the SDUI format and supports `{{placeholder}}` replacement.
+
+### JSON Examples
+
+#### 1. Easy: Simple Text Overlay
 ```json
 {
-  "type": "TransparentTextView",
-  "text": "Welcome, {{username}}!",
-  "startFrame": 0,
-  "endFrame": "{{duration}}",
-  "layout": {
-    "width": "match_parent",
-    "height": "wrap_content",
-    "gravity": "center"
+  "name": "Simple Title JSON",
+  "parameters": [
+    { "name": "title", "type": "STRING", "defaultValue": "Welcome" },
+    { "name": "duration", "type": "INTEGER", "defaultValue": 100 }
+  ],
+  "content": {
+    "type": "TransparentTextView",
+    "text": "{{title}}",
+    "startFrame": 0,
+    "endFrame": "{{duration}}"
   }
 }
 ```
 
-### 2. Load and Apply Data
-
-Use the `MotionTemplateViewGenerator` to create a `MotionView`.
-
+**Loading and Applying:**
 ```kotlin
-// 1. Prepare the template
-val templateJson = """{ ... }""" // The JSON above
-val template = MotionTemplate(JsonParser.parseString(templateJson).asJsonObject)
-
-// 2. Define the data
-val data = mapOf(
-    "username" to "John Doe",
-    "duration" to 150
-)
-
-// 3. Generate the MotionView
-val motionView = MotionTemplateViewGenerator.generate(context, template, data)
-
-// 4. Add to your composer or layout
-motionComposer.addView(motionView as View)
+val json = """{ ... }""" // JSON above
+val template = TemplateSerialization.templateFromJson(JsonParser.parseString(json).asJsonObject)
+val data = TemplateData(mapOf("title" to "Hello World", "duration" to 150))
+template.buildContent(scope)
 ```
 
-## Advanced Usage
-
-### List Replication
-You can generate a dynamic list of views (like lyrics or a gallery) using the `{{REPLICATE}}` marker.
-
-**Template:**
+#### 2. Medium: Animated Lower Third
 ```json
 {
-  "views": [
-    {
-      "{{REPLICATE}}": "items",
-      "template": {
-        "type": "PopUpTextView",
-        "text": "{{text}}",
-        "startFrame": "{{frame}}"
-      }
+  "name": "Lower Third JSON",
+  "parameters": [
+    { "name": "name", "type": "STRING" },
+    { "name": "role", "type": "STRING" }
+  ],
+  "content": {
+    "type": "PopUpTextView",
+    "text": "{{name}} - {{role}}",
+    "startFrame": 10,
+    "endFrame": 150,
+    "writingSpeed": 1.0,
+    "layout": {
+      "gravity": "bottom|center_horizontal",
+      "margin": { "bottom": 40 }
     }
-  ]
+  }
 }
 ```
 
-**Data:**
+**Loading and Applying:**
 ```kotlin
-val data = mapOf(
-    "items" to listOf(
-        mapOf("text" to "Line 1", "frame" to 0),
-        mapOf("text" to "Line 2", "frame" to 100)
-    )
-)
+val json = """{ ... }""" // JSON above
+val template = TemplateSerialization.templateFromJson(JsonParser.parseString(json).asJsonObject)
+val data = TemplateData(mapOf("name" to "John Doe", "role" to "Software Engineer"))
+template.buildContent(scope)
 ```
 
-**Result:**
-The system will repeat the `template` object for each item in the `items` list, injecting the item's data into the placeholders.
+#### 3. Hard: Dynamic Multi-View Template with List Replication
+A complex template using replication to generate a dynamic list of views (like lyrics or gallery items) based on provided data.
 
-## Real World Example: Lyrics Video
-
-Instead of manually creating views for each lyric line in code, you can use a template:
-
-```kotlin
-val lyricsData = project.lyrics.map { 
-    mapOf("text" to it.text, "frame" to it.frame, "nextFrame" to it.nextFrame) 
+```json
+{
+  "name": "Lyrics Master JSON",
+  "parameters": [
+    { "name": "songTitle", "type": "STRING" },
+    { "name": "lyrics", "type": "STRING" }
+  ],
+  "content": {
+    "views": [
+      {
+        "type": "GradientView",
+        "orientation": "VERTICAL",
+        "colors": [ -16777216, -12303292 ],
+        "startFrame": 0,
+        "endFrame": 1000
+      },
+      {
+        "{{REPLICATE}}": "lyricLines",
+        "template": {
+          "type": "PopUpTextView",
+          "text": "{{text}}",
+          "startFrame": "{{start}}",
+          "endFrame": "{{end}}",
+          "layout": { "gravity": "center" }
+        }
+      }
+    ]
+  }
 }
-
-val data = mapOf(
-    "songName" to project.name,
-    "lyrics" to lyricsData
-)
-
-val motionView = MotionTemplateViewGenerator.generate(context, lyricsTemplate, data)
 ```
 
-The system uses `Gson`'s `JsonObject` and `JsonArray` to traverse the template tree. It performs string replacement on any `JsonPrimitive` that is a string.
+**Loading and Applying:**
+```kotlin
+val json = """{ ... }""" // JSON above
+val template = TemplateSerialization.templateFromJson(JsonParser.parseString(json).asJsonObject)
 
-> [!NOTE]
-> All data values are converted to strings using `.toString()` before replacement. Ensure your SDUI factories can handle the resulting string types (e.g., parsing "150" back to an Int if needed, though most SDUI parsers in this project handle stringified numbers well).
+val lyricData = listOf(
+    mapOf("text" to "Hello from the other side", "start" to 0, "end" to 100),
+    mapOf("text" to "I must have called a thousand times", "start" to 101, "end" to 200)
+)
+
+val data = TemplateData(mapOf(
+    "songTitle" to "Hello",
+    "lyricLines" to lyricData
+))
+template.buildContent(scope)
+```
+
+### List Replication
+You can generate a dynamic list of views using the `{{REPLICATE}}` marker inside any JSON array.
+
+**Syntax:**
+```json
+{
+  "{{REPLICATE}}": "data_list_key",
+  "template": {
+    "type": "ViewType",
+    "property": "{{item_key}}"
+  }
+}
+```
+
+The system will repeat the `template` object for each item in the `data_list_key` provided via `TemplateData`. Each iteration uses the item's own map as the scope for placeholder replacement.
+
+---
+
+## Extensibility
+
+To add your own components to the DSL, simply create an extension function on `ContentScope`:
+
+```kotlin
+fun ContentScope.myCustomComponent(block: MyComponentBuilder.() -> Unit) {
+    val component = MyComponentBuilder(context).apply(block).build()
+    producer.addMotionViewToSequence(component)
+}
+```
+
+Now `myCustomComponent` is available inside any `content { ... }` block!

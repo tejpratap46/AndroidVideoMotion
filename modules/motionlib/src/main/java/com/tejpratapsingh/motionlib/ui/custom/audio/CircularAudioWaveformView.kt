@@ -12,8 +12,8 @@ import kotlin.math.sin
 class CircularAudioWaveformView(
     context: Context,
     val amplitudes: List<Float> = emptyList(),
-    override var startFrame: Int,
-    override var endFrame: Int,
+    override val startFrame: Int,
+    override val endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseAudioWaveformView(context, startFrame, endFrame, effects = effects) {
     override fun onDraw(canvas: Canvas) {

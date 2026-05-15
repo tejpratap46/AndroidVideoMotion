@@ -1,9 +1,9 @@
 import React from 'react';
-import type { MotionViewProps } from '../infra/types';
+import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 
-export const AudioWaveformView: React.FC<{ props: MotionViewProps; currentFrame: number }> = ({ props, currentFrame }) => {
-  const style = useApplyEffects(props, currentFrame);
+export const AudioWaveformView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
+  const style = useApplyEffects(props, currentFrame, config);
 
   const amplitudes: number[] = props.amplitudes || [];
 

@@ -7,8 +7,8 @@ import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 
 open class BaseAudioWaveformView(
     context: Context,
-    override var startFrame: Int,
-    override var endFrame: Int,
+    override val startFrame: Int,
+    override val endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     protected var currentFrame: Int = 0

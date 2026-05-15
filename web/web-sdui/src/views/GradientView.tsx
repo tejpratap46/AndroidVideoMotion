@@ -1,22 +1,15 @@
 import React from 'react';
-import type { MotionViewProps } from '../infra/types';
+import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 
-export const GradientView: React.FC<{ props: MotionViewProps; currentFrame: number }> = ({ props, currentFrame }) => {
-  const style = useApplyEffects(props, currentFrame);
+export const GradientView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
+  const style = useApplyEffects(props, currentFrame, config);
 
+  const colors = props.colors || ['#000000', '#ffffff'];
   const orientation = props.orientation || 'VERTICAL';
-  const colors = props.colors || ['#000000', '#FFFFFF'];
-  const colorsStr = colors.join(', ');
 
-  let background = '';
-  if (orientation === 'VERTICAL') {
-    background = `linear-gradient(to bottom, ${colorsStr})`;
-  } else if (orientation === 'HORIZONTAL') {
-    background = `linear-gradient(to right, ${colorsStr})`;
-  } else if (orientation === 'CIRCULAR') {
-    background = `radial-gradient(circle at center, ${colorsStr})`;
-  }
+  const gradientAngle = orientation === 'VERTICAL' ? '180deg' : '90deg';
+  const background = `linear-gradient(${gradientAngle}, ${colors.join(', ')})`;
 
   return (
     <div

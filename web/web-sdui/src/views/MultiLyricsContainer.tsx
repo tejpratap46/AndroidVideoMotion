@@ -1,5 +1,5 @@
 import React from 'react';
-import type { MotionViewProps } from '../infra/types';
+import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 
 const FakeAudioChartView: React.FC<{ frame: number }> = ({ frame }) => {
@@ -32,8 +32,8 @@ const FakeAudioChartView: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-export const MultiLyricsContainer: React.FC<{ props: MotionViewProps; currentFrame: number }> = ({ props, currentFrame }) => {
-  const style = useApplyEffects(props, currentFrame);
+export const MultiLyricsContainer: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
+  const style = useApplyEffects(props, currentFrame, config);
 
   return (
     <div

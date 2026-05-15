@@ -8,14 +8,15 @@ import android.text.SpannableString
 import android.text.style.ReplacementSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.graphics.toColorInt
 import androidx.core.graphics.withTranslation
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import com.tejpratapsingh.motionlib.ui.custom.text.CutoutTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 import timber.log.Timber
 
@@ -32,6 +33,9 @@ class PopUpTextView(
     val unwrittenTextAlpha: Float = 0f,
     val maxTranslationY: Float = 50f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    textSizeVariant: MotionTextVariant? = null,
+    textColor: String? = null,
+    highlightColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
@@ -40,6 +44,9 @@ class PopUpTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        textSizeVariant = textSizeVariant,
+        textColor = textColor,
+        highlightColor = highlightColor,
         effects = effects,
     ) {
     private val wordArray = text.split(" ")
@@ -84,6 +91,7 @@ class PopUpTextView(
                     progress = wordProgress,
                     unwrittenAlpha = unwrittenTextAlpha,
                     maxTranslationY = maxTranslationY,
+                    highlightColor = highlightColor?.toColorInt(),
                 )
 
             val start = currentIdx
@@ -114,6 +122,7 @@ class PopUpTextView(
         private val progress: Float,
         private val unwrittenAlpha: Float,
         private val maxTranslationY: Float,
+        private val highlightColor: Int? = null,
     ) : ReplacementSpan() {
         override fun getSize(
             paint: Paint,
@@ -142,13 +151,26 @@ class PopUpTextView(
             val translationY = maxTranslationY * (1f - progress)
 
             val oldAlpha = paint.alpha
+            val oldColor = paint.color
             paint.alpha = alpha.toInt()
 
             canvas.withTranslation(y = translationY) {
+                highlightColor?.let {
+                    paint.color = it
+                    drawRect(
+                        x,
+                        top.toFloat(),
+                        x + paint.measureText(text, start, end),
+                        bottom.toFloat(),
+                        paint,
+                    )
+                    paint.color = oldColor
+                }
                 drawText(text!!, start, end, x, y.toFloat(), paint)
             }
 
             paint.alpha = oldAlpha
+            paint.color = oldColor
         }
     }
 }

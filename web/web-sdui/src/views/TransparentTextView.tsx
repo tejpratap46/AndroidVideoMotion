@@ -1,9 +1,9 @@
 import React from 'react';
-import type { MotionViewProps } from '../infra/types';
+import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 
-export const TransparentTextView: React.FC<{ props: MotionViewProps; currentFrame: number }> = ({ props, currentFrame }) => {
-  const style = useApplyEffects(props, currentFrame);
+export const TransparentTextView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
+  const style = useApplyEffects(props, currentFrame, config);
 
   return (
     <div
@@ -18,6 +18,7 @@ export const TransparentTextView: React.FC<{ props: MotionViewProps; currentFram
         justifyContent: 'center',
         fontSize: '2rem',
         color: 'white',
+        textAlign: 'center',
         ...style,
       }}
     >

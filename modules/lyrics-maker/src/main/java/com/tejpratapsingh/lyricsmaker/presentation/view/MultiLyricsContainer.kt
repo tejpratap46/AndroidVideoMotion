@@ -4,18 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.widget.ImageView
-import com.squareup.picasso.Picasso
 import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
@@ -28,7 +24,7 @@ class MultiLyricsContainer(
     effects: List<MotionEffect> = emptyList(),
 ) : BaseFrameMotionView(context) {
     private val ivAlbumArt: ImageView
-    private val fakeChartView: FakeAudioChartView
+    val fakeChartView: FakeAudioChartView
 
     private val okHttp = OkHttpProvider.httpClient
     private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
@@ -54,13 +50,10 @@ class MultiLyricsContainer(
         ivAlbumArt.apply {
             runBlocking {
                 if (image != null) {
-                    val bitmap =
-                        Picasso
-                            .get()
-                            .load(image)
-                            .get()
-                    setImageBitmap(bitmap)
-                    return@runBlocking
+                    val bitmap = repository.getAlbumArtBitmap(image)
+                    bitmap?.let {
+                        setImageBitmap(it)
+                    }
                 } else {
                     Timber.i("Fetching from musicbrainz")
                     val songDetails = songName.split(" - ")
@@ -70,8 +63,12 @@ class MultiLyricsContainer(
                                 songDetails[0],
                                 songDetails[1],
                             )
-                        url?.let { repository.getAlbumArtBitmap(it) }?.also {
-                            setImageBitmap(it)
+
+                        url?.let { url ->
+                            val bitmap = repository.getAlbumArtBitmap(url)
+                            bitmap?.let {
+                                setImageBitmap(it)
+                            }
                         }
                     }
                 }

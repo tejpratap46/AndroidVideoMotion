@@ -5,7 +5,7 @@ import kotlin.math.min
 /**
  * Text size variants for video overlays.
  */
-internal enum class MotionTextVariant {
+enum class MotionTextVariant {
     H1,
     H2,
     H3,
@@ -34,6 +34,11 @@ internal data class MotionTextSizes(
  */
 object MotionTextSizeProvider {
     /**
+     * Base scale for all font sizes. Can be updated to scale all text sizes at once.
+     */
+    var baseTextScale: Float = 1.5f
+
+    /**
      * Returns the [MotionTextSizes] for the given [aspectRatio].
      *
      * Returns null for [VideoAspectRatio.Custom] as requested.
@@ -44,26 +49,26 @@ object MotionTextSizeProvider {
         }
 
         return MotionTextSizes(
-            h1 = aspectRatio.scale(96f),
-            h2 = aspectRatio.scale(72f),
-            h3 = aspectRatio.scale(48f),
-            h4 = aspectRatio.scale(36f),
-            h5 = aspectRatio.scale(24f),
-            h6 = aspectRatio.scale(20f),
-            p = aspectRatio.scale(32f),
+            h1 = aspectRatio.scale(160f * baseTextScale),
+            h2 = aspectRatio.scale(120f * baseTextScale),
+            h3 = aspectRatio.scale(80f * baseTextScale),
+            h4 = aspectRatio.scale(60f * baseTextScale),
+            h5 = aspectRatio.scale(40f * baseTextScale),
+            h6 = aspectRatio.scale(32f * baseTextScale),
+            p = aspectRatio.scale(48f * baseTextScale),
         )
     }
 
     /**
      * Returns the font size in pixels for the given [variant] and [aspectRatio].
      *
-     * For [VideoAspectRatio.Custom], it returns a fallback size of 32.0f.
+     * For [VideoAspectRatio.Custom], it returns a fallback size of (32.0f * baseTextScale).
      */
-    internal fun getFontSize(
+    fun getFontSize(
         aspectRatio: VideoAspectRatio,
         variant: MotionTextVariant,
     ): Float {
-        val sizes = getTextSizes(aspectRatio) ?: return 32f
+        val sizes = getTextSizes(aspectRatio) ?: return aspectRatio.scale(32f * baseTextScale)
 
         return when (variant) {
             MotionTextVariant.H1 -> sizes.h1
