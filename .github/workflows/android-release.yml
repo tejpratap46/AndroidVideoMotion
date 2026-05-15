@@ -1,4 +1,4 @@
-name: Build and Attach ALL Debug APKs to Release
+name: Build and Attach ALL Release Artifacts to Release
 
 on:
   # Triggers the workflow when a new release is published
@@ -29,10 +29,19 @@ jobs:
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | openssl base64 -d > modules/lyrics-maker/google-services.json
 
-      - name: 🔨 Build ALL Debug Artifacts (APKs & AARs)
-        # This command runs the 'assembleDebug' task across all subprojects/modules
+      - name: 🔑 Decode Keystore
         run: |
-          ./gradlew assembleDebug
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | openssl base64 -d -A > release.jks
+
+      - name: 🔨 Build ALL Release Artifacts (APKs & AARs)
+        # This command runs the 'assembleRelease' task across all subprojects/modules
+        # We inject signing properties so APKs are signed during the build
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$(pwd)/release.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.RELEASE_KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.RELEASE_KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.RELEASE_KEY_PASSWORD }}
 
       # NOTE: This step is fixed to correctly output multi-line file paths for the next action.
       - name: 📌 Define ALL Artifact Paths
@@ -40,11 +49,11 @@ jobs:
         run: |
           echo "🔎 Searching for APKs and AARs..."
           
-          # Find all debug APKs and AARs in standard output directories
-          ARTIFACT_FILES=$(find . \( -path '*/build/outputs/apk/debug/*-debug.apk' -o -path '*/build/outputs/aar/*-debug.aar' \) -type f)
+          # Find all release APKs and AARs in standard output directories
+          ARTIFACT_FILES=$(find . \( -path '*/build/outputs/apk/release/*.apk' -o -path '*/build/outputs/aar/*-release.aar' \) -type f)
           
           if [ -z "$ARTIFACT_FILES" ]; then
-            echo "::warning::No debug APKs or AARs found in the standard build paths."
+            echo "::warning::No release APKs or AARs found in the standard build paths."
             echo "ARTIFACT_FILES=" >> $GITHUB_OUTPUT
           else
             echo "✅ Found the following artifacts:"
