@@ -29,40 +29,40 @@ jobs:
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | openssl base64 -d > modules/lyrics-maker/google-services.json
 
-      - name: 🔨 Build ALL Debug APKs
+      - name: 🔨 Build ALL Debug Artifacts (APKs & AARs)
         # This command runs the 'assembleDebug' task across all subprojects/modules
         run: |
           ./gradlew assembleDebug
 
       # NOTE: This step is fixed to correctly output multi-line file paths for the next action.
-      - name: 📌 Define ALL APK Paths
-        id: apk_paths
+      - name: 📌 Define ALL Artifact Paths
+        id: artifact_paths
         run: |
-          echo "🔎 Searching for APKs..."
+          echo "🔎 Searching for APKs and AARs..."
           
-          # Find all debug APKs in standard output directories (*/build/outputs/apk/debug/*-debug.apk)
-          APK_FILES=$(find . -path '*/build/outputs/apk/debug/*-debug.apk' -type f)
+          # Find all debug APKs and AARs in standard output directories
+          ARTIFACT_FILES=$(find . \( -path '*/build/outputs/apk/debug/*-debug.apk' -o -path '*/build/outputs/aar/*-debug.aar' \) -type f)
           
-          if [ -z "$APK_FILES" ]; then
-            echo "::warning::No debug APKs found in the standard build paths."
-            echo "APK_FILES=" >> $GITHUB_OUTPUT
+          if [ -z "$ARTIFACT_FILES" ]; then
+            echo "::warning::No debug APKs or AARs found in the standard build paths."
+            echo "ARTIFACT_FILES=" >> $GITHUB_OUTPUT
           else
-            echo "✅ Found the following APKs:"
-            echo "$APK_FILES"
+            echo "✅ Found the following artifacts:"
+            echo "$ARTIFACT_FILES"
             
             # Use the EOF delimiter to output a multi-line string with true newlines
-            echo "APK_FILES<<EOF" >> $GITHUB_OUTPUT
-            echo "$APK_FILES" >> $GITHUB_OUTPUT
+            echo "ARTIFACT_FILES<<EOF" >> $GITHUB_OUTPUT
+            echo "$ARTIFACT_FILES" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
-      - name: 📤 Upload ALL APKs to Release Assets
+      - name: 📤 Upload ALL Artifacts to Release Assets
         # Using the recommended v2 of the action
         uses: softprops/action-gh-release@v2
-        if: steps.apk_paths.outputs.APK_FILES != '' # Only run if APKs were found
+        if: steps.artifact_paths.outputs.ARTIFACT_FILES != '' # Only run if artifacts were found
         with:
           # The 'files' input receives the newline-separated list of paths
-          files: ${{ steps.apk_paths.outputs.APK_FILES }}
+          files: ${{ steps.artifact_paths.outputs.ARTIFACT_FILES }}
           token: ${{ secrets.GITHUB_TOKEN }}
           # Added based on your previous logs to allow re-running and replacing files
           overwrite_files: true
