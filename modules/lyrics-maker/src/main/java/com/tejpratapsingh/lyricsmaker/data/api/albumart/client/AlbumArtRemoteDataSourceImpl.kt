@@ -2,7 +2,6 @@ package com.tejpratapsingh.lyricsmaker.data.api.albumart.client
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import timber.log.Timber
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.data.MusicBrainzResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,6 +9,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import timber.log.Timber
 
 class AlbumArtRemoteDataSourceImpl(
     private val client: OkHttpClient,

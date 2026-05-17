@@ -1,9 +1,16 @@
 package com.tejpratapsingh.motionlib.templates.dsl
 
 import android.content.Context
-import com.tejpratapsingh.motionlib.core.*
+import com.tejpratapsingh.motionlib.core.MotionAudio
+import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
+import com.tejpratapsingh.motionlib.core.MotionTransition
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.templates.model.*
+import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
+import com.tejpratapsingh.motionlib.templates.model.ParameterType
+import com.tejpratapsingh.motionlib.templates.model.TemplateData
+import com.tejpratapsingh.motionlib.templates.model.TemplateParameter
 import java.io.File
 
 @DslMarker
@@ -19,7 +26,10 @@ class ContentScope(
         producer.addMotionViewToSequence(view)
     }
 
-    fun transition(transition: MotionTransition, duration: Int) {
+    fun transition(
+        transition: MotionTransition,
+        duration: Int,
+    ) {
         producer.addTransition(transition, duration)
     }
 

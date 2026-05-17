@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
-import timber.log.Timber
 import android.view.Surface
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -24,6 +23,7 @@ import com.google.android.filament.utils.Utils
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 import java.nio.ByteBuffer
 
 class Filament3dView(

@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motionstore.worker
 
 import android.content.Context
-import timber.log.Timber
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -20,6 +19,7 @@ import com.tejpratapsingh.motionstore.domain.SyncException
 import com.tejpratapsingh.motionstore.infra.SyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 /**

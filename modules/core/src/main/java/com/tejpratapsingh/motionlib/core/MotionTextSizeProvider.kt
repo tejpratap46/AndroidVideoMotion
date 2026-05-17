@@ -1,7 +1,5 @@
 package com.tejpratapsingh.motionlib.core
 
-import kotlin.math.min
-
 /**
  * Text size variants for video overlays.
  */

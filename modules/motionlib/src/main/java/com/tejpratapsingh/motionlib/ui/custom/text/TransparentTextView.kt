@@ -5,7 +5,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.ui.custom.text.CutoutTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 
 class TransparentTextView(

@@ -9,7 +9,6 @@ import com.tejpratapsingh.motionlib.core.motion.transitions.BlurTransition
 import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
-import com.tejpratapsingh.motionlib.ui.effects.SlideEffect
 import com.tejpratapsingh.motionlib.ui.custom.audio.CircularAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.audio.RadialAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
@@ -29,6 +28,7 @@ import com.tejpratapsingh.motionlib.ui.effects.FadeInEffect
 import com.tejpratapsingh.motionlib.ui.effects.FadeOutEffect
 import com.tejpratapsingh.motionlib.ui.effects.GlitchEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideBottomToTopEffect
+import com.tejpratapsingh.motionlib.ui.effects.SlideEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideLeftToRightEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideRightToLeftEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideTopToBottomEffect
@@ -599,11 +599,12 @@ object MotionSduiInitializer {
         // Register SlideTransition
         MotionSdui.registerTransition(SlideTransition::class.java.simpleName) { json ->
             val directionStr = json.get("direction")?.asString ?: "LEFT_TO_RIGHT"
-            val direction = try {
-                SlideDirection.valueOf(directionStr)
-            } catch (e: Exception) {
-                SlideDirection.LEFT_TO_RIGHT
-            }
+            val direction =
+                try {
+                    SlideDirection.valueOf(directionStr)
+                } catch (e: Exception) {
+                    SlideDirection.LEFT_TO_RIGHT
+                }
             SlideTransition(direction = direction)
         }
         MotionSdui.registerTransitionSerializer(SlideTransition::class.java) { transition, json ->

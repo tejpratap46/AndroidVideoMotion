@@ -4,7 +4,6 @@ import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
-import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate

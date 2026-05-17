@@ -7,7 +7,6 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
-import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.IComposerView
 

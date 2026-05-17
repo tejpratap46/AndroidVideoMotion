@@ -19,7 +19,6 @@ import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
-import timber.log.Timber
 
 /**
  * A TextView that animates each word popping up from the bottom with rainbow colors.
@@ -53,15 +52,16 @@ class RainbowPopUpTextView(
     private val wordCount: Int = wordArray.size
 
     // Standard rainbow colors
-    private val rainbowColors = intArrayOf(
-        Color.RED,
-        Color.rgb(255, 127, 0), // Orange
-        Color.YELLOW,
-        Color.GREEN,
-        Color.BLUE,
-        Color.rgb(75, 0, 130), // Indigo
-        Color.rgb(148, 0, 211) // Violet
-    )
+    private val rainbowColors =
+        intArrayOf(
+            Color.RED,
+            Color.rgb(255, 127, 0), // Orange
+            Color.YELLOW,
+            Color.GREEN,
+            Color.BLUE,
+            Color.rgb(75, 0, 130), // Indigo
+            Color.rgb(148, 0, 211), // Violet
+        )
 
     init {
         contourHeightOf {
@@ -80,7 +80,7 @@ class RainbowPopUpTextView(
 
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
-        
+
         val progress: Float =
             MotionInterpolator
                 .interpolateForRange(
@@ -95,7 +95,7 @@ class RainbowPopUpTextView(
         var currentIdx = 0
         wordArray.forEachIndexed { index, word ->
             val wordProgress = (progress - index).coerceIn(0f, 1f)
-            
+
             val color = rainbowColors[index % rainbowColors.size]
 
             val span =
@@ -166,7 +166,7 @@ class RainbowPopUpTextView(
 
             val oldAlpha = paint.alpha
             val oldColor = paint.color
-            
+
             paint.alpha = alpha.toInt()
 
             canvas.withTranslation(y = translationY) {

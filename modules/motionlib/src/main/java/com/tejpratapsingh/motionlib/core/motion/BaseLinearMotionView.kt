@@ -2,9 +2,8 @@ package com.tejpratapsingh.motionlib.core.motion
 
 import android.content.Context
 import android.util.AttributeSet
-import timber.log.Timber
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.annotation.CallSuper
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
 import com.tejpratapsingh.motionlib.core.MotionEffect
@@ -12,6 +11,7 @@ import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 
 abstract class BaseLinearMotionView
     @JvmOverloads
@@ -34,7 +34,7 @@ abstract class BaseLinearMotionView
 
         companion object;
 
-    init {
+        init {
             context.theme
                 .obtainStyledAttributes(
                     attrs,
@@ -89,10 +89,10 @@ abstract class BaseLinearMotionView
         ) {
             val desiredWidth = provideCurrentConfig().aspectRatio.width
             val desiredHeight = provideCurrentConfig().aspectRatio.height
-            
+
             val widthSpec = MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY)
             val heightSpec = MeasureSpec.makeMeasureSpec(desiredHeight, MeasureSpec.EXACTLY)
-            
+
             super.onMeasure(widthSpec, heightSpec)
             setMeasuredDimension(desiredWidth, desiredHeight)
         }

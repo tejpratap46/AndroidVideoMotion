@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.jcodec
 
 import android.content.Context
 import android.graphics.Bitmap
-import timber.log.Timber
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -10,10 +9,10 @@ import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import org.jcodec.api.android.AndroidSequenceEncoder
+import timber.log.Timber
 import java.io.File
 
 class JCodecVideoProducerAdapter : VideoProducerAdapter {
-
     override suspend fun produceVideo(
         context: Context,
         motionComposerView: MotionView,

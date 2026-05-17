@@ -1,13 +1,11 @@
 package com.tejpratapsingh.motionlib.ui.effects
 
 import android.view.View
-import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 class SlideEffect(
     override val startFrame: Int,
@@ -21,12 +19,12 @@ class SlideEffect(
 
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) return motionView
-        
+
         val view = motionView as View
-        
+
         if (frame !in startFrame..endFrame) {
             // Reset translation if outside range
-            // This might be tricky if multiple slide effects are used, 
+            // This might be tricky if multiple slide effects are used,
             // but usually we want it to stay at final position if it's the end of view.
             return motionView
         }
@@ -42,7 +40,7 @@ class SlideEffect(
         if (fromX != null && toX != null) {
             view.translationX = fromX + (toX - fromX) * progress
         }
-        
+
         if (fromY != null && toY != null) {
             view.translationY = fromY + (toY - fromY) * progress
         }

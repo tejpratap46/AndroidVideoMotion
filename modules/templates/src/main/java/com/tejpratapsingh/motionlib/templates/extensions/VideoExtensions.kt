@@ -1,11 +1,11 @@
 package com.tejpratapsingh.motionlib.templates.extensions
 
+import android.net.Uri
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.ui.custom.video.MediaFrameView
 import com.tejpratapsingh.motionlib.ui.custom.video.VideoFrameView
-import android.net.Uri
 
 fun ContentScope.videoFrameView(
     videoUri: Uri,

@@ -1,7 +1,7 @@
 package com.tejpratapsingh.motion.sdui
 
-import android.graphics.Bitmap
 import android.content.Context
+import android.graphics.Bitmap
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig

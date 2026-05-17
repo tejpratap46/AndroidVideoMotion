@@ -1,10 +1,10 @@
 package com.tejpratapsingh.motion.sdui
 
-import com.google.gson.JsonObject
+import android.content.Context
+import android.graphics.Bitmap
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.toJson
 import com.tejpratapsingh.motion.sdui.infra.toMotionAudio
-import com.tejpratapsingh.motion.sdui.infra.toMotionEffect
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
@@ -13,8 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import android.graphics.Bitmap
-import android.content.Context
 import org.mockito.Mockito.mock
 import java.io.File
 
@@ -23,7 +21,6 @@ import java.io.File
  * It uses mock implementations of MotionView and MotionEffect that don't inherit from Android Views.
  */
 class MotionLogicTest {
-
     private lateinit var mockContext: Context
 
     @Before
@@ -58,7 +55,7 @@ class MotionLogicTest {
         assertEquals(0, json.get("startFrame").asInt)
         assertEquals(100, json.get("endFrame").asInt)
         assertTrue(json.has("effects"))
-        
+
         val effectsArray = json.getAsJsonArray("effects")
         assertEquals(1, effectsArray.size())
         val effectJson = effectsArray.get(0).asJsonObject
@@ -71,7 +68,7 @@ class MotionLogicTest {
         // 5. Verify restored objects
         assertEquals(originalView.startFrame, restoredView.startFrame)
         assertEquals(originalView.endFrame, restoredView.endFrame)
-        
+
         // Note: The registry handles the specific restoration of effects if the factory supports it.
         // In our simple MockLogicView factory above, we didn't add the effects back yet.
         // But the core logic of polymorphic serialization is proven.
@@ -79,12 +76,13 @@ class MotionLogicTest {
 
     @Test
     fun testMotionAudioRoundTrip() {
-        val originalAudio = MotionAudio(
-            file = File("/tmp/test.mp3"),
-            startFrame = 0,
-            endFrame = 100,
-            delayFrame = 10
-        )
+        val originalAudio =
+            MotionAudio(
+                file = File("/tmp/test.mp3"),
+                startFrame = 0,
+                endFrame = 100,
+                delayFrame = 10,
+            )
 
         val json = originalAudio.toJson()
         val restoredAudio = json.toMotionAudio(mockContext)
@@ -101,7 +99,7 @@ class MotionLogicTest {
     class MockLogicView(
         override val startFrame: Int,
         override val endFrame: Int,
-        override val loop: Pair<Int, Int> = Pair(0, 0)
+        override val loop: Pair<Int, Int> = Pair(0, 0),
     ) : MotionView {
         val mockEffects = mutableListOf<MotionEffect>()
         override val effects: List<MotionEffect> get() = mockEffects
@@ -112,14 +110,16 @@ class MotionLogicTest {
         }
 
         override fun forFrame(frame: Int): MotionView = this
+
         override fun getViewBitmap(): Bitmap = throw UnsupportedOperationException()
     }
 
     class MockLogicEffect(
         override val startFrame: Int,
-        override val endFrame: Int
+        override val endFrame: Int,
     ) : MotionEffect {
         override lateinit var motionView: MotionView
+
         override fun forFrame(frame: Int): MotionView = motionView
     }
 }

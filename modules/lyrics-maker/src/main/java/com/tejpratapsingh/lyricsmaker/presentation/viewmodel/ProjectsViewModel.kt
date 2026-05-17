@@ -1,6 +1,5 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
-import timber.log.Timber
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ProjectsViewModel(
     private val motionProject: MotionProjectDao,
@@ -79,7 +79,6 @@ class ProjectsViewModel(
             _syncEvent.emit(project)
         }
     }
-
 }
 
 class ProjectsViewModelFactory(

@@ -1,6 +1,5 @@
 package com.tejpratapsingh.motion.metadataextractor.data
 
-import timber.log.Timber
 import com.tejpratapsingh.motionlib.core.extensions.DownloadException
 import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import io.ktor.client.HttpClient
@@ -8,9 +7,9 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import org.jsoup.Jsoup
+import timber.log.Timber
 
 class MetaDataFetcher {
-
     private val client = HttpClient(CIO)
 
     suspend fun extractSocialMetadata(url: String): MetaDataResult {

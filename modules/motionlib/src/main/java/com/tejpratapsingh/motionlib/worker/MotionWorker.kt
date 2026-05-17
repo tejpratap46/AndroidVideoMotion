@@ -3,7 +3,6 @@ package com.tejpratapsingh.motionlib.worker
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.PowerManager
-import timber.log.Timber
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -11,6 +10,7 @@ import androidx.work.workDataOf
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.File
 
 abstract class MotionWorker(

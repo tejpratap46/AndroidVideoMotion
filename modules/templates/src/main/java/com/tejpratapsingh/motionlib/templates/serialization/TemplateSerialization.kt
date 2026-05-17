@@ -1,8 +1,15 @@
 package com.tejpratapsingh.motionlib.templates.serialization
 
-import com.google.gson.*
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.tejpratapsingh.motionlib.templates.json.JsonMotionTemplate
-import com.tejpratapsingh.motionlib.templates.model.*
+import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
+import com.tejpratapsingh.motionlib.templates.model.ParameterType
+import com.tejpratapsingh.motionlib.templates.model.TemplateData
+import com.tejpratapsingh.motionlib.templates.model.TemplateParameter
 import java.util.regex.Pattern
 
 object TemplateSerialization {
@@ -12,17 +19,17 @@ object TemplateSerialization {
     fun templateToJson(template: MotionTemplate): JsonObject {
         val json = JsonObject()
         json.addProperty("name", template.name)
-        
+
         val paramsArray = JsonArray()
         template.parameters.forEach { param ->
             paramsArray.add(parameterToJson(param))
         }
         json.add("parameters", paramsArray)
-        
+
         if (template is JsonMotionTemplate) {
             json.add("content", template.rawContent)
         }
-        
+
         return json
     }
 
@@ -31,7 +38,7 @@ object TemplateSerialization {
         val paramsArray = json.getAsJsonArray("parameters")
         val parameters = paramsArray.map { parameterFromJson(it.asJsonObject) }
         val content = json.getAsJsonObject("content")
-        
+
         return JsonMotionTemplate(name, parameters, content)
     }
 
@@ -53,7 +60,7 @@ object TemplateSerialization {
         val type = ParameterType.valueOf(json.get("type").asString)
         val description = json.get("description")?.asString
         val defaultValueElement = json.get("defaultValue")
-        
+
         return when (type) {
             ParameterType.STRING -> TemplateParameter(name, type, defaultValueElement?.asString, description)
             ParameterType.INTEGER -> TemplateParameter(name, type, defaultValueElement?.asInt, description)
@@ -65,7 +72,10 @@ object TemplateSerialization {
         }
     }
 
-    fun applyData(element: JsonElement, data: TemplateData): JsonElement {
+    fun applyData(
+        element: JsonElement,
+        data: TemplateData,
+    ): JsonElement {
         return when {
             element.isJsonObject -> {
                 val obj = element.asJsonObject
@@ -82,6 +92,7 @@ object TemplateSerialization {
                     newObj
                 }
             }
+
             element.isJsonArray -> {
                 val array = element.asJsonArray
                 val newArray = JsonArray()
@@ -90,7 +101,7 @@ object TemplateSerialization {
                         val replicateObj = item.asJsonObject
                         val listKey = replicateObj.get("{{REPLICATE}}").asString
                         val template = replicateObj.get("template") ?: return@forEach
-                        
+
                         val listData = data.get<List<Map<String, Any>>>(listKey)
                         listData?.forEach { itemData ->
                             val itemTemplateData = TemplateData(itemData)
@@ -102,6 +113,7 @@ object TemplateSerialization {
                 }
                 newArray
             }
+
             element.isJsonPrimitive -> {
                 val primitive = element.asJsonPrimitive
                 if (primitive.isString) {
@@ -134,7 +146,10 @@ object TemplateSerialization {
                     element
                 }
             }
-            else -> element
+
+            else -> {
+                element
+            }
         }
     }
 }

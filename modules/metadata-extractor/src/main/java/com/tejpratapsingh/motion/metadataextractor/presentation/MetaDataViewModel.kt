@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motion.metadataextractor.presentation
 
 import android.graphics.Bitmap
-import timber.log.Timber
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.tejpratapsingh.motion.metadataextractor.data.MetaDataFetcher
 import com.tejpratapsingh.motion.metadataextractor.data.MetaDataResult
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MetaDataViewModel : ViewModel() {
-
     private val metaDataFetcher = MetaDataFetcher()
     private val _metadata = MutableLiveData<MetaDataResult>()
     val metadata: LiveData<MetaDataResult> = _metadata

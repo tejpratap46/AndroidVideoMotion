@@ -2,12 +2,12 @@ package com.tejpratapsingh.ivi_demo.motion
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import timber.log.Timber
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 
