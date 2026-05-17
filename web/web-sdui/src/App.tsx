@@ -282,12 +282,23 @@ function App() {
 
     const clonedImages = Array.from(clonedNode.querySelectorAll<HTMLImageElement>('img'));
     for (const image of clonedImages) {
-      const originalSrc = image.getAttribute('src');
-      image.setAttribute('src', TRANSPARENT_PIXEL);
-      image.removeAttribute('srcset');
+      const src = image.getAttribute('src');
       image.setAttribute('crossorigin', 'anonymous');
-      console.warn('[VideoEncoder] Replaced image with transparent pixel for safe export', { src: originalSrc });
+      // Re-setting src ensures the browser re-evaluates CORS if it wasn't already anonymous
+      if (src) image.setAttribute('src', src);
     }
+
+    // Wait for all images to be loaded or failed before proceeding
+    await Promise.all(clonedImages.map(img => {
+      return new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) {
+          resolve(null);
+        } else {
+          img.onload = () => resolve(null);
+          img.onerror = () => resolve(null); // Resolve even on error to not block forever
+        }
+      });
+    }));
 
     const serialized = new XMLSerializer().serializeToString(clonedNode);
     const svg = `

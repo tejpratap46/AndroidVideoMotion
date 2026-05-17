@@ -3,19 +3,38 @@ package com.tejpratapsingh.motion.sdui.infra
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.google.gson.JsonArray
+import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionTextVariant
+import com.tejpratapsingh.motionlib.core.motion.transitions.BlurTransition
+import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
+import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
+import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
+import com.tejpratapsingh.motionlib.ui.effects.SlideEffect
 import com.tejpratapsingh.motionlib.ui.custom.audio.CircularAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.audio.RadialAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
 import com.tejpratapsingh.motionlib.ui.custom.image.CircularMotionImageView
 import com.tejpratapsingh.motionlib.ui.custom.image.MotionImageView
+import com.tejpratapsingh.motionlib.ui.custom.text.AccentMiddlePopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.RainbowPopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordWriterTextView
 import com.tejpratapsingh.motionlib.ui.custom.video.VideoFrameView
+import com.tejpratapsingh.motionlib.ui.effects.BlurEffect
+import com.tejpratapsingh.motionlib.ui.effects.FadeInEffect
+import com.tejpratapsingh.motionlib.ui.effects.FadeOutEffect
+import com.tejpratapsingh.motionlib.ui.effects.GlitchEffect
+import com.tejpratapsingh.motionlib.ui.effects.SlideBottomToTopEffect
+import com.tejpratapsingh.motionlib.ui.effects.SlideLeftToRightEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideRightToLeftEffect
+import com.tejpratapsingh.motionlib.ui.effects.SlideTopToBottomEffect
+import com.tejpratapsingh.motionlib.ui.effects.VibrateEffect
+import com.tejpratapsingh.motionlib.ui.effects.ZoomInEffect
+import com.tejpratapsingh.motionlib.ui.effects.ZoomOutEffect
 
 /**
  * Initializer for [MotionSdui] registry.
@@ -27,17 +46,24 @@ object MotionSduiInitializer {
         MotionSdui.registerView(TransparentTextView::class.java.simpleName) { context, json ->
             val props = json.parseMotionViewProps()
             val text = json.get("text")?.asString ?: ""
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
             TransparentTextView(
                 context = context,
                 text = text,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
                 effects = props.effects,
             )
         }
         MotionSdui.registerViewSerializer(TransparentTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
         // Register TypeWriterTextView
@@ -46,6 +72,8 @@ object MotionSduiInitializer {
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
             TypeWriterTextView(
                 context = context,
                 text = text,
@@ -53,6 +81,8 @@ object MotionSduiInitializer {
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
                 effects = props.effects,
             )
         }
@@ -61,6 +91,9 @@ object MotionSduiInitializer {
             json.addProperty("text", view.text)
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
         // Register WordWriterTextView
@@ -69,6 +102,9 @@ object MotionSduiInitializer {
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
+            val highlightColor = json.get("highlightColor")?.asString
             WordWriterTextView(
                 context = context,
                 text = text,
@@ -76,6 +112,9 @@ object MotionSduiInitializer {
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
+                highlightColor = highlightColor,
                 effects = props.effects,
             )
         }
@@ -84,6 +123,9 @@ object MotionSduiInitializer {
             json.addProperty("text", view.text)
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
         // Register WordBlinkTextView
@@ -91,12 +133,16 @@ object MotionSduiInitializer {
             val props = json.parseMotionViewProps()
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
             WordBlinkTextView(
                 context = context,
                 text = text,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
                 effects = props.effects,
             )
         }
@@ -104,6 +150,9 @@ object MotionSduiInitializer {
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
             json.addProperty("writingSpeed", view.writingSpeed)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
         // Register PopUpTextView
@@ -113,6 +162,9 @@ object MotionSduiInitializer {
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
+            val highlightColor = json.get("highlightColor")?.asString
             PopUpTextView(
                 context = context,
                 text = text,
@@ -121,6 +173,9 @@ object MotionSduiInitializer {
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
                 maxTranslationY = maxTranslationY,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
+                highlightColor = highlightColor,
                 effects = props.effects,
             )
         }
@@ -130,6 +185,82 @@ object MotionSduiInitializer {
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
+        }
+
+        // Register RainbowPopUpTextView
+        MotionSdui.registerView(RainbowPopUpTextView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps()
+            val text = json.get("text")?.asString ?: ""
+            val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
+            val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
+            val highlightColor = json.get("highlightColor")?.asString
+            RainbowPopUpTextView(
+                context = context,
+                text = text,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                writingSpeed = writingSpeed,
+                unwrittenTextAlpha = unwrittenTextAlpha,
+                maxTranslationY = maxTranslationY,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
+                highlightColor = highlightColor,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(RainbowPopUpTextView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("text", view.text)
+            json.addProperty("writingSpeed", view.writingSpeed)
+            json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            json.addProperty("maxTranslationY", view.maxTranslationY)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
+        }
+
+        // Register AccentMiddlePopUpTextView
+        MotionSdui.registerView(AccentMiddlePopUpTextView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps()
+            val text = json.get("text")?.asString ?: ""
+            val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
+            val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
+            val accentColor = json.get("accentColor")?.asInt ?: android.graphics.Color.YELLOW
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
+            val highlightColor = json.get("highlightColor")?.asString
+            AccentMiddlePopUpTextView(
+                context = context,
+                text = text,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                writingSpeed = writingSpeed,
+                unwrittenTextAlpha = unwrittenTextAlpha,
+                maxTranslationY = maxTranslationY,
+                accentColor = accentColor,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
+                highlightColor = highlightColor,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(AccentMiddlePopUpTextView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("text", view.text)
+            json.addProperty("writingSpeed", view.writingSpeed)
+            json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            json.addProperty("maxTranslationY", view.maxTranslationY)
+            json.addProperty("accentColor", view.accentColor)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
         // Register CircularMotionImageView
@@ -282,6 +413,202 @@ object MotionSduiInitializer {
         }
         MotionSdui.registerEffectSerializer(SlideRightToLeftEffect::class.java) { effect, json ->
             json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        // Register SlideLeftToRightEffect
+        MotionSdui.registerEffect(SlideLeftToRightEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            SlideLeftToRightEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+            )
+        }
+        MotionSdui.registerEffectSerializer(SlideLeftToRightEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        // Register SlideTopToBottomEffect
+        MotionSdui.registerEffect(SlideTopToBottomEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            SlideTopToBottomEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+            )
+        }
+        MotionSdui.registerEffectSerializer(SlideTopToBottomEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        // Register SlideBottomToTopEffect
+        MotionSdui.registerEffect(SlideBottomToTopEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            SlideBottomToTopEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+            )
+        }
+        MotionSdui.registerEffectSerializer(SlideBottomToTopEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        // Register ZoomInEffect
+        MotionSdui.registerEffect(ZoomInEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val startScale = json.get("startScale")?.asFloat ?: 1f
+            val endScale = json.get("endScale")?.asFloat ?: 2f
+            ZoomInEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                startScale = startScale,
+                endScale = endScale,
+            )
+        }
+        MotionSdui.registerEffectSerializer(ZoomInEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("startScale", effect.startScale)
+            json.addProperty("endScale", effect.endScale)
+        }
+
+        // Register ZoomOutEffect
+        MotionSdui.registerEffect(ZoomOutEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val startScale = json.get("startScale")?.asFloat ?: 2f
+            val endScale = json.get("endScale")?.asFloat ?: 1f
+            ZoomOutEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                startScale = startScale,
+                endScale = endScale,
+            )
+        }
+        MotionSdui.registerEffectSerializer(ZoomOutEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("startScale", effect.startScale)
+            json.addProperty("endScale", effect.endScale)
+        }
+
+        // Register FadeInEffect
+        MotionSdui.registerEffect(FadeInEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            FadeInEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+            )
+        }
+        MotionSdui.registerEffectSerializer(FadeInEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        // Register FadeOutEffect
+        MotionSdui.registerEffect(FadeOutEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            FadeOutEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+            )
+        }
+        MotionSdui.registerEffectSerializer(FadeOutEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+        }
+
+        MotionSdui.registerEffect(BlurEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val maxBlurRadius = json.get("maxBlurRadius")?.asFloat ?: 20f
+            BlurEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                fromBlurRadius = 0.1f,
+                toBlurRadius = maxBlurRadius,
+            )
+        }
+        MotionSdui.registerEffectSerializer(BlurEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("maxBlurRadius", effect.toBlurRadius)
+        }
+
+        // Register GlitchEffect
+        MotionSdui.registerEffect(GlitchEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val intensity = json.get("intensity")?.asFloat ?: 10f
+            GlitchEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                intensity = intensity,
+            )
+        }
+        MotionSdui.registerEffectSerializer(GlitchEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("intensity", effect.intensity)
+        }
+
+        // Register VibrateEffect
+        MotionSdui.registerEffect(VibrateEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val amplitude = json.get("amplitude")?.asFloat ?: 5f
+            val frequency = json.get("frequency")?.asFloat ?: 1f
+            VibrateEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                amplitude = amplitude,
+                frequency = frequency,
+            )
+        }
+        MotionSdui.registerEffectSerializer(VibrateEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("amplitude", effect.amplitude)
+            json.addProperty("frequency", effect.frequency)
+        }
+        // Register SlideEffect
+        MotionSdui.registerEffect(SlideEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            SlideEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                fromX = json.get("fromX")?.asFloat,
+                toX = json.get("toX")?.asFloat,
+                fromY = json.get("fromY")?.asFloat,
+                toY = json.get("toY")?.asFloat,
+            )
+        }
+        MotionSdui.registerEffectSerializer(SlideEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            effect.fromX?.let { json.addProperty("fromX", it) }
+            effect.toX?.let { json.addProperty("toX", it) }
+            effect.fromY?.let { json.addProperty("fromY", it) }
+            effect.toY?.let { json.addProperty("toY", it) }
+        }
+
+        // Register CrossFadeTransition
+        MotionSdui.registerTransition(CrossFadeTransition::class.java.simpleName) { _ ->
+            CrossFadeTransition()
+        }
+        MotionSdui.registerTransitionSerializer(CrossFadeTransition::class.java) { _, json ->
+            json.addProperty("type", CrossFadeTransition::class.java.simpleName)
+        }
+
+        // Register BlurTransition
+        MotionSdui.registerTransition(BlurTransition::class.java.simpleName) { json ->
+            val maxBlurRadius = json.get("maxBlurRadius")?.asFloat ?: 20f
+            BlurTransition(maxBlurRadius = maxBlurRadius)
+        }
+        MotionSdui.registerTransitionSerializer(BlurTransition::class.java) { transition, json ->
+            json.addProperty("type", BlurTransition::class.java.simpleName)
+            json.addProperty("maxBlurRadius", transition.maxBlurRadius)
+        }
+
+        // Register SlideTransition
+        MotionSdui.registerTransition(SlideTransition::class.java.simpleName) { json ->
+            val directionStr = json.get("direction")?.asString ?: "LEFT_TO_RIGHT"
+            val direction = try {
+                SlideDirection.valueOf(directionStr)
+            } catch (e: Exception) {
+                SlideDirection.LEFT_TO_RIGHT
+            }
+            SlideTransition(direction = direction)
+        }
+        MotionSdui.registerTransitionSerializer(SlideTransition::class.java) { transition, json ->
+            json.addProperty("type", SlideTransition::class.java.simpleName)
+            json.addProperty("direction", transition.direction.name)
         }
     }
 }

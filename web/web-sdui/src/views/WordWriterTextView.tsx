@@ -1,16 +1,15 @@
 import React from 'react';
-import type { MotionViewProps } from '../infra/types';
+import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 
-export const WordWriterTextView: React.FC<{ props: MotionViewProps; currentFrame: number }> = ({ props, currentFrame }) => {
-  const style = useApplyEffects(props, currentFrame);
+export const WordWriterTextView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
+  const style = useApplyEffects(props, currentFrame, config);
 
   const text = props.text || "";
   const writingSpeed = props.writingSpeed || 1;
   const startFrame = props.startFrame;
 
   // Calculate how many characters to show
-  // This is a simplification of the Android logic
   const elapsedFrames = currentFrame - startFrame;
   const charsToShow = Math.floor(elapsedFrames * writingSpeed);
 

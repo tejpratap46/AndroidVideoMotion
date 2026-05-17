@@ -14,12 +14,15 @@ import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositor
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
-import com.tejpratapsingh.motionlib.core.*
+import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import com.tejpratapsingh.motionlib.core.fontSizeH3
+import com.tejpratapsingh.motionlib.core.fontSizeH5
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO

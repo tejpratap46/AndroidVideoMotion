@@ -8,6 +8,7 @@ import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
@@ -25,6 +26,8 @@ class TypeWriterTextView(
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    textSizeVariant: MotionTextVariant? = null,
+    textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : AbstractMotionTextView(
         context = context,
@@ -33,6 +36,8 @@ class TypeWriterTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        textSizeVariant = textSizeVariant,
+        textColor = textColor,
         effects = effects,
     ) {
     init {

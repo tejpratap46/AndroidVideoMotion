@@ -52,13 +52,37 @@ class SDUIMotionVideoProducerFactory(
                 videoProducerAdapter = videoProducerAdapter,
             )
 
-        views.forEach { view ->
-            if (view is ViewGroup) {
-                // We use a helper to safely call addMotionViewToSequence which has multiple bounds
-                Timber.i("view is supported: ${view::class.java.simpleName}")
-                producer.addMotionViewToSequence(view)
-            } else {
-                Timber.w("view not supported: ${view::class.java.simpleName}")
+        if (sdui.has("sequence")) {
+            val sequenceArray = sdui.get("sequence").asJsonArray
+            sequenceArray.forEach { item ->
+                val json = item.asJsonObject
+                val type = json.get("type")?.asString
+                if (type != null) {
+                    val viewFactory = MotionSdui.getViewFactory(type)
+                    if (viewFactory != null) {
+                        val view = json.toMotionView(context)
+                        if (view is ViewGroup) {
+                            producer.addMotionViewToSequence(view)
+                        }
+                    } else {
+                        val transitionFactory = MotionSdui.getTransitionFactory(type)
+                        if (transitionFactory != null) {
+                            val transition = json.toMotionTransition()
+                            val duration = json.get("duration")?.asInt ?: 30
+                            producer.addTransition(transition, duration)
+                        }
+                    }
+                }
+            }
+        } else {
+            views.forEach { view ->
+                if (view is ViewGroup) {
+                    // We use a helper to safely call addMotionViewToSequence which has multiple bounds
+                    Timber.i("view is supported: ${view::class.java.simpleName}")
+                    producer.addMotionViewToSequence(view)
+                } else {
+                    Timber.w("view not supported: ${view::class.java.simpleName}")
+                }
             }
         }
 

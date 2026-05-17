@@ -5,11 +5,12 @@ import android.net.Uri
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.squareup.picasso.Picasso
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.utils.ImageUtil
+import kotlinx.coroutines.runBlocking
 
 /**
  * A [com.tejpratapsingh.motionlib.core.MotionView] that displays a static image from a [android.net.Uri].
@@ -56,13 +57,10 @@ class MotionImageView(
         }
 
         // Load image into ImageView for preview
-        val bitmap =
-            Picasso
-                .get()
-                .load(imageUri)
-                .get()
-
-        imageView.setImageBitmap(bitmap)
+        runBlocking {
+            val bitmap = ImageUtil.fetchBitmap(context, imageUri)
+            imageView.setImageBitmap(bitmap)
+        }
     }
 
     override fun forFrame(frame: Int): MotionView {

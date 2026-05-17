@@ -12,6 +12,7 @@ import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
+import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
@@ -107,7 +108,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
 //        motionConfig = motionConfig
 //    )
 
-    val motionView2: MotionView =
+    val motionView2 =
         GradientView(
             context = applicationContext,
             startFrame = motionView.endFrame + 1,
@@ -126,5 +127,8 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         .with(
             context = applicationContext,
             motionAudio = motionAudio,
-        ).addMotionViewToSequence(motionView = motionView)
+        )
+        .addMotionViewToSequence(motionView = motionView)
+        .addTransition(CrossFadeTransition(), duration = 30)
+        .addMotionViewToSequence(motionView = motionView2)
 }

@@ -47,9 +47,13 @@ afterEvaluate {
 
 dependencies {
     implementation project(path: ':modules:core')
+    implementation project(path: ':modules:sdui')
     implementation libs.androidx.appcompat
+    implementation libs.gson
 
     api project(path: ':modules:motionlib')
 
     testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.espresso.core
 }
