@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
+import com.tejpratapsingh.motionlib.ui.custom.background.TranslucentMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 import org.junit.Assert.assertTrue
@@ -58,5 +59,20 @@ class MotionSduiRegistryTest {
             }
         val view = json.toMotionView(RuntimeEnvironment.getApplication())
         assertTrue(view is GradientView)
+    }
+
+    @Test
+    fun testTranslucentMotionViewRegistration() {
+        val json =
+            JsonObject().apply {
+                addProperty("type", "TranslucentMotionView")
+                addProperty("color", "#FF0000")
+                addProperty("alpha", 0.5f)
+                addProperty("startFrame", 0)
+                addProperty("endFrame", 100)
+            }
+        val view = json.toMotionView(RuntimeEnvironment.getApplication())
+        assertTrue(view is TranslucentMotionView)
+        assertTrue((view as TranslucentMotionView).alpha == 0.5f)
     }
 }

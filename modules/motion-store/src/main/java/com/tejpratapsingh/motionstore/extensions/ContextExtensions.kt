@@ -45,3 +45,16 @@ fun Context.createProjectFile(motionProject: MotionProject): File {
         "video_out.mp4",
     )
 }
+
+/**
+ * Deletes the directory associated with the provided [motionProject] from the internal app storage.
+ *
+ * @param motionProject The project whose folder should be deleted.
+ */
+fun Context.deleteProjectFolder(motionProject: MotionProject) {
+    val projectsDirectory: File = applicationContext.filesDir.resolve(PROJECTS_DIR)
+    val fileDirectory: File = projectsDirectory.resolve(motionProject.id)
+    if (fileDirectory.exists()) {
+        fileDirectory.deleteRecursively()
+    }
+}

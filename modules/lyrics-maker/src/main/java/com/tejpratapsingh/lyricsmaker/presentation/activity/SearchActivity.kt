@@ -12,10 +12,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
@@ -57,7 +59,6 @@ class SearchActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        LyricsMotionWorker.cancelAllWork(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
@@ -73,23 +74,25 @@ class SearchActivity : ComponentActivity() {
             }
         }
 
-        val metadata = ShareReceiverActivity.readMetadataFromIntent(intent)
-        metadata?.let {
-            lyricsViewModel.socialMeta.value = it
-            lyricsViewModel.query.value = it.title ?: it.description ?: ""
-            lyricsViewModel.searchLyrics(it.title ?: it.description ?: "")
-        }
+        handleIntent(intent)
 
         setContent {
             val navController = rememberNavController()
-            LaunchedEffect(metadata) {
-                if (metadata != null) {
-                    navController.navigate(Screen.Search.route)
+            val socialMeta by lyricsViewModel.socialMeta.collectAsState()
+
+            LaunchedEffect(socialMeta) {
+                if (socialMeta.title != null || socialMeta.description != null) {
+                    navController.navigate(Screen.Search.route) {
+                        launchSingleTop = true
+                    }
                 }
             }
 
             AnimatorTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                ) { _ ->
                     AppNavHost(
                         navController = navController,
                         projectsViewModel = projectsViewModel,
@@ -97,7 +100,7 @@ class SearchActivity : ComponentActivity() {
                             navController.navigate(Screen.ProjectDetails.createRoute(motionProject.id))
                         },
                         lyricsViewModel = lyricsViewModel,
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier, // Padding handled by internal screens
                     )
                 }
             }
@@ -124,6 +127,24 @@ class SearchActivity : ComponentActivity() {
                         SyncWorker.scheduleImmediate(this@SearchActivity)
                     }
                 }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        LyricsMotionWorker.cancelAllWork(applicationContext)
+        intent?.let {
+            val metadata = ShareReceiverActivity.readMetadataFromIntent(it)
+            metadata?.let { socialMeta ->
+                lyricsViewModel.socialMeta.value = socialMeta
+                lyricsViewModel.query.value = socialMeta.title ?: socialMeta.description ?: ""
+                lyricsViewModel.searchLyrics(socialMeta.title ?: socialMeta.description ?: "")
             }
         }
     }

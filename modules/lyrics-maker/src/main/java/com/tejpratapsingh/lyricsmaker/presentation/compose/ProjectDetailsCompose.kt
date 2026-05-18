@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
@@ -49,6 +51,7 @@ import kotlinx.coroutines.withContext
 fun ProjectDetailsScreen(
     project: MotionProject,
     onBackClick: () -> Unit,
+    onEditClick: (MotionProject) -> Unit,
     onShareClick: (MotionProject) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -174,6 +177,7 @@ fun ProjectDetailsScreen(
             onClick = onBackClick,
             modifier =
                 Modifier
+                    .statusBarsPadding()
                     .padding(16.dp)
                     .align(Alignment.TopStart)
                     .background(
@@ -184,6 +188,26 @@ fun ProjectDetailsScreen(
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+
+        // Overlay Edit Button - Positioned at top-right with status bar padding
+        IconButton(
+            onClick = { onEditClick(project) },
+            modifier =
+                Modifier
+                    .statusBarsPadding()
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        shape = CircleShape,
+                    ),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Edit,
+                contentDescription = "Edit",
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }

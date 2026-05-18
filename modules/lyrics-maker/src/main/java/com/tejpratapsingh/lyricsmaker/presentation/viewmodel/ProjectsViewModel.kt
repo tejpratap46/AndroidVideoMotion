@@ -1,9 +1,12 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tejpratapsingh.lyricsmaker.presentation.compose.ThumbnailCache
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
+import com.tejpratapsingh.motionstore.extensions.deleteProjectFolder
 import com.tejpratapsingh.motionstore.infra.PreferenceManager
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
@@ -60,8 +63,13 @@ class ProjectsViewModel(
         }
     }
 
-    fun deleteProject(project: MotionProject) {
-        viewModelScope.launch {
+    fun deleteProject(
+        context: Context,
+        project: MotionProject,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            context.deleteProjectFolder(project)
+            ThumbnailCache.remove(project.id)
             motionProject.deleteById(project.id)
             loadProjects()
         }

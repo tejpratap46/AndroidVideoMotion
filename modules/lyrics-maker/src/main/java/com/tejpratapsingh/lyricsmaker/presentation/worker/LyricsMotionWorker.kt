@@ -8,10 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -25,10 +23,8 @@ import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
-import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
-import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import kotlinx.coroutines.Dispatchers
@@ -96,16 +92,7 @@ class LyricsMotionWorker(
         return SDUIMotionVideoProducerFactory(
             context = appContext,
             videoProducerAdapter = FfmpegVideoProducerAdapter(),
-        ).createFromProject(motionProject) { views ->
-            views.filterIsInstance<AbstractMotionTextView>().forEach {
-                it.textView.apply {
-                    textSize = fontSizeH3
-                    setTextColor(Color.WHITE)
-                    setPadding(16, 16, 16, 16)
-                    textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
-                }
-            }
-        }
+        ).createFromProject(motionProject)
     }
 
     override suspend fun onProgress(

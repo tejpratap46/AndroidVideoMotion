@@ -206,14 +206,15 @@ class MotionVideoPlayer(
         playbackJob =
             scope.launch {
                 var startTime = SystemClock.elapsedRealtime()
-                var startFrame = seekBar.progress
+                var startFrameValue = seekBar.progress
+                var lastRenderedFrame = startFrameValue
 
                 while (isPlaying) {
                     val elapsed = SystemClock.elapsedRealtime() - startTime
-                    val expectedFrame = startFrame + (elapsed / frameDurationMs).toInt()
+                    val expectedFrame = startFrameValue + (elapsed / frameDurationMs).toInt()
 
                     if (expectedFrame <= seekBar.max) {
-                        if (expectedFrame != seekBar.progress) {
+                        if (expectedFrame != lastRenderedFrame) {
                             motionVideoProducer.motionComposerView.forFrame(expectedFrame)
 
                             // 🔊 Check if we should play audio
@@ -223,6 +224,7 @@ class MotionVideoPlayer(
                             )
 
                             seekBar.progress = expectedFrame
+                            lastRenderedFrame = expectedFrame
                         }
                     } else {
                         // Loop
@@ -233,7 +235,8 @@ class MotionVideoPlayer(
 
                         // Reset timer for the next loop iteration
                         startTime = SystemClock.elapsedRealtime()
-                        startFrame = resetFrame
+                        startFrameValue = resetFrame
+                        lastRenderedFrame = resetFrame
                     }
                     delay(10) // Check frequently enough for smooth playback but avoid 100% CPU usage
                 }

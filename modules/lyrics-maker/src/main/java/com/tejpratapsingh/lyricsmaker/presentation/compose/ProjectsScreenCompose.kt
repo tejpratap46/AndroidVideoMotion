@@ -62,10 +62,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
@@ -84,6 +86,8 @@ fun ProjectsRoute(
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+
     ProjectsScreen(
         projects = projects,
         isRefreshing = isRefreshing,
@@ -92,7 +96,9 @@ fun ProjectsRoute(
         onRefresh = viewModel::refresh,
         onCreateNew = onCreateNew,
         onProjectClick = onProjectClick,
-        onDeleteProject = viewModel::deleteProject,
+        onDeleteProject = { project ->
+            viewModel.deleteProject(context, project)
+        },
         onShareProject = viewModel::shareProject,
         onSync = viewModel::syncProject,
         modifier = modifier,
@@ -122,7 +128,10 @@ fun ProjectsScreen(
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -139,7 +148,7 @@ fun ProjectsScreen(
                                 .padding(bottom = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        GradientText(text = "Lyrics Maker")
+                        GradientText(text = stringResource(R.string.app_name))
                         Spacer(modifier = Modifier.height(8.dp))
                         Box(
                             modifier = Modifier.fillMaxWidth(),

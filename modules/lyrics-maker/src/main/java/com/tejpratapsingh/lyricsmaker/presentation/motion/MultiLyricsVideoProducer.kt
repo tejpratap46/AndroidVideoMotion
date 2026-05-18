@@ -18,6 +18,38 @@ import com.tejpratapsingh.motionlib.templates.model.TemplateData
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import timber.log.Timber
 
+fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
+    val lyrics =
+        motionProject.metadata.get("lyrics")?.takeIf { it.isJsonArray }?.asJsonArray?.map {
+            SyncedLyricFrame(
+                frame =
+                    it.asJsonObject
+                        .get("frame")
+                        ?.takeIf { f -> f.isJsonPrimitive }
+                        ?.asInt ?: 0,
+                text =
+                    it.asJsonObject
+                        .get("text")
+                        ?.takeIf { t -> t.isJsonPrimitive }
+                        ?.asString ?: "",
+            )
+        } ?: emptyList()
+
+    val image =
+        motionProject.metadata
+            .get("image")
+            ?.takeIf { it.isJsonPrimitive }
+            ?.asString
+
+    return TemplateData(
+        mapOf(
+            "songName" to motionProject.name,
+            "image" to (image ?: ""),
+            "lyrics" to lyrics,
+        ),
+    )
+}
+
 fun getMultiLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
@@ -84,32 +116,6 @@ private fun createLyricsVideoProducerInternal(
 ): MotionVideoProducer {
     Timber.i("createLyricsVideoProducerInternal: $motionProject, isPreview: $isPreview")
 
-    val lyrics =
-        motionProject.metadata.get("lyrics")?.takeIf { it.isJsonArray }?.asJsonArray?.map {
-            SyncedLyricFrame(
-                frame =
-                    it.asJsonObject
-                        .get("frame")
-                        ?.takeIf { f -> f.isJsonPrimitive }
-                        ?.asInt ?: 0,
-                text =
-                    it.asJsonObject
-                        .get("text")
-                        ?.takeIf { t -> t.isJsonPrimitive }
-                        ?.asString ?: "",
-            ).also { lyricFrame ->
-                Timber.d("lyricFrame: $lyricFrame")
-            }
-        } ?: emptyList()
-
-    Timber.d("createLyricsVideoProducerInternal: ${lyrics.size}")
-
-    val image =
-        motionProject.metadata
-            .get("image")
-            ?.takeIf { it.isJsonPrimitive }
-            ?.asString
-
     val motionConfig =
         MotionConfig(
             aspectRatio = VideoAspectRatio.Ratio9x16_480,
@@ -125,14 +131,7 @@ private fun createLyricsVideoProducerInternal(
                 videoProducerAdapter = FfmpegVideoProducerAdapter(),
             )
 
-    val templateData =
-        TemplateData(
-            mapOf(
-                "songName" to motionProject.name,
-                "image" to (image ?: ""),
-                "lyrics" to lyrics,
-            ),
-        )
+    val templateData = extractLyricsTemplateData(motionProject)
 
     val contentScope =
         ContentScope(

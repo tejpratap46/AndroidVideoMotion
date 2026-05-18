@@ -11,6 +11,7 @@ import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
 import com.tejpratapsingh.motionlib.templates.extensions.accentMiddlePopUpTextView
 import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
+import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 
 val AccentLyricsTemplate: MotionTemplate =
@@ -36,16 +37,23 @@ val AccentLyricsTemplate: MotionTemplate =
                     )
                 }
 
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = lyrics.first().frame,
+                    endFrame = lyrics.last().frame,
+                )
+
                 lyrics.zipWithNext().forEach { (current, next) ->
                     accentMiddlePopUpTextView(
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        writingSpeed = 1.0f,
+                        writingSpeed = 1.5f,
                         unwrittenTextAlpha = 0.4f,
                         maxTranslationY = 40f,
                         accentColor = "#FFC107".toColorInt(), // Amber color
-                        textSizeVariant = MotionTextVariant.H2,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#F5F5F5", // Off-white
                         textView =
                             AppCompatTextView(context).apply {
@@ -77,16 +85,23 @@ val AccentLyricsTemplate: MotionTemplate =
                     )
                 }
 
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = lyrics.first().frame,
+                    endFrame = lyrics.last().frame,
+                )
+
                 previewLyrics.zipWithNext().forEach { (current, next) ->
                     accentMiddlePopUpTextView(
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        writingSpeed = 1.0f,
+                        writingSpeed = 1.5f,
                         unwrittenTextAlpha = 0.4f,
                         maxTranslationY = 40f,
                         accentColor = "#FFC107".toColorInt(),
-                        textSizeVariant = MotionTextVariant.H2,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#F5F5F5",
                         textView =
                             AppCompatTextView(context).apply {

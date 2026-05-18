@@ -68,13 +68,21 @@ class AlbumArtRemoteDataSourceImpl(
 
     override suspend fun fetchBitmap(url: String): Bitmap? =
         withContext(Dispatchers.IO) {
-            val request = Request.Builder().url(url).build()
+            try {
+                if (url.isBlank()) {
+                    return@withContext null
+                }
+                val request = Request.Builder().url(url).build()
 
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return@withContext null
 
-                val bytes = response.body()?.bytes() ?: return@withContext null
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    val bytes = response.body()?.bytes() ?: return@withContext null
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "fetchBitmap failed for url: $url")
+                null
             }
         }
 }

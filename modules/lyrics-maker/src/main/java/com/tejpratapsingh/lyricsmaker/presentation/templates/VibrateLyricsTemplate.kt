@@ -2,11 +2,14 @@ package com.tejpratapsingh.lyricsmaker.presentation.templates
 
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.net.toUri
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
+import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
+import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
 import com.tejpratapsingh.motionlib.templates.extensions.wordWriterTextView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionlib.ui.effects.VibrateEffect
@@ -24,11 +27,20 @@ val VibrateLyricsTemplate: MotionTemplate =
             val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
 
             if (lyrics.isNotEmpty()) {
-                multiLyricsContainer(
-                    songName = songName,
+
+                image?.let {
+                    motionImageView(
+                        startFrame = lyrics.first().frame,
+                        endFrame = lyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
+                }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
                     startFrame = lyrics.first().frame,
                     endFrame = lyrics.last().frame,
-                    image = image,
                 )
 
                 lyrics.zipWithNext().forEach { (current, next) ->
@@ -36,8 +48,9 @@ val VibrateLyricsTemplate: MotionTemplate =
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        textSizeVariant = MotionTextVariant.H2,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFF00",
+                        writingSpeed = 1.5f,
                         effects = listOf(VibrateEffect(current.frame, next.frame, amplitude = 10f, frequency = 0.5f)),
                         textView =
                             AppCompatTextView(context).apply {
@@ -58,12 +71,19 @@ val VibrateLyricsTemplate: MotionTemplate =
 
             if (lyrics.isNotEmpty()) {
                 val previewLyrics = lyrics.take(3)
-                val endFrame = previewLyrics.last().frame
-                multiLyricsContainer(
-                    songName = songName,
-                    startFrame = lyrics.first().frame,
-                    endFrame = endFrame,
-                    image = image,
+                image?.let {
+                    motionImageView(
+                        startFrame = previewLyrics.first().frame,
+                        endFrame = previewLyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
+                }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = previewLyrics.first().frame,
+                    endFrame = previewLyrics.last().frame,
                 )
 
                 previewLyrics.zipWithNext().forEach { (current, next) ->
@@ -71,8 +91,9 @@ val VibrateLyricsTemplate: MotionTemplate =
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        textSizeVariant = MotionTextVariant.H2,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFF00",
+                        writingSpeed = 1.5f,
                         effects = listOf(VibrateEffect(current.frame, next.frame, amplitude = 10f, frequency = 0.5f)),
                         textView =
                             AppCompatTextView(context).apply {
