@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.video
 
 import android.graphics.Bitmap
 import android.media.MediaPlayer
+import android.view.Choreographer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +41,6 @@ import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
@@ -64,31 +64,47 @@ fun MotionVideoPlayerCompose(
         previewBitmap = motionVideoProducer.motionComposerView.getViewBitmap()
     }
 
-    // Playback loop
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) {
-            val frameDurationMs = (1000.0 / motionConfig.fps).toLong()
-            var lastFrameTime = System.currentTimeMillis()
+    // Playback loop driven by display vsync; advances by video fps time budget.
+    DisposableEffect(isPlaying, motionConfig.fps, totalFrames) {
+        if (!isPlaying) {
+            onDispose { }
+        } else {
+            val choreographer = Choreographer.getInstance()
+            val frameDurationNanos = (1_000_000_000L / motionConfig.fps).coerceAtLeast(1L)
+            var lastFrameNanos = 0L
+            var accumulatedNanos = 0L
 
-            while (isPlaying) {
-                val currentTime = System.currentTimeMillis()
-                val elapsed = currentTime - lastFrameTime
+            val callback = object : Choreographer.FrameCallback {
+                override fun doFrame(frameTimeNanos: Long) {
+                    if (!isPlaying) return
 
-                if (elapsed >= frameDurationMs) {
-                    val framesToAdvance = (elapsed / frameDurationMs).toInt().coerceAtLeast(1)
-                    val nextFrame = currentFrame + framesToAdvance
-
-                    if (nextFrame <= totalFrames) {
-                        currentFrame = nextFrame
-                    } else {
-                        // Loop
-                        currentFrame = 0
-                        activePlayers.values.forEach { it.stop(); it.release() }
-                        activePlayers.clear()
+                    if (lastFrameNanos != 0L) {
+                        accumulatedNanos += (frameTimeNanos - lastFrameNanos).coerceAtLeast(0L)
                     }
-                    lastFrameTime = currentTime
+                    lastFrameNanos = frameTimeNanos
+
+                    if (accumulatedNanos >= frameDurationNanos) {
+                        val framesToAdvance = (accumulatedNanos / frameDurationNanos).toInt().coerceAtLeast(1)
+                        accumulatedNanos %= frameDurationNanos
+
+                        val nextFrame = currentFrame + framesToAdvance
+                        if (nextFrame <= totalFrames) {
+                            currentFrame = nextFrame
+                        } else {
+                            currentFrame = 0
+                            activePlayers.values.forEach { it.stop(); it.release() }
+                            activePlayers.clear()
+                        }
+                    }
+
+                    choreographer.postFrameCallback(this)
                 }
-                delay(10) // Smooth check
+            }
+
+            choreographer.postFrameCallback(callback)
+
+            onDispose {
+                choreographer.removeFrameCallback(callback)
             }
         }
     }
