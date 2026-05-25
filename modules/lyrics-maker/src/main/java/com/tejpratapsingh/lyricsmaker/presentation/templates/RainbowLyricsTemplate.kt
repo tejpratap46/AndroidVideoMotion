@@ -11,6 +11,7 @@ import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
 import com.tejpratapsingh.motionlib.templates.extensions.accentMiddlePopUpTextView
 import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
 import com.tejpratapsingh.motionlib.templates.extensions.rainbowPopUpTextView
+import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 
 val RainbowLyricsTemplate: MotionTemplate =
@@ -25,16 +26,20 @@ val RainbowLyricsTemplate: MotionTemplate =
             val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
 
             if (lyrics.isNotEmpty()) {
-                val startFrame = lyrics.first().frame
-                val endFrame = lyrics.last().frame
-
                 image?.let {
                     motionImageView(
-                        startFrame = startFrame,
-                        endFrame = endFrame,
+                        startFrame = lyrics.first().frame,
+                        endFrame = lyrics.last().frame,
                         imageUri = image.toUri(),
                     )
                 }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = lyrics.first().frame,
+                    endFrame = lyrics.last().frame,
+                )
 
                 lyrics.zipWithNext().forEachIndexed { index, (current, next) ->
                     if (index % 2 == 0) {
@@ -43,6 +48,7 @@ val RainbowLyricsTemplate: MotionTemplate =
                             startFrame = current.frame,
                             endFrame = next.frame,
                             textSizeVariant = MotionTextVariant.H1,
+                            writingSpeed = 1.5f,
                             textView =
                                 AppCompatTextView(context).apply {
                                     setPadding(32, 32, 32, 32)
@@ -57,6 +63,67 @@ val RainbowLyricsTemplate: MotionTemplate =
                             startFrame = current.frame,
                             endFrame = next.frame,
                             textSizeVariant = MotionTextVariant.H1,
+                            accentColor = Color.CYAN,
+                            writingSpeed = 1.5f,
+                            textView =
+                                AppCompatTextView(context).apply {
+                                    setPadding(32, 32, 32, 32)
+                                    textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                                    gravity = Gravity.CENTER
+                                    setShadowLayer(10f, 0f, 0f, Color.BLACK)
+                                },
+                        )
+                    }
+                    transition(CrossFadeTransition(), duration = 15)
+                }
+            }
+        }
+
+        preview {
+            val songName = data.getString("songName") ?: ""
+            val image = data.getString("image")
+            val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
+
+            if (lyrics.isNotEmpty()) {
+                val previewLyrics = lyrics.take(3)
+                image?.let {
+                    motionImageView(
+                        startFrame = previewLyrics.first().frame,
+                        endFrame = previewLyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
+                }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = previewLyrics.first().frame,
+                    endFrame = previewLyrics.last().frame,
+                )
+
+                previewLyrics.zipWithNext().forEachIndexed { index, (current, next) ->
+                    if (index % 2 == 0) {
+                        rainbowPopUpTextView(
+                            text = current.text,
+                            startFrame = current.frame,
+                            endFrame = next.frame,
+                            textSizeVariant = MotionTextVariant.H1,
+                            writingSpeed = 1.5f,
+                            textView =
+                                AppCompatTextView(context).apply {
+                                    setPadding(32, 32, 32, 32)
+                                    textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
+                                    gravity = Gravity.CENTER
+                                    setShadowLayer(10f, 0f, 0f, Color.BLACK)
+                                },
+                        )
+                    } else {
+                        accentMiddlePopUpTextView(
+                            text = current.text,
+                            startFrame = current.frame,
+                            endFrame = next.frame,
+                            textSizeVariant = MotionTextVariant.H1,
+                            writingSpeed = 1.5f,
                             accentColor = Color.CYAN,
                             textView =
                                 AppCompatTextView(context).apply {

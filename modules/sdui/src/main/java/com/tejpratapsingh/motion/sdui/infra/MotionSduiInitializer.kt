@@ -13,6 +13,7 @@ import com.tejpratapsingh.motionlib.ui.custom.audio.CircularAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.audio.RadialAudioWaveformView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
+import com.tejpratapsingh.motionlib.ui.custom.background.TranslucentMotionView
 import com.tejpratapsingh.motionlib.ui.custom.image.CircularMotionImageView
 import com.tejpratapsingh.motionlib.ui.custom.image.MotionImageView
 import com.tejpratapsingh.motionlib.ui.custom.text.AccentMiddlePopUpTextView
@@ -268,7 +269,7 @@ object MotionSduiInitializer {
             val props = json.parseMotionViewProps()
             val imageUriStr =
                 json.get("imageUri")?.asString
-                    ?: throw IllegalArgumentException("imageUri required for CircularMotionImageView")
+                    ?: ""
             CircularMotionImageView(
                 context = context,
                 imageUri = imageUriStr.toUri(),
@@ -287,7 +288,7 @@ object MotionSduiInitializer {
             val props = json.parseMotionViewProps()
             val imageUriStr =
                 json.get("imageUri")?.asString
-                    ?: throw IllegalArgumentException("imageUri required for MotionImageView")
+                    ?: ""
             MotionImageView(
                 context = context,
                 imageUri = imageUriStr.toUri(),
@@ -357,6 +358,28 @@ object MotionSduiInitializer {
                 colorsArray.add(String.format("#%06X", 0xFFFFFF and color))
             }
             json.add("colors", colorsArray)
+        }
+
+        // Register TranslucentMotionView
+        MotionSdui.registerView(TranslucentMotionView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps()
+            val color = json.get("color")?.asString ?: "#00000000"
+            val alpha = json.get("alpha")?.asFloat ?: 1.0f
+            TranslucentMotionView(
+                context = context,
+                color = color,
+                alpha = alpha,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                effects = props.effects,
+            ).apply {
+                this.layoutInfo = props.layoutInfo
+            }
+        }
+        MotionSdui.registerViewSerializer(TranslucentMotionView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("color", view.color)
+            json.addProperty("alpha", view.alpha)
         }
 
         // Register CircularAudioWaveformView

@@ -39,6 +39,7 @@ val GlitchLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         effects = listOf(GlitchEffect(current.frame, next.frame, intensity = 30f)),
                     ) {
                         textView.apply {
@@ -74,6 +75,7 @@ val GlitchLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         effects = listOf(GlitchEffect(current.frame, next.frame, intensity = 10f)),
                     ) {
                         textView.apply {

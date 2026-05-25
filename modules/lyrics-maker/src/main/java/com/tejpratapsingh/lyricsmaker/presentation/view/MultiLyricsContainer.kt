@@ -2,6 +2,7 @@ package com.tejpratapsingh.lyricsmaker.presentation.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.widget.ImageView
 import com.tejpratapsingh.lyricsmaker.R
@@ -49,11 +50,9 @@ class MultiLyricsContainer(
 
         ivAlbumArt.apply {
             runBlocking {
+                var bitmap: Bitmap? = null
                 if (image != null) {
-                    val bitmap = repository.getAlbumArtBitmap(image)
-                    bitmap?.let {
-                        setImageBitmap(it)
-                    }
+                    bitmap = repository.getAlbumArtBitmap(image)
                 } else {
                     Timber.i("Fetching from musicbrainz")
                     val songDetails = songName.split(" - ")
@@ -65,12 +64,21 @@ class MultiLyricsContainer(
                             )
 
                         url?.let { url ->
-                            val bitmap = repository.getAlbumArtBitmap(url)
-                            bitmap?.let {
-                                setImageBitmap(it)
-                            }
+                            bitmap = repository.getAlbumArtBitmap(url)
                         }
                     }
+                }
+
+                if (bitmap == null) {
+                    bitmap =
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            com.tejpratapsingh.motionlib.R.drawable.default_bg,
+                        )
+                }
+
+                bitmap?.let {
+                    setImageBitmap(it)
                 }
             }
         }

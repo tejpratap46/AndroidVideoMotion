@@ -48,6 +48,7 @@ val GradientLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         textView =
                             AppCompatTextView(context).apply {
                                 setPadding(32, 32, 32, 32)
@@ -90,6 +91,7 @@ val GradientLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         textView =
                             AppCompatTextView(context).apply {
                                 setPadding(32, 32, 32, 32)

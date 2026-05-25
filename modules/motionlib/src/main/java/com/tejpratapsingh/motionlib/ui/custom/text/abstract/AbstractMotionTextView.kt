@@ -12,6 +12,23 @@ import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
+/**
+ * An abstract base class for motion-based text views.
+ * Extends [BaseContourMotionView] to provide common functionality for rendering text with motion effects,
+ * custom fonts, and styling within a contour layout.
+ *
+ * @param context The Android context.
+ * @param text The text to be displayed.
+ * @param startFrame The frame index where the text starts appearing.
+ * @param endFrame The frame index where the text stops appearing. If -1, it stays indefinitely or until the end of the video.
+ * @param textView The underlying [AppCompatTextView] used for rendering.
+ * @param writingSpeed The speed factor for text "writing" animations. Defaults to 1.0f.
+ * @param fontUrl Optional URL for a custom web font.
+ * @param textSizeVariant Optional variant for text size (e.g., TITLE, BODY).
+ * @param textColor Optional hex color string for the text.
+ * @param highlightColor Optional hex color string for highlighting parts of the text.
+ * @param effects A list of [MotionEffect]s to be applied to this view.
+ */
 abstract class AbstractMotionTextView(
     context: Context,
     val text: String,
@@ -25,6 +42,11 @@ abstract class AbstractMotionTextView(
     val highlightColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
+
+    /**
+     * Calculates the adjusted end frame based on the writing speed.
+     * If [writingSpeed] is 1.0, it matches [endFrame]. If higher, the duration is shortened.
+     */
     protected val inferredEndFrame: Int =
         if (endFrame != -1 && writingSpeed > 0) {
             (startFrame + (endFrame - startFrame) / writingSpeed).toInt()
@@ -33,6 +55,7 @@ abstract class AbstractMotionTextView(
         }
 
     init {
+        // Set the contour dimensions based on the current configuration's aspect ratio.
         contourHeightOf {
             provideCurrentConfig()
                 .aspectRatio.height
@@ -44,8 +67,10 @@ abstract class AbstractMotionTextView(
                 .toXInt()
         }
 
+        // Center the text within the TextView.
         textView.gravity = Gravity.CENTER
 
+        // Apply text styling and custom fonts.
         textView.apply {
             textSizeVariant?.let { variant ->
                 val config = provideCurrentConfig()
@@ -56,7 +81,7 @@ abstract class AbstractMotionTextView(
                 try {
                     this.setTextColor(it.toColorInt())
                 } catch (e: Exception) {
-                    // Fallback or log error
+                    // Fallback or log error if the color string is invalid
                 }
             }
             if (fontUrl != null) {
@@ -64,6 +89,7 @@ abstract class AbstractMotionTextView(
             }
         }
 
+        // Position the TextView to fill the parent container using Contour.
         textView.layoutBy(
             x =
                 leftTo {
@@ -78,6 +104,7 @@ abstract class AbstractMotionTextView(
                     parent.bottom()
                 },
         )
+        // Set the final text content.
         textView.text = text
     }
 }

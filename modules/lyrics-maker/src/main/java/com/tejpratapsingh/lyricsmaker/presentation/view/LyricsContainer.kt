@@ -3,6 +3,7 @@ package com.tejpratapsingh.lyricsmaker.presentation.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
@@ -65,9 +66,9 @@ class LyricsContainer(
         fakeChartView = view.findViewById(R.id.fake_chart_view)
 
         tvSongName.text = songName
-        tvSongName.textSize = fontSizeH5
-        tvLyricsLine1.textSize = fontSizeH3
-        tvLyricsLine2.textSize = fontSizeH3
+        tvSongName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH5)
+        tvLyricsLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH3)
+        tvLyricsLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH3)
 
         progress.progress = startFrame
         progress.max = endFrame

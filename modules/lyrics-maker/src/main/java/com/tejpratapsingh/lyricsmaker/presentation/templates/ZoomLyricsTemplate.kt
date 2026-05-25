@@ -10,6 +10,7 @@ import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
 import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
 import com.tejpratapsingh.motionlib.templates.extensions.popUpTextView
+import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionlib.ui.effects.FadeInEffect
 import com.tejpratapsingh.motionlib.ui.effects.ZoomInEffect
@@ -35,6 +36,13 @@ val ZoomLyricsTemplate: MotionTemplate =
                     )
                 }
 
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = lyrics.first().frame,
+                    endFrame = lyrics.last().frame,
+                )
+
                 lyrics.zipWithNext().forEach { (current, next) ->
                     popUpTextView(
                         text = current.text,
@@ -42,6 +50,7 @@ val ZoomLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         effects =
                             listOf(
                                 ZoomInEffect(current.frame, next.frame, startScale = 0.8f, endScale = 1.5f),
@@ -66,15 +75,20 @@ val ZoomLyricsTemplate: MotionTemplate =
 
             if (lyrics.isNotEmpty()) {
                 val previewLyrics = lyrics.take(3)
-                val endFrame = previewLyrics.last().frame
-                multiLyricsContainer(
-                    songName = songName,
-                    startFrame = lyrics.first().frame,
-                    endFrame = endFrame,
-                    image = image,
-                ).apply {
-                    fakeChartView.isVisible = false
+                image?.let {
+                    motionImageView(
+                        startFrame = previewLyrics.first().frame,
+                        endFrame = previewLyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
                 }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = previewLyrics.first().frame,
+                    endFrame = previewLyrics.last().frame,
+                )
 
                 previewLyrics.zipWithNext().forEach { (current, next) ->
                     popUpTextView(
@@ -83,6 +97,7 @@ val ZoomLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.5f,
                         effects =
                             listOf(
                                 ZoomInEffect(current.frame, next.frame, startScale = 0.8f, endScale = 1.5f),

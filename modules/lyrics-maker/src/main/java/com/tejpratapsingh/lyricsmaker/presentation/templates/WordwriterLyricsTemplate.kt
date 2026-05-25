@@ -2,11 +2,14 @@ package com.tejpratapsingh.lyricsmaker.presentation.templates
 
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.net.toUri
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
+import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
+import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
 import com.tejpratapsingh.motionlib.templates.extensions.wordWriterTextView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 
@@ -23,11 +26,20 @@ val WordwriterLyricsTemplate: MotionTemplate =
             val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
 
             if (lyrics.isNotEmpty()) {
-                multiLyricsContainer(
-                    songName = songName,
+
+                image?.let {
+                    motionImageView(
+                        startFrame = lyrics.first().frame,
+                        endFrame = lyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
+                }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
                     startFrame = lyrics.first().frame,
                     endFrame = lyrics.last().frame,
-                    image = image,
                 )
 
                 lyrics.zipWithNext().forEach { (current, next) ->
@@ -37,7 +49,7 @@ val WordwriterLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         writingSpeed = 1.5f,
                         unwrittenTextAlpha = 0.3f,
-                        textSizeVariant = MotionTextVariant.H3,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
                         textView =
                             AppCompatTextView(context).apply {
@@ -58,12 +70,19 @@ val WordwriterLyricsTemplate: MotionTemplate =
 
             if (lyrics.isNotEmpty()) {
                 val previewLyrics = lyrics.take(3)
-                val endFrame = previewLyrics.last().frame
-                multiLyricsContainer(
-                    songName = songName,
-                    startFrame = lyrics.first().frame,
-                    endFrame = endFrame,
-                    image = image,
+                image?.let {
+                    motionImageView(
+                        startFrame = previewLyrics.first().frame,
+                        endFrame = previewLyrics.last().frame,
+                        imageUri = image.toUri(),
+                    )
+                }
+
+                translucentMotionView(
+                    color = "#000000",
+                    alpha = 0.4f,
+                    startFrame = previewLyrics.first().frame,
+                    endFrame = previewLyrics.last().frame,
                 )
 
                 previewLyrics.zipWithNext().forEach { (current, next) ->
@@ -73,7 +92,7 @@ val WordwriterLyricsTemplate: MotionTemplate =
                         endFrame = next.frame,
                         writingSpeed = 1.5f,
                         unwrittenTextAlpha = 0.3f,
-                        textSizeVariant = MotionTextVariant.H3,
+                        textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
                         textView =
                             AppCompatTextView(context).apply {

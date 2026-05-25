@@ -72,11 +72,13 @@ suspend fun HttpClient.downloadFile(
     }
 }
 
-suspend fun HttpClient.fetchBitmap(url: String): Bitmap? =
-    try {
+suspend fun HttpClient.fetchBitmap(url: String): Bitmap? {
+    return try {
+        if (url.isBlank()) return null
         val bytes: ByteArray = get(url).body()
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     } catch (e: Exception) {
         e.printStackTrace()
         null
     }
+}

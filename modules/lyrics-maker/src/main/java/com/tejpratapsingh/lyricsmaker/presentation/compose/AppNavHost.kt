@@ -10,9 +10,14 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
+import com.tejpratapsingh.lyricsmaker.presentation.motion.extractLyricsTemplateData
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
+import com.tejpratapsingh.motioneditor.ui.MotionEditorScreen
+import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.md5
+import com.tejpratapsingh.motionlib.templates.sdui.MotionTemplateSDUIProvider
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 sealed class Screen(
@@ -30,6 +35,10 @@ sealed class Screen(
 
     object ProjectDetails : Screen("project_details/{projectId}") {
         fun createRoute(projectId: String) = "project_details/$projectId"
+    }
+
+    object VideoEditor : Screen("video_editor/{projectId}") {
+        fun createRoute(projectId: String) = "video_editor/$projectId"
     }
 }
 
@@ -128,13 +137,63 @@ fun AppNavHost(
                         it.metadata.addProperty("template", template.name)
                         // Clear old SDUI if any
                         it.metadata.remove("sdui")
-                        
-                        navController.context.asLyricsApp().motionStoreDao.upsert(it)
+
+                        val templateData = extractLyricsTemplateData(it)
+
+                        val config =
+                            MotionConfig(
+                                aspectRatio = VideoAspectRatio.Ratio9x16_480,
+                                fps = 24,
+                            )
+
+                        // Generate and save SDUI
+                        val sdui =
+                            MotionTemplateSDUIProvider.provideSDUI(
+                                context = navController.context,
+                                template = template,
+                                data = templateData,
+                                config = config,
+                            )
+
+                        val updatedProject = it.copy(sdui = sdui)
+
+                        navController.context
+                            .asLyricsApp()
+                            .motionStoreDao
+                            .upsert(updatedProject)
+
                         projectsViewModel.loadProjects()
-                        
-                        navController.navigate(Screen.ProjectDetails.createRoute(it.id)) {
+
+                        navController.navigate(Screen.VideoEditor.createRoute(it.id)) {
                             // Pop the template selector so back from details goes to lyrics
                             popUpTo(Screen.TemplateSelector.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = modifier,
+                )
+            }
+        }
+
+        composable(route = Screen.VideoEditor.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")
+            val projects = projectsViewModel.projects.collectAsStateWithLifecycle()
+            val project = projects.value.find { it.id == projectId }
+
+            project?.let {
+                MotionEditorScreen(
+                    project = it,
+                    onBackClick = { navController.popBackStack() },
+                    onSaveClick = { updatedProject ->
+                        navController.context
+                            .asLyricsApp()
+                            .motionStoreDao
+                            .upsert(updatedProject)
+
+                        projectsViewModel.loadProjects()
+                        navController.navigate(Screen.ProjectDetails.createRoute(updatedProject.id)) {
+                            popUpTo(Screen.Projects.route) { inclusive = false }
+                            launchSingleTop = true
                         }
                     },
                     modifier = modifier,
@@ -151,6 +210,11 @@ fun AppNavHost(
                 ProjectDetailsScreen(
                     project = it,
                     onBackClick = { navController.popBackStack() },
+                    onEditClick = { p ->
+                        navController.navigate(Screen.VideoEditor.createRoute(p.id)) {
+                            launchSingleTop = true
+                        }
+                    },
                     onShareClick = { p -> projectsViewModel.shareProject(p) },
                     modifier = modifier,
                 )

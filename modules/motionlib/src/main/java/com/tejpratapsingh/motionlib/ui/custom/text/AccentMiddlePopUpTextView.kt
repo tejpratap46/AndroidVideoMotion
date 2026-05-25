@@ -70,7 +70,7 @@ class AccentMiddlePopUpTextView(
 
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
-        
+
         val progress: Float =
             MotionInterpolator
                 .interpolateForRange(
@@ -85,7 +85,7 @@ class AccentMiddlePopUpTextView(
         var currentIdx = 0
         wordArray.forEachIndexed { index, word ->
             val wordProgress = (progress - index).coerceIn(0f, 1f)
-            
+
             val color = if (index == middleIndex) accentColor else textView.currentTextColor
 
             val span =
@@ -156,7 +156,7 @@ class AccentMiddlePopUpTextView(
 
             val oldAlpha = paint.alpha
             val oldColor = paint.color
-            
+
             paint.alpha = alpha.toInt()
 
             canvas.withTranslation(y = translationY) {

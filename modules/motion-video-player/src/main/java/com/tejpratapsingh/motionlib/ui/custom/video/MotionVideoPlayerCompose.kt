@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
@@ -47,43 +50,65 @@ import java.util.Locale
 fun MotionVideoPlayerCompose(
     motionVideoProducer: MotionVideoProducer,
     modifier: Modifier = Modifier,
+    currentFrame: Int? = null,
+    isPlaying: Boolean? = null,
+    showControls: Boolean = true,
+    onFrameChange: (Int) -> Unit = {},
+    onPlayingChange: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val motionConfig: MotionConfig = remember { provideCurrentConfig() }
     val totalFrames = motionVideoProducer.totalFrames
 
-    var currentFrame by remember { mutableIntStateOf(0) }
-    var isPlaying by remember { mutableStateOf(false) }
+    var internalCurrentFrame by remember { mutableIntStateOf(0) }
+    val effectiveCurrentFrame = currentFrame ?: internalCurrentFrame
+
+    var internalIsPlaying by remember { mutableStateOf(false) }
+    val effectiveIsPlaying = isPlaying ?: internalIsPlaying
+
     var previewBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     val activePlayers = remember { mutableStateMapOf<MotionAudio, MediaPlayer>() }
 
-    // Update preview when currentFrame changes
-    LaunchedEffect(currentFrame) {
-        motionVideoProducer.motionComposerView.forFrame(currentFrame)
+    // Update preview when effectiveCurrentFrame changes
+    LaunchedEffect(motionVideoProducer, effectiveCurrentFrame) {
+        motionVideoProducer.motionComposerView.forFrame(effectiveCurrentFrame)
         previewBitmap = motionVideoProducer.motionComposerView.getViewBitmap()
     }
 
     // Playback loop
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) {
+    LaunchedEffect(effectiveIsPlaying, motionVideoProducer, totalFrames, motionConfig, onFrameChange, currentFrame) {
+        if (effectiveIsPlaying) {
             val frameDurationMs = (1000.0 / motionConfig.fps).toLong()
             var lastFrameTime = System.currentTimeMillis()
+            var currentFrameTracker = effectiveCurrentFrame
 
-            while (isPlaying) {
+            while (effectiveIsPlaying) {
                 val currentTime = System.currentTimeMillis()
                 val elapsed = currentTime - lastFrameTime
 
                 if (elapsed >= frameDurationMs) {
                     val framesToAdvance = (elapsed / frameDurationMs).toInt().coerceAtLeast(1)
-                    val nextFrame = currentFrame + framesToAdvance
+                    currentFrameTracker += framesToAdvance
 
-                    if (nextFrame <= totalFrames) {
-                        currentFrame = nextFrame
+                    if (currentFrameTracker <= totalFrames) {
+                        if (currentFrame != null) {
+                            onFrameChange(currentFrameTracker)
+                        } else {
+                            internalCurrentFrame = currentFrameTracker
+                        }
                     } else {
                         // Loop
-                        currentFrame = 0
-                        activePlayers.values.forEach { it.stop(); it.release() }
+                        currentFrameTracker = 0
+                        if (currentFrame != null) {
+                            onFrameChange(0)
+                        } else {
+                            internalCurrentFrame = 0
+                        }
+                        activePlayers.values.forEach {
+                            it.stop()
+                            it.release()
+                        }
                         activePlayers.clear()
                     }
                     lastFrameTime = currentTime
@@ -94,19 +119,20 @@ fun MotionVideoPlayerCompose(
     }
 
     // Audio management
-    LaunchedEffect(currentFrame, isPlaying) {
-        if (isPlaying) {
+    LaunchedEffect(effectiveCurrentFrame, effectiveIsPlaying, motionVideoProducer) {
+        if (effectiveIsPlaying) {
             motionVideoProducer.motionAudio.forEach { audio ->
-                val shouldPlay = currentFrame in audio.delayFrame..audio.endFrame
+                val shouldPlay = effectiveCurrentFrame in audio.delayFrame..audio.endFrame
                 val player = activePlayers[audio]
 
                 if (shouldPlay) {
                     if (player == null) {
-                        val mediaPlayer = MediaPlayer().apply {
-                            setDataSource(audio.file.absolutePath)
-                            prepare()
-                            start()
-                        }
+                        val mediaPlayer =
+                            MediaPlayer().apply {
+                                setDataSource(audio.file.absolutePath)
+                                prepare()
+                                start()
+                            }
                         activePlayers[audio] = mediaPlayer
                     } else if (!player.isPlaying) {
                         player.start()
@@ -126,7 +152,9 @@ fun MotionVideoPlayerCompose(
 
     DisposableEffect(Unit) {
         onDispose {
-            isPlaying = false
+            if (isPlaying == null) {
+                internalIsPlaying = false
+            }
             activePlayers.values.forEach {
                 if (it.isPlaying) it.stop()
                 it.release()
@@ -136,71 +164,149 @@ fun MotionVideoPlayerCompose(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(Color.Black),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Preview Area
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
             previewBitmap?.let { bitmap ->
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Video Preview",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .aspectRatio(
-                            motionConfig.aspectRatio.width.toFloat() / motionConfig.aspectRatio.height.toFloat()
-                        ),
-                    contentScale = ContentScale.Fit
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .aspectRatio(
+                                motionConfig.aspectRatio.width.toFloat() / motionConfig.aspectRatio.height.toFloat(),
+                            ),
+                    contentScale = ContentScale.Fit,
                 )
             }
         }
 
         // Controls Area
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                .padding(16.dp)
-        ) {
-            Slider(
-                value = currentFrame.toFloat(),
-                onValueChange = {
-                    currentFrame = it.toInt()
-                    isPlaying = false // Pause on seek
-                },
-                valueRange = 0f..totalFrames.toFloat(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+        if (showControls) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                        .padding(16.dp),
             ) {
-                IconButton(onClick = { isPlaying = !isPlaying }) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
+                Slider(
+                    value = effectiveCurrentFrame.toFloat(),
+                    onValueChange = {
+                        if (currentFrame != null) {
+                            onFrameChange(it.toInt())
+                        } else {
+                            internalCurrentFrame = it.toInt()
+                        }
+                        if (isPlaying == null) {
+                            internalIsPlaying = false
+                            onPlayingChange(false)
+                        } else {
+                            onPlayingChange(false)
+                        }
+                    },
+                    valueRange = 0f..totalFrames.toFloat(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        IconButton(onClick = {
+                            val nextFrame = (effectiveCurrentFrame - 1).coerceAtLeast(0)
+                            if (currentFrame != null) {
+                                onFrameChange(nextFrame)
+                            } else {
+                                internalCurrentFrame = nextFrame
+                            }
+                            if (isPlaying == null) {
+                                internalIsPlaying = false
+                                onPlayingChange(false)
+                            } else {
+                                onPlayingChange(false)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Previous Frame",
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                if (isPlaying == null) {
+                                    internalIsPlaying = !internalIsPlaying
+                                    onPlayingChange(internalIsPlaying)
+                                } else {
+                                    onPlayingChange(!isPlaying)
+                                }
+                            },
+                            modifier =
+                                Modifier.background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(8.dp),
+                                ),
+                        ) {
+                            Icon(
+                                imageVector = if (effectiveIsPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (effectiveIsPlaying) "Pause" else "Play",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            val nextFrame = (effectiveCurrentFrame + 1).coerceAtMost(totalFrames)
+                            if (currentFrame != null) {
+                                onFrameChange(nextFrame)
+                            } else {
+                                internalCurrentFrame = nextFrame
+                            }
+                            if (isPlaying == null) {
+                                internalIsPlaying = false
+                                onPlayingChange(false)
+                            } else {
+                                onPlayingChange(false)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Next Frame",
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "${formatTime(effectiveCurrentFrame, motionConfig.fps)} / ${formatTime(totalFrames, motionConfig.fps)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.align(Alignment.CenterEnd),
                     )
                 }
-
-                Text(
-                    text = "${formatTime(currentFrame, motionConfig.fps)} / ${formatTime(totalFrames, motionConfig.fps)}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
         }
     }
 }
 
-private fun formatTime(frames: Int, fps: Int): String {
+private fun formatTime(
+    frames: Int,
+    fps: Int,
+): String {
     val totalSeconds = frames / fps
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
