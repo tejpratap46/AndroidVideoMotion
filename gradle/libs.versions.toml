@@ -34,6 +34,7 @@ runtimeVersion = "1.10.6"
 crashlyticsVersion = "3.0.7"
 googleServicesVersion = "4.4.4"
 media3Version = "1.10.0"
+mlkitSubjectSegmentationVersion = "16.0.0-beta1"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -84,6 +85,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
+mlkit-subject-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "mlkitSubjectSegmentationVersion" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 
 supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabaseBomVersion" }

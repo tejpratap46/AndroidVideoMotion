@@ -34,6 +34,7 @@ import com.tejpratapsingh.motionlib.ui.effects.SlideLeftToRightEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideRightToLeftEffect
 import com.tejpratapsingh.motionlib.ui.effects.SlideTopToBottomEffect
 import com.tejpratapsingh.motionlib.ui.effects.VibrateEffect
+import com.tejpratapsingh.motionlib.ui.effects.VintageEffect
 import com.tejpratapsingh.motionlib.ui.effects.ZoomInEffect
 import com.tejpratapsingh.motionlib.ui.effects.ZoomOutEffect
 
@@ -581,6 +582,25 @@ object MotionSduiInitializer {
             json.addProperty("amplitude", effect.amplitude)
             json.addProperty("frequency", effect.frequency)
         }
+
+        // Register VintageEffect
+        MotionSdui.registerEffect(VintageEffect::class.java.simpleName) { json ->
+            val props = json.parseMotionEffectProps()
+            val fromIntensity = json.get("fromIntensity")?.asFloat ?: 0.0f
+            val toIntensity = json.get("toIntensity")?.asFloat ?: 1.0f
+            VintageEffect(
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                fromIntensity = fromIntensity,
+                toIntensity = toIntensity,
+            )
+        }
+        MotionSdui.registerEffectSerializer(VintageEffect::class.java) { effect, json ->
+            json.addProperty("type", effect.javaClass.simpleName)
+            json.addProperty("fromIntensity", effect.fromIntensity)
+            json.addProperty("toIntensity", effect.toIntensity)
+        }
+
         // Register SlideEffect
         MotionSdui.registerEffect(SlideEffect::class.java.simpleName) { json ->
             val props = json.parseMotionEffectProps()
