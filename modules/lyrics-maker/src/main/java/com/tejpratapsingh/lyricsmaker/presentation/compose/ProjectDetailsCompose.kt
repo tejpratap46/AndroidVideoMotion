@@ -38,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.tejpratapsingh.lyricsmaker.presentation.motion.getMultiLyricsVideoProducer
+import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
@@ -59,7 +59,7 @@ fun ProjectDetailsScreen(
     val motionVideoProducer by produceState<MotionVideoProducer?>(initialValue = null, project) {
         value =
             withContext(Dispatchers.IO) {
-                getMultiLyricsVideoProducer(context, project)
+                getLyricsVideoProducer(context, project)
             }
     }
 

@@ -1,3 +1,8 @@
+---
+name: create-new-motion-view
+description: create a new MotionView, either for Template or otherwise, make sure to map tio SDUI.
+---
+
 # How to Create a New MotionView
 
 This guide describes the process of creating a new `MotionView`, adding it to the Template DSL, and registering it for Server-Driven UI (SDUI).
