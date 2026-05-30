@@ -9,117 +9,112 @@ import com.tejpratapsingh.motionlib.core.motion.transitions.SlideDirection
 import com.tejpratapsingh.motionlib.core.motion.transitions.SlideTransition
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
 import com.tejpratapsingh.motionlib.templates.extensions.motionImageView
-import com.tejpratapsingh.motionlib.templates.extensions.popUpTextView
 import com.tejpratapsingh.motionlib.templates.extensions.translucentMotionView
+import com.tejpratapsingh.motionlib.templates.extensions.wordWriterTextView
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
-import com.tejpratapsingh.motionlib.ui.effects.BlurEffect
+import com.tejpratapsingh.motionlib.ui.effects.VibrateEffect
+import com.tejpratapsingh.motionlib.ui.effects.VintageEffect
 
-val PopupLyricsTemplate: MotionTemplate =
-    motionTemplate("Multi Lyrics Template") {
+val VintageLyricsTemplate: MotionTemplate =
+    motionTemplate("Vintage Lyrics Template") {
         parameters {
             string("songName")
             string("image", defaultValue = null)
-            // Lyrics are passed as a list of SyncedLyricFrame in TemplateData
         }
 
         content {
-            val songName = data.getString("songName") ?: ""
             val image = data.getString("image")
             val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
 
             if (lyrics.isNotEmpty()) {
+                val startFrame = lyrics.first().frame
+                val endFrame = lyrics.last().frame
 
                 image?.let {
                     motionImageView(
-                        startFrame = lyrics.first().frame,
-                        endFrame = lyrics.last().frame,
+                        startFrame = startFrame,
+                        endFrame = endFrame,
                         imageUri = image.toUri(),
+                        effects =
+                            listOf(
+                                VibrateEffect(startFrame, endFrame, amplitude = 10f, frequency = 0.05f),
+                                VintageEffect(startFrame, endFrame, fromIntensity = 0.8f, toIntensity = 1.0f),
+                            ),
                     )
                 }
 
                 translucentMotionView(
                     color = "#000000",
-                    alpha = 0.4f,
-                    startFrame = lyrics.first().frame,
-                    endFrame = lyrics.last().frame,
-                    effects =
-                        listOf(
-                            BlurEffect(
-                                lyrics.first().frame,
-                                lyrics.last().frame,
-                            ),
-                        ),
+                    alpha = 0.3f,
+                    startFrame = startFrame,
+                    endFrame = endFrame,
                 )
 
                 lyrics.zipWithNext().forEach { (current, next) ->
-                    popUpTextView(
+                    wordWriterTextView(
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        writingSpeed = 1.5f,
-                        unwrittenTextAlpha = 0.3f,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.0f,
                         textView =
                             AppCompatTextView(context).apply {
-                                setPadding(16, 16, 16, 16)
+                                setPadding(32, 32, 32, 32)
                                 textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
                                 gravity = Gravity.CENTER
                             },
                     )
-                    transition(SlideTransition(SlideDirection.BOTTOM_TO_TOP), duration = 10)
+                    transition(SlideTransition(SlideDirection.RIGHT_TO_LEFT), duration = 15)
                 }
             }
         }
 
         preview {
-            val songName = data.getString("songName") ?: ""
             val image = data.getString("image")
             val lyrics = data.get<List<SyncedLyricFrame>>("lyrics") ?: emptyList()
 
             if (lyrics.isNotEmpty()) {
                 val previewLyrics = lyrics.take(3)
+                val startFrame = previewLyrics.first().frame
                 val endFrame = previewLyrics.last().frame
 
                 image?.let {
                     motionImageView(
-                        startFrame = previewLyrics.first().frame,
-                        endFrame = previewLyrics.last().frame,
+                        startFrame = startFrame,
+                        endFrame = endFrame,
                         imageUri = image.toUri(),
+                        effects =
+                            listOf(
+                                VibrateEffect(startFrame, endFrame, amplitude = 10f, frequency = 0.05f),
+                                VintageEffect(startFrame, endFrame, fromIntensity = 0.8f, toIntensity = 1.0f),
+                            ),
                     )
                 }
 
                 translucentMotionView(
                     color = "#000000",
-                    alpha = 0.4f,
-                    startFrame = previewLyrics.first().frame,
-                    endFrame = previewLyrics.last().frame,
-                    effects =
-                        listOf(
-                            BlurEffect(
-                                previewLyrics.first().frame,
-                                previewLyrics.last().frame,
-                            ),
-                        ),
+                    alpha = 0.3f,
+                    startFrame = startFrame,
+                    endFrame = endFrame,
                 )
 
                 previewLyrics.zipWithNext().forEach { (current, next) ->
-                    popUpTextView(
+                    wordWriterTextView(
                         text = current.text,
                         startFrame = current.frame,
                         endFrame = next.frame,
-                        writingSpeed = 1.5f,
-                        unwrittenTextAlpha = 0.3f,
                         textSizeVariant = MotionTextVariant.H1,
                         textColor = "#FFFFFF",
+                        writingSpeed = 1.0f,
                         textView =
                             AppCompatTextView(context).apply {
-                                setPadding(16, 16, 16, 16)
+                                setPadding(32, 32, 32, 32)
                                 textAlignment = AppCompatTextView.TEXT_ALIGNMENT_CENTER
                                 gravity = Gravity.CENTER
                             },
                     )
-                    transition(SlideTransition(SlideDirection.BOTTOM_TO_TOP), duration = 10)
+                    transition(SlideTransition(SlideDirection.RIGHT_TO_LEFT), duration = 15)
                 }
             }
         }
