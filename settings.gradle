@@ -16,7 +16,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "AndroidMotionVideo"
-include ':modules:app'
 include ':modules:motionlib'
 include ':modules:templates'
 include ':modules:core'
@@ -27,11 +26,15 @@ include ':modules:3d-filament-renderer'
 include ':modules:3d-opengl-renderer'
 include ':modules:tensorflow-motion-ext'
 include ':modules:pytorch-motion-ext'
-include ':modules:ivi-demo'
-include ':modules:lyrics-maker'
 include ':modules:sdui'
 include ':modules:metadata-extractor'
 include ':modules:motion-store'
 include ':modules:motion-video-player'
 include ':modules:motion-video-editor'
 include ':modules:ml-kit-ext'
+
+if (!System.env.JITPACK) {
+    include ':modules:app'
+    include ':modules:ivi-demo'
+    include ':modules:lyrics-maker'  
+}
