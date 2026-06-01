@@ -45,7 +45,7 @@ abstract class MotionWorker(
 
     override suspend fun doWork(): Result {
         Timber.d("Worker ${this.id}: Starting video generation.")
-        wakeLock.acquire(10 * 60 * 60 * 1000L /* 1 hour */)
+        wakeLock.acquire(1 * 60 * 60 * 1000L /* 1 hours */)
         return try {
             val videoFile: File =
                 generateVideo(
@@ -121,7 +121,7 @@ abstract class MotionWorker(
      *
      * @param exception The exception that occurred.
      */
-    open fun onFailed(exception: Exception) {
+    open suspend fun onFailed(exception: Exception) {
         // Default implementation does nothing, subclasses can override.
     }
 

@@ -13,6 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -48,26 +52,36 @@ fun GradientText(
     )
 
     val gradientColors =
-        listOf(
-            ThemePink,
-            ThemeBlue,
-        )
+        remember {
+            listOf(
+                ThemePink,
+                ThemeBlue,
+            )
+        }
 
     Text(
         text = text,
         style =
             MaterialTheme.typography.displayMedium.copy(
                 fontFamily = malamPoek,
-                brush =
-                    Brush.linearGradient(
-                        colors = gradientColors,
-                        start = Offset(offset, offset),
-                        end = Offset(offset + 5f, offset + 5f),
-                    ),
                 fontSize = 48.sp,
             ),
         fontWeight = FontWeight.ExtraBold,
-        modifier = modifier,
+        modifier =
+            modifier
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                .drawWithCache {
+                    val brush =
+                        Brush.linearGradient(
+                            colors = gradientColors,
+                            start = Offset(offset, offset),
+                            end = Offset(offset + 5f, offset + 5f),
+                        )
+                    onDrawWithContent {
+                        drawContent()
+                        drawRect(brush, blendMode = BlendMode.SrcAtop)
+                    }
+                },
     )
 }
 

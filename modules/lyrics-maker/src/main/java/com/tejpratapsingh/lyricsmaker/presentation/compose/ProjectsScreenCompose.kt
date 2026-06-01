@@ -28,9 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CloudDone
-import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.VideocamOff
@@ -55,6 +54,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,6 +74,7 @@ import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.lang.Exception
 
 @Composable
 fun ProjectsRoute(
@@ -210,12 +211,17 @@ fun ProjectsScreen(
                     CreateNewProjectCard(onClick = onCreateNew)
                 }
                 items(items = projects, key = { it.id }) { project ->
+                    val onProjectClickState by rememberUpdatedState(onProjectClick)
+                    val onDeleteProjectState by rememberUpdatedState(onDeleteProject)
+                    val onShareProjectState by rememberUpdatedState(onShareProject)
+                    val onSyncState by rememberUpdatedState(onSync)
+
                     ProjectCard(
                         project = project,
-                        onClick = { onProjectClick(project) },
-                        onDelete = { onDeleteProject(project) },
-                        onShare = { onShareProject(project) },
-                        onSync = { onSync(project) },
+                        onClick = { onProjectClickState(project) },
+                        onDelete = { onDeleteProjectState(project) },
+                        onShare = { onShareProjectState(project) },
+                        onSync = { onSyncState(project) },
                     )
                 }
             }
@@ -337,16 +343,19 @@ private fun ProjectCard(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    var thumbnail by remember(project.id) { mutableStateOf(ThumbnailCache.get(project.id)) }
+    var thumbnail by remember(project.id, project.updated) {
+        mutableStateOf(ThumbnailCache.get("${project.id}_${project.updated}"))
+    }
 
-    LaunchedEffect(project.id) {
+    LaunchedEffect(project.id, project.updated) {
         if (thumbnail == null) {
             withContext(Dispatchers.IO) {
                 val projectFile = context.createProjectFile(project)
                 if (projectFile.exists()) {
                     val extractedBitmap = extractFirstFrame(projectFile.path)
                     extractedBitmap?.let {
-                        ThumbnailCache.put(project.id, it)
+                        ThumbnailCache.removeByPrefix(project.id)
+                        ThumbnailCache.put("${project.id}_${project.updated}", it)
                         withContext(Dispatchers.Main) {
                             thumbnail = it
                         }
@@ -453,7 +462,7 @@ private fun ProjectCard(
                             ),
                     ) {
                         Icon(
-                            imageVector = if (project.syncTracker.isDirty) Icons.Rounded.CloudOff else Icons.Rounded.CloudDone,
+                            imageVector = if (project.syncTracker.isDirty) Icons.Rounded.Check else Icons.Rounded.DoneAll,
                             contentDescription = if (project.syncTracker.isDirty) "Start sync" else "Synced",
                             modifier = Modifier.size(22.dp),
                         )
@@ -531,12 +540,20 @@ private fun ProjectCard(
 
 fun extractFirstFrame(videoPath: String): Bitmap? {
     val retriever = MediaMetadataRetriever()
-    retriever.setDataSource(videoPath)
-    // 0 is the time in microseconds
-    val bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
-    retriever.release()
-
-    return bitmap
+    return try {
+        retriever.setDataSource(videoPath)
+        // Request a smaller frame (e.g., 300px) and use OPTION_CLOSEST_SYNC for speed
+        retriever.getScaledFrameAtTime(
+            0,
+            MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
+            300,
+            300,
+        )
+    } catch (e: Exception) {
+        null
+    } finally {
+        retriever.release()
+    }
 }
 
 // Extension to format the updated timestamp
