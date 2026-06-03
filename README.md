@@ -103,15 +103,50 @@ dependencyResolutionManagement {
 }
 ```
 
-### 2) Add dependency
+### 2) Add the modules you need
+
+Every library module is consumable as a separate JitPack artifact, so you can keep your app dependency graph as small as the feature set you use. Replace `TAG` with a release/tag from JitPack.
 
 ```gradle
 dependencies {
+  // Shared primitives: config, MotionView contracts, layout metadata, audio, effects.
   implementation 'com.github.tejpratap46.AndroidVideoMotion:core:TAG'
+
+  // Main Android View-based motion composer, custom views, transitions, and export flow.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:motionlib:TAG'
+
+  // Ready-made composition templates and SDUI-backed template helpers.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:templates:TAG'
+
+  // JSON-driven motion and generic server-driven UI rendering.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:sdui:TAG'
+
+  // Persist, catalog, or retrieve reusable motion definitions/assets.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:motion-store:TAG'
+
+  // Extract media metadata for timeline and asset decisions.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:metadata-extractor:TAG'
+
+  // Playback helpers for generated motion videos.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:motion-video-player:TAG'
+
+  // Video processing/export extension backed by FFmpeg.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:ffmpeg-motion-ext:TAG'
+
+  // Video processing/export extension backed by JCodec.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:jcodec-motion-ext:TAG'
+
+  // Offscreen 3D rendering integrations.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:3d-opengl-renderer:TAG'
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:3d-filament-renderer:TAG'
+
+  // ML-assisted motion/image/video extensions.
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:tensorflow-motion-ext:TAG'
+  implementation 'com.github.tejpratap46.AndroidVideoMotion:pytorch-motion-ext:TAG'
 }
 ```
 
-> Replace `TAG` with a release/tag from JitPack.
+> Demo/application modules such as `app`, `ivi-demo`, and `lyrics-maker` are intended as examples and entry points rather than reusable library dependencies.
 
 ---
 
@@ -146,6 +181,71 @@ val motionConfig = MotionConfig(
     fps = 30,
 )
 setCurrentConfig(motionConfig)
+```
+
+### Create and customize a motion view
+
+Custom motion views usually extend one of the base motion containers, set a frame window, optionally expose `layoutInfo`, and update their child views inside `forFrame(frame)`. Always call `super.forFrame(frame)` so visibility, nested `MotionView` children, and attached effects continue to work.
+
+```kotlin
+class CaptionMotionView(
+    context: Context,
+    private val caption: String,
+    private val fromFrame: Int,
+    private val toFrame: Int,
+) : BaseLinearMotionView(context) {
+
+    private val captionView = AppCompatTextView(context).apply {
+        text = caption
+        textSize = 28f
+        gravity = Gravity.CENTER
+        setTextColor(Color.WHITE)
+    }
+
+    override var layoutInfo = MotionLayoutInfo(
+        width = MotionLayoutInfo.MATCH_PARENT,
+        height = MotionLayoutInfo.WRAP_CONTENT,
+        margin = MotionLayoutInfo.Margin(bottom = 48),
+        gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
+    )
+
+    init {
+        startFrame = fromFrame
+        endFrame = toFrame
+        addView(captionView)
+        addEffect(FadeInEffect(startFrame = fromFrame, endFrame = fromFrame + 12))
+    }
+
+    override fun forFrame(frame: Int): MotionView {
+        super.forFrame(frame)
+
+        val scale = MotionInterpolator.interpolateForRange(
+            interpolator = Interpolators(Easings.CUBIC_OUT),
+            currentFrame = frame.coerceIn(startFrame, endFrame),
+            frameRange = startFrame to endFrame,
+            valueRange = 0.92f to 1.08f,
+        )
+
+        captionView.scaleX = scale
+        captionView.scaleY = scale
+        return this
+    }
+}
+```
+
+Use it in the producer exactly like a built-in view:
+
+```kotlin
+val caption = CaptionMotionView(
+    context = applicationContext,
+    caption = "Generated with AndroidVideoMotion",
+    fromFrame = 1,
+    toFrame = motionConfig.fps * 3,
+)
+
+val motionProducer = MotionVideoProducer
+    .with(context = applicationContext)
+    .addMotionViewToSequence(caption)
 ```
 
 ---
