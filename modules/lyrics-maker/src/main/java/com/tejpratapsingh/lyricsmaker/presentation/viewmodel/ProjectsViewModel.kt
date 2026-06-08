@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tejpratapsingh.lyricsmaker.presentation.compose.ThumbnailCache
+import com.tejpratapsingh.lyricsmaker.presentation.compose.projects.ThumbnailCache
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.extensions.deleteProjectFolder
 import com.tejpratapsingh.motionstore.infra.PreferenceManager

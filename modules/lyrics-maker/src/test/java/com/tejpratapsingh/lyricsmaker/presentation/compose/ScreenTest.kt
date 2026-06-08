@@ -1,5 +1,6 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose
 
+import com.tejpratapsingh.lyricsmaker.presentation.compose.navigation.Screen
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

@@ -1,4 +1,4 @@
-package com.tejpratapsingh.lyricsmaker.presentation.compose
+package com.tejpratapsingh.lyricsmaker.presentation.compose.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,6 +10,11 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
+import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectDetailsScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.lyrics.SyncedLyricsSelector
+import com.tejpratapsingh.lyricsmaker.presentation.compose.projects.ProjectsRoute
+import com.tejpratapsingh.lyricsmaker.presentation.compose.search.SearchScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.templates.LyricsTemplateSelector
 import com.tejpratapsingh.lyricsmaker.presentation.motion.extractLyricsTemplateData
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
@@ -19,28 +24,6 @@ import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.templates.sdui.MotionTemplateSDUIProvider
 import com.tejpratapsingh.motionstore.tables.MotionProject
-
-sealed class Screen(
-    val route: String,
-) {
-    object Projects : Screen("projects")
-
-    object Search : Screen("search")
-
-    object Lyrics : Screen("lyrics")
-
-    object TemplateSelector : Screen("template_selector/{projectId}") {
-        fun createRoute(projectId: String) = "template_selector/$projectId"
-    }
-
-    object ProjectDetails : Screen("project_details/{projectId}") {
-        fun createRoute(projectId: String) = "project_details/$projectId"
-    }
-
-    object VideoEditor : Screen("video_editor/{projectId}") {
-        fun createRoute(projectId: String) = "video_editor/$projectId"
-    }
-}
 
 @Composable
 fun AppNavHost(

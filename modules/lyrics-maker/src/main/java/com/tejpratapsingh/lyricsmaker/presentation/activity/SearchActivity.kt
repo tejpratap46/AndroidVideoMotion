@@ -28,8 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
-import com.tejpratapsingh.lyricsmaker.presentation.compose.AppNavHost
-import com.tejpratapsingh.lyricsmaker.presentation.compose.Screen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.navigation.AppNavHost
+import com.tejpratapsingh.lyricsmaker.presentation.compose.navigation.Screen
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.AnimatorTheme
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsUiState
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
