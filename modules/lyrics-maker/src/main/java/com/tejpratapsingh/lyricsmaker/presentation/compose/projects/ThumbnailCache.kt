@@ -1,4 +1,4 @@
-package com.tejpratapsingh.lyricsmaker.presentation.compose
+package com.tejpratapsingh.lyricsmaker.presentation.compose.projects
 
 import android.graphics.Bitmap
 import android.util.LruCache

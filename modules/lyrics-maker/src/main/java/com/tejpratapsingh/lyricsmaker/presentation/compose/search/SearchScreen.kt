@@ -1,4 +1,4 @@
-package com.tejpratapsingh.lyricsmaker.presentation.compose
+package com.tejpratapsingh.lyricsmaker.presentation.compose.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

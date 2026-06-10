@@ -1,4 +1,4 @@
-package com.tejpratapsingh.lyricsmaker.presentation.compose
+package com.tejpratapsingh.lyricsmaker.presentation.compose.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

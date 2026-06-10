@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectDetailsScreen
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import org.junit.Assert.assertEquals
 import org.junit.Rule
