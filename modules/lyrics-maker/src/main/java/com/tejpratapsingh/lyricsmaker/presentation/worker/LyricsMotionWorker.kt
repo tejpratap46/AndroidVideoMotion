@@ -82,7 +82,8 @@ class LyricsMotionWorker(
     override suspend fun getOutputFile(): File =
         withContext(Dispatchers.Unconfined) {
             val projectId = inputData.getString(PROJECT_ID)!!
-            val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
+            val motionProject =
+                applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
             applicationContext.createProjectFile(motionProject)
         }
 

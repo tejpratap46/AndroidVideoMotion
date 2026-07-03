@@ -162,8 +162,14 @@ class VideoFrameHandler private constructor(
                 exo.addListener(listener)
 
                 cont.invokeOnCancellation {
-                    exo.removeListener(listener)
-                    exo.release()
+                    playerHandler.post {
+                        try {
+                            exo.removeListener(listener)
+                            exo.release()
+                        } catch (e: Exception) {
+                            // Ignore
+                        }
+                    }
                 }
             }
         }
@@ -344,7 +350,15 @@ class VideoFrameHandler private constructor(
                         exo.addListener(listener)
                         exo.seekTo(positionMs)
 
-                        cont.invokeOnCancellation { exo.removeListener(listener) }
+                        cont.invokeOnCancellation {
+                            playerHandler.post {
+                                try {
+                                    exo.removeListener(listener)
+                                } catch (e: Exception) {
+                                    // Ignore
+                                }
+                            }
+                        }
                     }
                 }
             }
