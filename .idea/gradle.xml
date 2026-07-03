@@ -20,6 +20,7 @@
             <option value="$PROJECT_DIR$/modules/ivi-demo" />
             <option value="$PROJECT_DIR$/modules/jcodec-motion-ext" />
             <option value="$PROJECT_DIR$/modules/lyrics-maker" />
+            <option value="$PROJECT_DIR$/modules/media3-motion-ext" />
             <option value="$PROJECT_DIR$/modules/metadata-extractor" />
             <option value="$PROJECT_DIR$/modules/ml-kit-ext" />
             <option value="$PROJECT_DIR$/modules/motion-store" />
