@@ -20,7 +20,7 @@ class RenaultCar(
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     companion object {
-        const val imageAssetSubFolder = "renault_kiger_bg"
+        const val IMAGE_ASSET_SUB_FOLDER = "renault_kiger_bg"
     }
 
     private val imageView: ImageView =
@@ -78,7 +78,7 @@ class RenaultCar(
         )
 
         // Determine which image to show based on the current frame
-        val imageName = "$imageAssetSubFolder/$frame.png"
+        val imageName = "$IMAGE_ASSET_SUB_FOLDER/$frame.png"
 
         try {
             val inputStream: InputStream = assetManager.open(imageName)

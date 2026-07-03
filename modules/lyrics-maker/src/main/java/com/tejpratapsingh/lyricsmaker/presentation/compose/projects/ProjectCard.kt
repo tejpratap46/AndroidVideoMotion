@@ -47,6 +47,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 internal fun ProjectCard(
     project: MotionProject,
     onClick: () -> Unit,

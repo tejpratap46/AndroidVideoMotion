@@ -11,13 +11,12 @@ import com.tejpratapsingh.motionlib.templates.serialization.TemplateSerializatio
 class JsonMotionTemplate(
     name: String,
     parameters: List<TemplateParameter<*>>,
-    val rawContent: JsonObject
+    val rawContent: JsonObject,
 ) : MotionTemplate(name, parameters) {
-
     override fun buildContent(scope: ContentScope) {
         // 1. Apply data to content JSON
         val appliedJson = TemplateSerialization.applyData(rawContent, scope.data).asJsonObject
-        
+
         // 2. Content can be a single view or a container with children
         // For simplicity, let's assume it's a list of views under "views" key or a single view
         if (appliedJson.has("views")) {

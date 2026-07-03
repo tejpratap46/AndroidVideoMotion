@@ -89,10 +89,9 @@ fun JsonObject.getMotionPlugins(context: Context): List<MotionPlugin> {
 /**
  * Get [MotionConfig] from [JsonObject].
  */
-fun JsonObject.getMotionConfig(): MotionConfig? {
-    return if (has("config") && get("config").isJsonObject) {
+fun JsonObject.getMotionConfig(): MotionConfig? =
+    if (has("config") && get("config").isJsonObject) {
         get("config").asJsonObject.toMotionConfig()
     } else {
         null
     }
-}

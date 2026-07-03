@@ -3,7 +3,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.templates
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.net.toUri
-import androidx.core.view.isVisible
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition

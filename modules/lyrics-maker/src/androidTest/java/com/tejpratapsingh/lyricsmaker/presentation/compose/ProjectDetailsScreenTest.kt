@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class ProjectDetailsScreenTest {
-
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -72,6 +71,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -91,6 +91,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -113,6 +114,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -133,6 +135,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -149,6 +152,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = { sharedProject = it },
             )
         }
@@ -170,6 +174,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = {},
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -186,6 +191,7 @@ class ProjectDetailsScreenTest {
             ProjectDetailsScreen(
                 project = project,
                 onBackClick = { backClicked = true },
+                onEditClick = {},
                 onShareClick = {},
             )
         }
@@ -193,5 +199,44 @@ class ProjectDetailsScreenTest {
         composeTestRule.onNodeWithContentDescription("Back").performClick()
 
         assertEquals(true, backClicked)
+    }
+
+    // ------------------------------------------------------------------
+    // Edit button
+    // ------------------------------------------------------------------
+
+    @Test
+    fun editButton_isDisplayed() {
+        val project = buildProject()
+
+        composeTestRule.setContent {
+            ProjectDetailsScreen(
+                project = project,
+                onBackClick = {},
+                onEditClick = {},
+                onShareClick = {},
+            )
+        }
+
+        composeTestRule.onNodeWithText("Edit Project").assertIsDisplayed()
+    }
+
+    @Test
+    fun editButton_invokesOnEditClickWithProject() {
+        val project = buildProject(id = "edit-test")
+        var editedProject: MotionProject? = null
+
+        composeTestRule.setContent {
+            ProjectDetailsScreen(
+                project = project,
+                onBackClick = {},
+                onEditClick = { editedProject = it },
+                onShareClick = {},
+            )
+        }
+
+        composeTestRule.onNodeWithText("Edit Project").performClick()
+
+        assertEquals(project.id, editedProject?.id)
     }
 }

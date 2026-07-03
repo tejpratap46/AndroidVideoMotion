@@ -1,3 +1,5 @@
+package com.tejpratapsingh.ividemo.motion
+
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.widget.ImageView
@@ -22,8 +24,8 @@ class RenaultCar(
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     companion object {
-        const val imageAssetSubFolder = "renault_kiger_bg"
-        const val roadAssetSubFolder = "road"
+        const val IMAGE_ASSET_SUB_FOLDER = "renault_kiger_bg"
+        const val ROAD_ASSET_SUB_FOLDER = "road"
     }
 
     private val imageViewBg: ImageView =
@@ -37,8 +39,8 @@ class RenaultCar(
         }
 
     private val assetManager = context.assets
-    private val files = assetManager.list(imageAssetSubFolder)
-    private val roadFiles = assetManager.list(roadAssetSubFolder)
+    private val files = assetManager.list(IMAGE_ASSET_SUB_FOLDER)
+    private val roadFiles = assetManager.list(ROAD_ASSET_SUB_FOLDER)
 
     init {
         imageViewBg.layoutBy(
@@ -120,7 +122,7 @@ class RenaultCar(
 //        val road = String.format(
 //            Locale.getDefault(),
 //            "%s/%02d.png",
-//            roadAssetSubFolder,
+//            ROAD_ASSET_SUB_FOLDER,
 //            min(roadInterpolator, (roadFiles?.size ?: 1) - 1)
 //        )
 //
@@ -137,7 +139,7 @@ class RenaultCar(
             String.format(
                 Locale.getDefault(),
                 "%s/%d.png",
-                imageAssetSubFolder,
+                IMAGE_ASSET_SUB_FOLDER,
                 min(frame, (files?.size ?: 1) - 1),
             )
 

@@ -51,7 +51,7 @@ open class MotionVideoProducer private constructor(
 
     override fun addTransition(
         transition: MotionTransition,
-        duration: Int
+        duration: Int,
     ): MotionVideoProducer {
         pendingTransition = Pair(transition, duration)
         return this
@@ -66,31 +66,33 @@ open class MotionVideoProducer private constructor(
             transition.apply(currentLastView, motionView, duration)
             pendingTransition = null
         }
-        
+
         lastMotionView = motionView
 
         totalFrames = maxOf(totalFrames, motionView.endFrame)
         motionComposerView.apply {
             val layoutInfo = motionView.layoutInfo
             motionView.layoutBy(
-                x = if (layoutInfo.gravity and android.view.Gravity.CENTER_HORIZONTAL == android.view.Gravity.CENTER_HORIZONTAL) {
-                    centerHorizontallyTo { parent.centerX() }
-                } else if (layoutInfo.gravity and android.view.Gravity.LEFT == android.view.Gravity.LEFT) {
-                    leftTo { parent.left() + layoutInfo.margin.left.toXInt() }
-                } else if (layoutInfo.gravity and android.view.Gravity.RIGHT == android.view.Gravity.RIGHT) {
-                    rightTo { parent.right() - layoutInfo.margin.right.toXInt() }
-                } else {
-                    centerHorizontallyTo { parent.centerX() }
-                },
-                y = if (layoutInfo.gravity and android.view.Gravity.CENTER_VERTICAL == android.view.Gravity.CENTER_VERTICAL) {
-                    centerVerticallyTo { parent.centerY() }
-                } else if (layoutInfo.gravity and android.view.Gravity.TOP == android.view.Gravity.TOP) {
-                    topTo { parent.top() + layoutInfo.margin.top.toYInt() }
-                } else if (layoutInfo.gravity and android.view.Gravity.BOTTOM == android.view.Gravity.BOTTOM) {
-                    bottomTo { parent.bottom() - layoutInfo.margin.bottom.toYInt() }
-                } else {
-                    centerVerticallyTo { parent.centerY() }
-                },
+                x =
+                    if (layoutInfo.gravity and android.view.Gravity.CENTER_HORIZONTAL == android.view.Gravity.CENTER_HORIZONTAL) {
+                        centerHorizontallyTo { parent.centerX() }
+                    } else if (layoutInfo.gravity and android.view.Gravity.LEFT == android.view.Gravity.LEFT) {
+                        leftTo { parent.left() + layoutInfo.margin.left.toXInt() }
+                    } else if (layoutInfo.gravity and android.view.Gravity.RIGHT == android.view.Gravity.RIGHT) {
+                        rightTo { parent.right() - layoutInfo.margin.right.toXInt() }
+                    } else {
+                        centerHorizontallyTo { parent.centerX() }
+                    },
+                y =
+                    if (layoutInfo.gravity and android.view.Gravity.CENTER_VERTICAL == android.view.Gravity.CENTER_VERTICAL) {
+                        centerVerticallyTo { parent.centerY() }
+                    } else if (layoutInfo.gravity and android.view.Gravity.TOP == android.view.Gravity.TOP) {
+                        topTo { parent.top() + layoutInfo.margin.top.toYInt() }
+                    } else if (layoutInfo.gravity and android.view.Gravity.BOTTOM == android.view.Gravity.BOTTOM) {
+                        bottomTo { parent.bottom() - layoutInfo.margin.bottom.toYInt() }
+                    } else {
+                        centerVerticallyTo { parent.centerY() }
+                    },
                 addToViewGroup = true,
             )
         }

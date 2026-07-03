@@ -47,6 +47,7 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
+@Suppress("FunctionName")
 fun MotionVideoPlayerCompose(
     motionVideoProducer: MotionVideoProducer,
     modifier: Modifier = Modifier,

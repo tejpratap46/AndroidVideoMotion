@@ -19,7 +19,8 @@ object MotionSdui {
     private val effectSerializers = mutableMapOf<Class<out MotionEffect>, MotionEffectSerializer<out MotionEffect>>()
 
     private val transitionFactories = mutableMapOf<String, MotionTransitionFactory>()
-    private val transitionSerializers = mutableMapOf<Class<out MotionTransition>, MotionTransitionSerializer<out MotionTransition>>()
+    private val transitionSerializers =
+        mutableMapOf<Class<out MotionTransition>, MotionTransitionSerializer<out MotionTransition>>()
 
     private val pluginFactories = mutableMapOf<String, MotionPluginFactory>()
     private val pluginSerializers = mutableMapOf<Class<out MotionPlugin>, MotionPluginSerializer<out MotionPlugin>>()
@@ -30,70 +31,100 @@ object MotionSdui {
     /**
      * Register a [MotionView] for deserialization.
      */
-    fun registerView(type: String, factory: MotionViewFactory) {
+    fun registerView(
+        type: String,
+        factory: MotionViewFactory,
+    ) {
         viewFactories[type] = factory
     }
 
     /**
      * Register a [MotionView] for serialization.
      */
-    fun <T : MotionView> registerViewSerializer(clazz: Class<T>, serializer: MotionViewSerializer<T>) {
+    fun <T : MotionView> registerViewSerializer(
+        clazz: Class<T>,
+        serializer: MotionViewSerializer<T>,
+    ) {
         viewSerializers[clazz] = serializer
     }
 
     /**
      * Register a [MotionEffect] for deserialization.
      */
-    fun registerEffect(type: String, factory: MotionEffectFactory) {
+    fun registerEffect(
+        type: String,
+        factory: MotionEffectFactory,
+    ) {
         effectFactories[type] = factory
     }
 
     /**
      * Register a [MotionEffect] for serialization.
      */
-    fun <T : MotionEffect> registerEffectSerializer(clazz: Class<T>, serializer: MotionEffectSerializer<T>) {
+    fun <T : MotionEffect> registerEffectSerializer(
+        clazz: Class<T>,
+        serializer: MotionEffectSerializer<T>,
+    ) {
         effectSerializers[clazz] = serializer
     }
 
     /**
      * Register a [MotionTransition] for deserialization.
      */
-    fun registerTransition(type: String, factory: MotionTransitionFactory) {
+    fun registerTransition(
+        type: String,
+        factory: MotionTransitionFactory,
+    ) {
         transitionFactories[type] = factory
     }
 
     /**
      * Register a [MotionTransition] for serialization.
      */
-    fun <T : MotionTransition> registerTransitionSerializer(clazz: Class<T>, serializer: MotionTransitionSerializer<T>) {
+    fun <T : MotionTransition> registerTransitionSerializer(
+        clazz: Class<T>,
+        serializer: MotionTransitionSerializer<T>,
+    ) {
         transitionSerializers[clazz] = serializer
     }
 
     /**
      * Register a [MotionPlugin] for deserialization.
      */
-    fun registerPlugin(type: String, factory: MotionPluginFactory) {
+    fun registerPlugin(
+        type: String,
+        factory: MotionPluginFactory,
+    ) {
         pluginFactories[type] = factory
     }
 
     /**
      * Register a [MotionPlugin] for serialization.
      */
-    fun <T : MotionPlugin> registerPluginSerializer(clazz: Class<T>, serializer: MotionPluginSerializer<T>) {
+    fun <T : MotionPlugin> registerPluginSerializer(
+        clazz: Class<T>,
+        serializer: MotionPluginSerializer<T>,
+    ) {
         pluginSerializers[clazz] = serializer
     }
 
     /**
      * Register a [MotionAudio] for deserialization.
      */
-    fun registerAudio(type: String, factory: MotionAudioFactory) {
+    fun registerAudio(
+        type: String,
+        factory: MotionAudioFactory,
+    ) {
         audioFactories[type] = factory
     }
 
     /**
      * Register a [MotionAudio] for serialization.
      */
-    fun <T : MotionAudio> registerAudioSerializer(clazz: Class<T>, serializer: MotionAudioSerializer<T>) {
+    fun <T : MotionAudio> registerAudioSerializer(
+        clazz: Class<T>,
+        serializer: MotionAudioSerializer<T>,
+    ) {
         audioSerializers[clazz] = serializer
     }
 
@@ -129,11 +160,17 @@ object MotionSdui {
 }
 
 fun interface MotionViewFactory {
-    fun create(context: Context, json: JsonObject): MotionView
+    fun create(
+        context: Context,
+        json: JsonObject,
+    ): MotionView
 }
 
 fun interface MotionViewSerializer<T : MotionView> {
-    fun serialize(view: T, json: JsonObject)
+    fun serialize(
+        view: T,
+        json: JsonObject,
+    )
 }
 
 fun interface MotionEffectFactory {
@@ -141,7 +178,10 @@ fun interface MotionEffectFactory {
 }
 
 fun interface MotionEffectSerializer<T : MotionEffect> {
-    fun serialize(effect: T, json: JsonObject)
+    fun serialize(
+        effect: T,
+        json: JsonObject,
+    )
 }
 
 fun interface MotionTransitionFactory {
@@ -149,21 +189,36 @@ fun interface MotionTransitionFactory {
 }
 
 fun interface MotionTransitionSerializer<T : MotionTransition> {
-    fun serialize(transition: T, json: JsonObject)
+    fun serialize(
+        transition: T,
+        json: JsonObject,
+    )
 }
 
 fun interface MotionPluginFactory {
-    fun create(context: Context, json: JsonObject): MotionPlugin
+    fun create(
+        context: Context,
+        json: JsonObject,
+    ): MotionPlugin
 }
 
 fun interface MotionPluginSerializer<T : MotionPlugin> {
-    fun serialize(plugin: T, json: JsonObject)
+    fun serialize(
+        plugin: T,
+        json: JsonObject,
+    )
 }
 
 fun interface MotionAudioFactory {
-    fun create(context: Context, json: JsonObject): MotionAudio
+    fun create(
+        context: Context,
+        json: JsonObject,
+    ): MotionAudio
 }
 
 fun interface MotionAudioSerializer<T : MotionAudio> {
-    fun serialize(audio: T, json: JsonObject)
+    fun serialize(
+        audio: T,
+        json: JsonObject,
+    )
 }

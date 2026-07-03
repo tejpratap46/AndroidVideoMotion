@@ -9,6 +9,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun ProjectsRoute(
     viewModel: ProjectsViewModel,
     onCreateNew: () -> Unit,

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.tejpratapsingh.ivi_demo'
+    namespace 'com.tejpratapsingh.ividemo'
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.tejpratapsingh.ivi_demo"
+        applicationId "com.tejpratapsingh.ividemo"
         minSdk 28
         targetSdk 36
         versionCode 1

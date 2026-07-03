@@ -38,31 +38,50 @@ class BrightnessContrastEffect(
             return motionView
         }
 
-        val brightness = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromBrightness, toBrightness),
-        )
-        
-        val contrast = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromContrast, toContrast),
-        )
+        val brightness =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromBrightness, toBrightness),
+            )
+
+        val contrast =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromContrast, toContrast),
+            )
 
         // Matrix for contrast and brightness
         // contrast * (channel - 0.5) + 0.5 + brightness
         // = contrast * channel - 0.5 * contrast + 0.5 + brightness
         val t = (1.0f - contrast) / 2.0f * 255.0f + brightness * 255.0f
-        
-        val matrix = floatArrayOf(
-            contrast, 0f, 0f, 0f, t,
-            0f, contrast, 0f, 0f, t,
-            0f, 0f, contrast, 0f, t,
-            0f, 0f, 0f, 1f, 0f
-        )
+
+        val matrix =
+            floatArrayOf(
+                contrast,
+                0f,
+                0f,
+                0f,
+                t,
+                0f,
+                contrast,
+                0f,
+                0f,
+                t,
+                0f,
+                0f,
+                contrast,
+                0f,
+                t,
+                0f,
+                0f,
+                0f,
+                1f,
+                0f,
+            )
 
         val colorFilter = ColorMatrixColorFilter(matrix)
         view.setRenderEffect(RenderEffect.createColorFilterEffect(colorFilter))

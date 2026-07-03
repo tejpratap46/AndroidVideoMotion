@@ -48,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun ProjectDetailsScreen(
     project: MotionProject,
     onBackClick: () -> Unit,

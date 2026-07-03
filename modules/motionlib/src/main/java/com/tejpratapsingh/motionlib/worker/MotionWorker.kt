@@ -45,7 +45,7 @@ abstract class MotionWorker(
 
     override suspend fun doWork(): Result {
         Timber.d("Worker ${this.id}: Starting video generation.")
-        wakeLock.acquire(1 * 60 * 60 * 1000L /* 1 hours */)
+        wakeLock.acquire(1 * 60 * 60 * 1000L) // 1 hour
         return try {
             val videoFile: File =
                 generateVideo(

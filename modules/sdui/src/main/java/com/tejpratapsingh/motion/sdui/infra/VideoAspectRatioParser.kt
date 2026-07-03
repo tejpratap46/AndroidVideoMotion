@@ -62,6 +62,4 @@ private val gsonDefault = Gson()
 
 fun VideoAspectRatio.toJson(): JsonObject = gsonDefault.toJsonTree(this).asJsonObject
 
-fun JsonObject.toVideoAspectRatio(): VideoAspectRatio {
-    return gsonWithAspectRatio.fromJson(this, VideoAspectRatio::class.java)
-}
+fun JsonObject.toVideoAspectRatio(): VideoAspectRatio = gsonWithAspectRatio.fromJson(this, VideoAspectRatio::class.java)

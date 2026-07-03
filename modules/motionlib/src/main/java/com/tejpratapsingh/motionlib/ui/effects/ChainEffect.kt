@@ -40,13 +40,13 @@ class ChainEffect(
         }
 
         // Chaining is tricky with the current side-effect based architecture.
-        // For now, we just call the inner and outer effects, which will 
+        // For now, we just call the inner and outer effects, which will
         // each try to set the RenderEffect on the view, with the last one winning.
-        // To properly support chaining, we would need to refactor MotionEffect 
+        // To properly support chaining, we would need to refactor MotionEffect
         // to return a RenderEffect instead of applying it.
         innerEffect.forFrame(frame)
         outerEffect.forFrame(frame)
-        
+
         return motionView
     }
 }

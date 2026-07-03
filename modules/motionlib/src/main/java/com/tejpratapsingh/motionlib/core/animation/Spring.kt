@@ -99,9 +99,9 @@ object Spring {
                         // numerically degenerate; fallback
                         1.0 - exp(-omega0 * t)
                     } else {
-                        val A = (v0 - r2 * (-1.0)) / (r1 - r2) // solving linear system
-                        val B = -1.0 - A
-                        1.0 + A * exp(r1 * t) + B * exp(r2 * t)
+                        val a = (v0 - r2 * (-1.0)) / (r1 - r2) // solving linear system
+                        val b = -1.0 - a
+                        1.0 + a * exp(r1 * t) + b * exp(r2 * t)
                     }
                 }
             }

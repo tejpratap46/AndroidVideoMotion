@@ -22,7 +22,9 @@ class PixelateEffect(
 ) : MotionEffect {
     override lateinit var motionView: MotionView
 
-    private val PIXELATE_SHADER = """
+    companion object {
+        private const val PIXELATE_SHADER =
+            """
         uniform shader content;
         uniform float pixelSize;
 
@@ -33,7 +35,8 @@ class PixelateEffect(
             float2 p = floor(fragCoord / pixelSize) * pixelSize;
             return content.eval(p);
         }
-    """.trimIndent()
+    """
+    }
 
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) return motionView
@@ -48,16 +51,17 @@ class PixelateEffect(
             return motionView
         }
 
-        val pixelSize = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromPixelSize, toPixelSize),
-        )
+        val pixelSize =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromPixelSize, toPixelSize),
+            )
 
         val shader = RuntimeShader(PIXELATE_SHADER)
         shader.setFloatUniform("pixelSize", pixelSize)
-        
+
         view.setRenderEffect(RenderEffect.createRuntimeShaderEffect(shader, "content"))
 
         return motionView

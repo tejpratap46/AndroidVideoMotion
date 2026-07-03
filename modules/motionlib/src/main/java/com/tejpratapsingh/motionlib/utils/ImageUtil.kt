@@ -14,39 +14,48 @@ import java.io.InputStream
 object ImageUtil {
     private val client = OkHttpClient()
 
-    suspend fun fetchBitmap(context: Context, uri: Uri): Bitmap? = withContext(Dispatchers.IO) {
-        val bitmap = when (uri.scheme) {
-            "http", "https" -> fetchFromNetwork(uri.toString())
-            "content", "file", "android.resource" -> fetchFromLocal(context, uri)
-            else -> null
+    suspend fun fetchBitmap(
+        context: Context,
+        uri: Uri,
+    ): Bitmap? =
+        withContext(Dispatchers.IO) {
+            val bitmap =
+                when (uri.scheme) {
+                    "http", "https" -> fetchFromNetwork(uri.toString())
+                    "content", "file", "android.resource" -> fetchFromLocal(context, uri)
+                    else -> null
+                }
+            return@withContext bitmap ?: fetchDefault(context)
         }
-        return@withContext bitmap ?: fetchDefault(context)
-    }
 
-    private fun fetchDefault(context: Context): Bitmap? {
-        return try {
+    private fun fetchDefault(context: Context): Bitmap? =
+        try {
             BitmapFactory.decodeResource(context.resources, R.drawable.default_bg)
         } catch (e: Exception) {
             null
         }
-    }
 
-    private fun fetchFromNetwork(url: String): Bitmap? {
-        return try {
-            if (url.isBlank()) return null
-            val request = Request.Builder().url(url).build()
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return null
-                val bytes = response.body()?.bytes() ?: return null
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    private fun fetchFromNetwork(url: String): Bitmap? =
+        try {
+            if (url.isBlank()) {
+                null
+            } else {
+                val request = Request.Builder().url(url).build()
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return null
+                    val bytes = response.body()?.bytes() ?: return null
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
             }
         } catch (e: Exception) {
             null
         }
-    }
 
-    private fun fetchFromLocal(context: Context, uri: Uri): Bitmap? {
-        return try {
+    private fun fetchFromLocal(
+        context: Context,
+        uri: Uri,
+    ): Bitmap? =
+        try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
             inputStream.use {
                 BitmapFactory.decodeStream(it)
@@ -54,5 +63,4 @@ object ImageUtil {
         } catch (e: Exception) {
             null
         }
-    }
 }

@@ -1,4 +1,4 @@
-package com.tejpratapsingh.ivi_demo.motion
+package com.tejpratapsingh.ividemo.motion
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -18,7 +18,7 @@ class Road(
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
     companion object {
-        const val imageAssetSubFolder = "road"
+        const val IMAGE_ASSET_SUB_FOLDER = "road"
     }
 
     private val imageView: ImageView =
@@ -60,7 +60,7 @@ class Road(
         super.forFrame(frame)
 
         // Determine which image to show based on the current frame
-        val imageName = "$imageAssetSubFolder/$frame.png"
+        val imageName = "$IMAGE_ASSET_SUB_FOLDER/$frame.png"
 
         try {
             val inputStream: InputStream = assetManager.open(imageName)

@@ -34,6 +34,7 @@ private val LightColorScheme =
     )
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun AnimatorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+

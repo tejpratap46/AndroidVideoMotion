@@ -1,4 +1,4 @@
-package com.tejpratapsingh.ivi_demo
+package com.tejpratapsingh.ividemo
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry

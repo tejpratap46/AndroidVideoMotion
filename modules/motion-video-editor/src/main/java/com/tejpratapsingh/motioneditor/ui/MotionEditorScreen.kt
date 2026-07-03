@@ -1,7 +1,9 @@
 package com.tejpratapsingh.motioneditor.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -20,14 +23,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -42,6 +42,7 @@ import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun MotionEditorScreen(
     project: MotionProject,
     onBackClick: () -> Unit,
@@ -180,6 +181,7 @@ fun MotionEditorScreen(
 
 @Preview(showBackground = true)
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun PreviewMotionEditorScreen() {
     val sampleProject =
         MotionProject(

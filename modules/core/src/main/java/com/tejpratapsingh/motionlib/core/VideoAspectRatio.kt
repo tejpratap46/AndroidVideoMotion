@@ -1,5 +1,6 @@
 package com.tejpratapsingh.motionlib.core
 
+@Suppress("ClassName")
 sealed class VideoAspectRatio(
     val width: Int,
     val height: Int,

@@ -35,12 +35,13 @@ class InvertEffect(
             return motionView
         }
 
-        val intensity = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromIntensity, toIntensity),
-        )
+        val intensity =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromIntensity, toIntensity),
+            )
 
         // Invert matrix:
         // R' = -1*R + 255
@@ -48,21 +49,55 @@ class InvertEffect(
         // B' = -1*B + 255
         // Scaled to 0-1 for ColorMatrix:
         // R' = -1*R + 1
-        
-        val invertMatrix = floatArrayOf(
-            -1f, 0f, 0f, 0f, 255f,
-            0f, -1f, 0f, 0f, 255f,
-            0f, 0f, -1f, 0f, 255f,
-            0f, 0f, 0f, 1f, 0f
-        )
-        
-        val identityMatrix = floatArrayOf(
-            1f, 0f, 0f, 0f, 0f,
-            0f, 1f, 0f, 0f, 0f,
-            0f, 0f, 1f, 0f, 0f,
-            0f, 0f, 0f, 1f, 0f
-        )
-        
+
+        val invertMatrix =
+            floatArrayOf(
+                -1f,
+                0f,
+                0f,
+                0f,
+                255f,
+                0f,
+                -1f,
+                0f,
+                0f,
+                255f,
+                0f,
+                0f,
+                -1f,
+                0f,
+                255f,
+                0f,
+                0f,
+                0f,
+                1f,
+                0f,
+            )
+
+        val identityMatrix =
+            floatArrayOf(
+                1f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                1f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                1f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                1f,
+                0f,
+            )
+
         val resultMatrix = FloatArray(20)
         for (i in 0 until 20) {
             resultMatrix[i] = identityMatrix[i] + (invertMatrix[i] - identityMatrix[i]) * intensity

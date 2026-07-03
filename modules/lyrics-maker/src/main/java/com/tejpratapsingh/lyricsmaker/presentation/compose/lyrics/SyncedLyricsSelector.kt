@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -19,7 +18,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -53,12 +51,13 @@ import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemeBlue
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemePink
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
+@Suppress("FunctionName")
 fun SyncedLyricsSelector(
     viewModel: LyricsViewModel,
     modifier: Modifier = Modifier,
@@ -112,7 +111,8 @@ fun SyncedLyricsSelector(
 
             when (activeHandle) {
                 ListItem.StartHandle -> {
-                    val found = findLyricIndexAt(listState, autoScroll.listTopInRoot, livePointerYInRoot)
+                    val found =
+                        findLyricIndexAt(listState, autoScroll.listTopInRoot, livePointerYInRoot)
                     if (found != null) {
                         if (moveMode) {
                             val newStart = found.coerceIn(0, lastIdx - rangeSize)
@@ -127,7 +127,8 @@ fun SyncedLyricsSelector(
                 }
 
                 ListItem.EndHandle -> {
-                    val found = findLyricIndexAt(listState, autoScroll.listTopInRoot, livePointerYInRoot)
+                    val found =
+                        findLyricIndexAt(listState, autoScroll.listTopInRoot, livePointerYInRoot)
                     if (found != null) {
                         if (moveMode) {
                             val newEnd = found.coerceIn(rangeSize, lastIdx)
@@ -153,7 +154,10 @@ fun SyncedLyricsSelector(
             if (lyrics.isEmpty()) {
                 emptyList()
             } else {
-                lyrics.subList(selection.minIndex, (selection.maxIndex + 1).coerceAtMost(lyrics.size))
+                lyrics.subList(
+                    selection.minIndex,
+                    (selection.maxIndex + 1).coerceAtMost(lyrics.size),
+                )
             }
         }
     }
@@ -202,7 +206,7 @@ fun SyncedLyricsSelector(
             if (lyrics.isNotEmpty()) {
                 Surface(
                     tonalElevation = 2.dp,
-                    modifier = Modifier.statusBarsPadding()
+                    modifier = Modifier.statusBarsPadding(),
                 ) {
                     Row(
                         modifier =

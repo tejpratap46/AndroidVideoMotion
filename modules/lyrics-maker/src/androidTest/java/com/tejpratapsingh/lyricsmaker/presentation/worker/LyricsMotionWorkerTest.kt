@@ -24,7 +24,6 @@ import java.util.UUID
  */
 @RunWith(AndroidJUnit4::class)
 class LyricsMotionWorkerTest {
-
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val songName = "Worker Test Song"
     private val projectId = songName.md5()

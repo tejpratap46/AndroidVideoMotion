@@ -14,9 +14,9 @@ import java.nio.FloatBuffer
  * This processes the bitmap directly and returns a new bitmap with the background removed.
  */
 class SubjectSegmentationPlugin : MotionPlugin {
-
     private val options =
-        SubjectSegmenterOptions.Builder()
+        SubjectSegmenterOptions
+            .Builder()
             .enableForegroundConfidenceMask()
             .build()
 
@@ -40,27 +40,28 @@ class SubjectSegmentationPlugin : MotionPlugin {
 
     private fun applyMaskToBitmap(
         source: Bitmap,
-        mask: FloatBuffer
+        mask: FloatBuffer,
     ): Bitmap {
         val width = source.width
         val height = source.height
         val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        
+
         mask.rewind()
         val pixels = IntArray(width * height)
         source.getPixels(pixels, 0, width, 0, 0, width, height)
-        
+
         for (i in 0 until width * height) {
             val confidence = if (mask.hasRemaining()) mask.get() else 0.0f
             val alpha = (Color.alpha(pixels[i]) * confidence).toInt()
-            pixels[i] = Color.argb(
-                alpha,
-                Color.red(pixels[i]),
-                Color.green(pixels[i]),
-                Color.blue(pixels[i])
-            )
+            pixels[i] =
+                Color.argb(
+                    alpha,
+                    Color.red(pixels[i]),
+                    Color.green(pixels[i]),
+                    Color.blue(pixels[i]),
+                )
         }
-        
+
         result.setPixels(pixels, 0, width, 0, 0, width, height)
         return result
     }

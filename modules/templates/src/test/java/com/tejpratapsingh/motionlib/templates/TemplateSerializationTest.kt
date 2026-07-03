@@ -12,10 +12,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TemplateSerializationTest {
-
     @Test
     fun testPlaceholderReplacement() {
-        val json = """
+        val json =
+            """
             {
                 "type": "PopUpTextView",
                 "text": "{{title}}",
@@ -25,17 +25,20 @@ class TemplateSerializationTest {
                     "key": "Value: {{title}}"
                 }
             }
-        """.trimIndent()
-        
+            """.trimIndent()
+
         val content = JsonParser.parseString(json).asJsonObject
-        val data = TemplateData(mapOf(
-            "title" to "Hello World",
-            "duration" to 300,
-            "color" to 0xFF00FF
-        ))
-        
+        val data =
+            TemplateData(
+                mapOf(
+                    "title" to "Hello World",
+                    "duration" to 300,
+                    "color" to 0xFF00FF,
+                ),
+            )
+
         val applied = TemplateSerialization.applyData(content, data).asJsonObject
-        
+
         assertEquals("Hello World", applied.get("text").asString)
         assertEquals(300, applied.get("duration").asInt)
         assertEquals(0xFF00FF, applied.get("color").asInt)
@@ -44,22 +47,24 @@ class TemplateSerializationTest {
 
     @Test
     fun testTemplateSerialization() {
-        val parameters = listOf(
-            TemplateParameter("title", ParameterType.STRING, "Default"),
-            TemplateParameter("duration", ParameterType.INTEGER, 100)
-        )
-        val content = JsonObject().apply {
-            addProperty("type", "SimpleView")
-            addProperty("text", "{{title}}")
-        }
-        
+        val parameters =
+            listOf(
+                TemplateParameter("title", ParameterType.STRING, "Default"),
+                TemplateParameter("duration", ParameterType.INTEGER, 100),
+            )
+        val content =
+            JsonObject().apply {
+                addProperty("type", "SimpleView")
+                addProperty("text", "{{title}}")
+            }
+
         val template = JsonMotionTemplate("MyTemplate", parameters, content)
         val json = TemplateSerialization.templateToJson(template)
-        
+
         assertEquals("MyTemplate", json.get("name").asString)
         assertEquals(2, json.getAsJsonArray("parameters").size())
         assertTrue(json.has("content"))
-        
+
         val restoredTemplate = TemplateSerialization.templateFromJson(json)
         assertEquals(template.name, restoredTemplate.name)
         assertEquals(template.parameters.size, restoredTemplate.parameters.size)
@@ -68,7 +73,8 @@ class TemplateSerializationTest {
 
     @Test
     fun testArrayReplication() {
-        val json = """
+        val json =
+            """
             {
                 "views": [
                     {
@@ -84,25 +90,35 @@ class TemplateSerializationTest {
                     }
                 ]
             }
-        """.trimIndent()
-        
+            """.trimIndent()
+
         val content = JsonParser.parseString(json).asJsonObject
-        val data = TemplateData(mapOf(
-            "items" to listOf(
-                mapOf("text" to "Item 1", "frame" to 10),
-                mapOf("text" to "Item 2", "frame" to 20)
+        val data =
+            TemplateData(
+                mapOf(
+                    "items" to
+                        listOf(
+                            mapOf("text" to "Item 1", "frame" to 10),
+                            mapOf("text" to "Item 2", "frame" to 20),
+                        ),
+                ),
             )
-        ))
-        
+
         val applied = TemplateSerialization.applyData(content, data).asJsonObject
         val views = applied.getAsJsonArray("views")
-        
+
         assertEquals(3, views.size()) // 1 static + 2 dynamic
-        assertEquals("StaticView", views.get(0).asJsonObject.get("type").asString)
-        assertEquals("DynamicView", views.get(1).asJsonObject.get("type").asString)
-        assertEquals("Item 1", views.get(1).asJsonObject.get("text").asString)
-        assertEquals(10, views.get(1).asJsonObject.get("frame").asInt)
-        assertEquals("Item 2", views.get(2).asJsonObject.get("text").asString)
-        assertEquals(20, views.get(2).asJsonObject.get("frame").asInt)
+
+        val view0 = views.get(0).asJsonObject
+        assertEquals("StaticView", view0.get("type").asString)
+
+        val view1 = views.get(1).asJsonObject
+        assertEquals("DynamicView", view1.get("type").asString)
+        assertEquals("Item 1", view1.get("text").asString)
+        assertEquals(10, view1.get("frame").asInt)
+
+        val view2 = views.get(2).asJsonObject
+        assertEquals("Item 2", view2.get("text").asString)
+        assertEquals(20, view2.get("frame").asInt)
     }
 }
