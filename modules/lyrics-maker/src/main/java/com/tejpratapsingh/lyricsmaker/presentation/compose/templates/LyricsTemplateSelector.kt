@@ -2,6 +2,7 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.templates
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
@@ -36,6 +36,7 @@ import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun LyricsTemplateSelector(
     project: MotionProject,
     onBack: () -> Unit,

@@ -8,7 +8,10 @@ import com.tejpratapsingh.motioneditor.TimelineTrack
 import com.tejpratapsingh.motionlib.core.MotionView
 
 object TimelineUtils {
-    fun fromSdui(context: Context, sduiJson: JsonObject): List<TimelineTrack> {
+    fun fromSdui(
+        context: Context,
+        sduiJson: JsonObject,
+    ): List<TimelineTrack> {
         val views = sduiJson.getMotionViews(context)
         return fromMotionViews(views)
     }
@@ -19,15 +22,16 @@ object TimelineUtils {
         return views.mapIndexed { index, view ->
             TimelineTrack(
                 id = "track_$index",
-                items = listOf(
-                    TimelineItem(
-                        id = view.hashCode().toString(),
-                        type = view.javaClass.simpleName,
-                        startFrame = view.startFrame,
-                        endFrame = view.endFrame,
-                        label = view.javaClass.simpleName
-                    )
-                )
+                items =
+                    listOf(
+                        TimelineItem(
+                            id = view.hashCode().toString(),
+                            type = view.javaClass.simpleName,
+                            startFrame = view.startFrame,
+                            endFrame = view.endFrame,
+                            label = view.javaClass.simpleName,
+                        ),
+                    ),
             )
         }
     }

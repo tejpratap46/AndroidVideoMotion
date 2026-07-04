@@ -1,7 +1,7 @@
-package com.tejpratapsingh.ivi_demo.sequence
+package com.tejpratapsingh.ividemo.sequence
 
-import RenaultCar
 import android.content.Context
+import com.tejpratapsingh.ividemo.motion.RenaultCar
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -18,7 +18,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     setCurrentConfig(motionConfig)
 
     val assetManager = applicationContext.assets
-    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
+    val files = assetManager.list(RenaultCar.IMAGE_ASSET_SUB_FOLDER)
 
     val motionView: BaseContourMotionView =
         RenaultCar(

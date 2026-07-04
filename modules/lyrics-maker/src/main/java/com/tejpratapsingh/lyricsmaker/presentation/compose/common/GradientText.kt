@@ -26,6 +26,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemeBlue
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemePink
 
 @Composable
+@Suppress("FunctionName")
 fun GradientText(
     text: String,
     modifier: Modifier = Modifier,

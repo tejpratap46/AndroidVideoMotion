@@ -38,6 +38,7 @@ import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
 @Composable
+@Suppress("FunctionName")
 internal fun StartDragHandle(
     color: Color,
     autoScroll: AutoScrollState,

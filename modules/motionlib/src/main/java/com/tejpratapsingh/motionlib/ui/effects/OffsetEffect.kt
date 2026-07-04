@@ -36,19 +36,21 @@ class OffsetEffect(
             return motionView
         }
 
-        val offsetX = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromOffsetX, toOffsetX),
-        )
+        val offsetX =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromOffsetX, toOffsetX),
+            )
 
-        val offsetY = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromOffsetY, toOffsetY),
-        )
+        val offsetY =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromOffsetY, toOffsetY),
+            )
 
         view.setRenderEffect(RenderEffect.createOffsetEffect(offsetX, offsetY))
 

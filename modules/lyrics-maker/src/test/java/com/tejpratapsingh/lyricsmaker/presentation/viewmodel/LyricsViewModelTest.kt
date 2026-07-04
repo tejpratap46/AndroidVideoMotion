@@ -13,7 +13,6 @@ import org.junit.Test
  * and the new selectedStartTimeInSeconds field introduced in this PR.
  */
 class LyricsViewModelTest {
-
     private lateinit var viewModel: LyricsViewModel
 
     @Before
@@ -40,10 +39,11 @@ class LyricsViewModelTest {
 
     @Test
     fun `selectedLyrics getter normalises frames by subtracting the first frame`() {
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = 48, text = "Hello"),
-            SyncedLyricFrame(frame = 96, text = "World"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = 48, text = "Hello"),
+                SyncedLyricFrame(frame = 96, text = "World"),
+            )
 
         val result = viewModel.selectedLyrics
 
@@ -56,10 +56,11 @@ class LyricsViewModelTest {
 
     @Test
     fun `selectedLyrics getter preserves texts after frame normalisation`() {
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = 10, text = "Line A"),
-            SyncedLyricFrame(frame = 20, text = "Line B"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = 10, text = "Line A"),
+                SyncedLyricFrame(frame = 20, text = "Line B"),
+            )
 
         val result = viewModel.selectedLyrics
 
@@ -70,10 +71,11 @@ class LyricsViewModelTest {
     @Test
     fun `selectedLyrics getter sorts frames in ascending order`() {
         // Provide frames out of order to verify sorting.
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = 100, text = "Second"),
-            SyncedLyricFrame(frame = 50, text = "First"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = 100, text = "Second"),
+                SyncedLyricFrame(frame = 50, text = "First"),
+            )
 
         val result = viewModel.selectedLyrics
 
@@ -87,9 +89,10 @@ class LyricsViewModelTest {
 
     @Test
     fun `selectedLyrics getter returns single item with frame normalised to zero`() {
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = 72, text = "Only line"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = 72, text = "Only line"),
+            )
 
         val result = viewModel.selectedLyrics
 
@@ -112,10 +115,11 @@ class LyricsViewModelTest {
     @Test
     fun `selectedStartTimeInSeconds is computed from first frame divided by fps`() {
         // fps = 24 (set in setUp), first frame = 48 → expected = 48 / 24 = 2.0 seconds
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = 48, text = "Start"),
-            SyncedLyricFrame(frame = 72, text = "End"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = 48, text = "Start"),
+                SyncedLyricFrame(frame = 72, text = "End"),
+            )
 
         assertEquals(2.0f, viewModel.selectedStartTimeInSeconds, 0.001f)
     }
@@ -146,10 +150,11 @@ class LyricsViewModelTest {
         // the raw first element — NOT the minimum frame. Verify this contract.
         val fps = 24
         val firstFrame = 72 // This will be value.first()
-        viewModel.selectedLyrics = listOf(
-            SyncedLyricFrame(frame = firstFrame, text = "C"),
-            SyncedLyricFrame(frame = 24, text = "A"),
-        )
+        viewModel.selectedLyrics =
+            listOf(
+                SyncedLyricFrame(frame = firstFrame, text = "C"),
+                SyncedLyricFrame(frame = 24, text = "A"),
+            )
 
         val expected = firstFrame.toFloat() / fps
         assertEquals(expected, viewModel.selectedStartTimeInSeconds, 0.001f)

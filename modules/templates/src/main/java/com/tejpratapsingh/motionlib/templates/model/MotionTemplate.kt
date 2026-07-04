@@ -4,7 +4,7 @@ import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 
 abstract class MotionTemplate(
     val name: String,
-    val parameters: List<TemplateParameter<*>>
+    val parameters: List<TemplateParameter<*>>,
 ) {
     abstract fun buildContent(scope: ContentScope)
 

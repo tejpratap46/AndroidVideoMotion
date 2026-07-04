@@ -42,7 +42,6 @@ abstract class AbstractMotionTextView(
     val highlightColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
-
     /**
      * Calculates the adjusted end frame based on the writing speed.
      * If [writingSpeed] is 1.0, it matches [endFrame]. If higher, the duration is shortened.

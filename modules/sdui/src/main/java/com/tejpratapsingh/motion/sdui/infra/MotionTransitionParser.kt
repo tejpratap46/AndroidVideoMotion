@@ -21,8 +21,12 @@ fun MotionTransition.toJson(): JsonObject {
  * Polymorphic deserialization for [MotionTransition].
  */
 fun JsonObject.toMotionTransition(): MotionTransition {
-    val type = get("type")?.asString ?: throw IllegalArgumentException("Missing 'type' in MotionTransition JSON")
-    val factory = MotionSdui.getTransitionFactory(type) ?: throw IllegalArgumentException("No factory registered for MotionTransition type: $type")
+    val type =
+        get("type")?.asString
+            ?: throw IllegalArgumentException("Missing 'type' in MotionTransition JSON")
+    val factory =
+        MotionSdui.getTransitionFactory(type)
+            ?: throw IllegalArgumentException("No factory registered for MotionTransition type: $type")
 
     return factory.create(this)
 }

@@ -42,6 +42,7 @@ import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun ProjectsScreen(
     projects: List<MotionProject>,
     isRefreshing: Boolean,

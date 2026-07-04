@@ -32,7 +32,7 @@ class GrayscaleEffect(
 
         if (frame !in startFrame..endFrame) {
             if (frame > endFrame) {
-                // Keep the final state if needed, or clear it. 
+                // Keep the final state if needed, or clear it.
                 // Typically transitions might want to stay at final state if it's the end of visibility.
                 // But for generic effects, we might want to clear them when out of range.
                 // BlurEffect clears it, so we follow that pattern.
@@ -41,17 +41,19 @@ class GrayscaleEffect(
             return motionView
         }
 
-        val saturation = MotionInterpolator.interpolateForRange(
-            interpolator = Interpolators(Easings.LINEAR),
-            currentFrame = frame,
-            frameRange = Pair(startFrame, endFrame),
-            valueRange = Pair(fromSaturation, toSaturation),
-        )
+        val saturation =
+            MotionInterpolator.interpolateForRange(
+                interpolator = Interpolators(Easings.LINEAR),
+                currentFrame = frame,
+                frameRange = Pair(startFrame, endFrame),
+                valueRange = Pair(fromSaturation, toSaturation),
+            )
 
-        val matrix = ColorMatrix().apply {
-            setSaturation(saturation)
-        }
-        
+        val matrix =
+            ColorMatrix().apply {
+                setSaturation(saturation)
+            }
+
         val colorFilter = ColorMatrixColorFilter(matrix)
         view.setRenderEffect(RenderEffect.createColorFilterEffect(colorFilter))
 

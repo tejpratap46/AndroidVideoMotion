@@ -20,6 +20,7 @@ import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 @Composable
+@Suppress("FunctionName")
 internal fun LyricRow(
     line: SyncedLyricFrame,
     isSelected: Boolean,

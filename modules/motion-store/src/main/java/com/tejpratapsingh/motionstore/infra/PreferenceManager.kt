@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 
-class PreferenceManager(context: Context) {
+class PreferenceManager(
+    context: Context,
+) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("lyrics_maker_prefs", Context.MODE_PRIVATE)
 

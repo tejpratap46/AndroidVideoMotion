@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
-import java.io.File
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Handles frame generation and caching for video production.
  */
 class FrameProcessor(
-    private val subDirName: String
+    private val subDirName: String,
 ) {
     /**
      * Renders frames from [motionComposerView] and saves them to the cache directory.

@@ -21,7 +21,6 @@ class Media3VideoProducerAdapter(
     private val compositionBuilder: Media3CompositionBuilder = Media3CompositionBuilder(),
     private val transformerRunner: Media3TransformerRunner = Media3TransformerRunner(),
 ) : VideoProducerAdapter {
-
     private val subDirName by lazy { UUID.randomUUID().toString() }
 
     override suspend fun produceVideo(
@@ -56,17 +55,18 @@ class Media3VideoProducerAdapter(
             )
 
             // S: Composition building responsibility delegated to Media3CompositionBuilder
-            val composition = compositionBuilder.build(
-                frameDirectory = subDir,
-                motionAudio = motionAudio,
-                motionConfig = motionConfig
-            )
+            val composition =
+                compositionBuilder.build(
+                    frameDirectory = subDir,
+                    motionAudio = motionAudio,
+                    motionConfig = motionConfig,
+                )
 
             // S: Transformer execution responsibility delegated to Media3TransformerRunner
             transformerRunner.export(
                 context = context,
                 composition = composition,
-                outputFile = outputFile
+                outputFile = outputFile,
             )
         } finally {
             if (subDir.exists()) {

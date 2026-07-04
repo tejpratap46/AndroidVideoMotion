@@ -2,7 +2,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.projects
 
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import java.lang.Exception
 
 fun extractFirstFrame(videoPath: String): Bitmap? {
     val retriever = MediaMetadataRetriever()

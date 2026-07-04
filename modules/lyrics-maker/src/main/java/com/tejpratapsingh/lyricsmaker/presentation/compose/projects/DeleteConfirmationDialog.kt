@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 internal fun DeleteConfirmationDialog(
     projectName: String,
     onConfirm: () -> Unit,

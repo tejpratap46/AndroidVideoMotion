@@ -1,4 +1,4 @@
-package com.tejpratapsingh.ivi_demo.extension
+package com.tejpratapsingh.ividemo.extension
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent

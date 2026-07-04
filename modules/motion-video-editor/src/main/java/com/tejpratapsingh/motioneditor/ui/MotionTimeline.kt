@@ -15,10 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,23 +35,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Surface
-import androidx.compose.ui.text.style.TextOverflow
 import com.tejpratapsingh.motioneditor.TimelineItem
 import com.tejpratapsingh.motioneditor.TimelineTrack
-import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun MotionTimeline(
     tracks: List<TimelineTrack>,
     currentFrame: Int,
@@ -116,8 +117,7 @@ fun MotionTimeline(
                                 change.consume()
                                 onResize(dragAmount)
                             }
-                        }
-                        .horizontalScroll(horizontalScrollState),
+                        }.horizontalScroll(horizontalScrollState),
             ) {
                 Row {
                     Spacer(modifier = Modifier.width(halfWidth))
@@ -168,6 +168,7 @@ fun MotionTimeline(
 }
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun TimeScaleView(
     totalFrames: Int,
     fps: Int,
@@ -229,6 +230,7 @@ private fun formatFrameToTime(
 }
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun TimelineTrackView(
     track: TimelineTrack,
     pixelsPerFrame: Float,
@@ -249,6 +251,7 @@ fun TimelineTrackView(
 }
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun TimelineItemView(
     item: TimelineItem,
     pixelsPerFrame: Float,
@@ -276,7 +279,11 @@ fun TimelineItemView(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = item.label.firstOrNull()?.toString()?.uppercase() ?: "?",
+                        text =
+                            item.label
+                                .firstOrNull()
+                                ?.toString()
+                                ?.uppercase() ?: "?",
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge,
                     )
@@ -306,6 +313,7 @@ fun TimelineItemView(
 
 @Preview(showBackground = true)
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun PreviewMotionTimeline() {
     val sampleTracks =
         listOf(

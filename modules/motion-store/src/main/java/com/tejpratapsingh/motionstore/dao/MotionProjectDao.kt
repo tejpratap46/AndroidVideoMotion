@@ -87,11 +87,10 @@ class MotionProjectDao(
             ),
     )
 
-    private fun String.toJsonObject(): JsonObject {
-        return try {
+    private fun String.toJsonObject(): JsonObject =
+        try {
             JsonParser.parseString(this).asJsonObject
         } catch (e: Exception) {
             JsonObject()
         }
-    }
 }

@@ -11,7 +11,6 @@ import org.junit.Test
  * helper introduced in this PR.
  */
 class ScreenTest {
-
     // ------------------------------------------------------------------
     // Screen.ProjectDetails.route template
     // ------------------------------------------------------------------

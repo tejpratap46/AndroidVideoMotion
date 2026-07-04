@@ -17,7 +17,6 @@ import kotlin.math.roundToLong
  */
 @UnstableApi
 class Media3CompositionBuilder {
-
     /**
      * Builds a [Composition] from the frames in [frameDirectory] and the provided [motionAudio].
      */
@@ -95,9 +94,13 @@ class Media3CompositionBuilder {
         }
     }
 
-    private fun frameToMs(frame: Int, fps: Int): Long = 
-        ((frame.toDouble() / fps.toDouble()) * 1_000).roundToLong()
+    private fun frameToMs(
+        frame: Int,
+        fps: Int,
+    ): Long = ((frame.toDouble() / fps.toDouble()) * 1_000).roundToLong()
 
-    private fun frameToUs(frame: Int, fps: Int): Long = 
-        ((frame.toDouble() / fps.toDouble()) * 1_000_000).roundToLong()
+    private fun frameToUs(
+        frame: Int,
+        fps: Int,
+    ): Long = ((frame.toDouble() / fps.toDouble()) * 1_000_000).roundToLong()
 }

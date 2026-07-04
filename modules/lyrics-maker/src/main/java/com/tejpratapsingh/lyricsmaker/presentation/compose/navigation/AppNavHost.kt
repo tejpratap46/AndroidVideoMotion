@@ -26,6 +26,7 @@ import com.tejpratapsingh.motionlib.templates.sdui.MotionTemplateSDUIProvider
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 fun AppNavHost(
     navController: NavHostController,
     currentScreen: Screen = Screen.Projects,

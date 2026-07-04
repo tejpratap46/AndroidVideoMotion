@@ -12,20 +12,20 @@ data class MotionLayoutInfo(
     val height: Int = WRAP_CONTENT,
     val padding: Padding = Padding(),
     val margin: Margin = Margin(),
-    val gravity: Int = Gravity.NO_GRAVITY
+    val gravity: Int = Gravity.NO_GRAVITY,
 ) {
     data class Padding(
         val left: Int = 0,
         val top: Int = 0,
         val right: Int = 0,
-        val bottom: Int = 0
+        val bottom: Int = 0,
     )
 
     data class Margin(
         val left: Int = 0,
         val top: Int = 0,
         val right: Int = 0,
-        val bottom: Int = 0
+        val bottom: Int = 0,
     )
 
     companion object {

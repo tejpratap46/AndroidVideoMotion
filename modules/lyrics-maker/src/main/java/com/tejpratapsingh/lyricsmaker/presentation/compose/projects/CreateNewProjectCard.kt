@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
+@Suppress("ktlint:standard:function-naming")
 internal fun CreateNewProjectCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

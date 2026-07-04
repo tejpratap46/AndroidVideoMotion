@@ -15,9 +15,9 @@ class FadeInEffect(
 
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) return motionView
-        
+
         val view = motionView as View
-        
+
         if (frame !in startFrame..endFrame) {
             // If we are past the effect, ensure alpha is 1
             if (frame > endFrame) {

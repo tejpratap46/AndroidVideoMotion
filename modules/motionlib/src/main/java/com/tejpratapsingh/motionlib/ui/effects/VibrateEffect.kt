@@ -21,7 +21,7 @@ class VibrateEffect(
 
         // Using sin wave for vibration
         val offset = sin(frame.toDouble() * frequency).toFloat() * amplitude
-        
+
         view.translationX = offset
         view.translationY = offset / 2f // Slight diagonal vibration
 

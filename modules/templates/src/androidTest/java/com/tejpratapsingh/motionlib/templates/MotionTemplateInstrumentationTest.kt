@@ -18,79 +18,87 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class MotionTemplateInstrumentationTest {
-
-    data class LyricLine(val text: String, val startFrame: Int, val endFrame: Int)
+    data class LyricLine(
+        val text: String,
+        val startFrame: Int,
+        val endFrame: Int,
+    )
 
     @Test
     fun testHardExampleWithRealContext() {
         val appContext: Context = InstrumentationRegistry.getInstrumentation().targetContext
-        
+
         // We need a real MotionVideoProducer for the content block to execute addView/audio calls
         val producer = MotionVideoProducer.with(appContext)
 
-        val lyricsVideoTemplate = motionTemplate("Lyrics Master") {
-            parameters {
-                string("songTitle")
-                string("backgroundVideoPath")
-            }
-
-            content {
-                val bgVideoPath = data.getString("backgroundVideoPath")
-                assertNotNull(bgVideoPath)
-
-                // Add a dummy background video view using the DSL extension
-                // Even if the path is fake, we're testing the DSL registration
-                videoFrameView(
-                    videoUri = android.net.Uri.parse(bgVideoPath!!),
-                    startFrame = 0,
-                    endFrame = 1000
-                )
-
-                // Fetch list of lyrics from data
-                val lyrics = data.get<List<LyricLine>>("lyricLines") ?: emptyList()
-                assertEquals(2, lyrics.size)
-
-                lyrics.forEach { line ->
-                    // Use the DSL to add text views for lyrics
-                    popUpTextView(
-                        text = line.text,
-                        startFrame = line.startFrame,
-                        endFrame = line.endFrame
-                    )
+        val lyricsVideoTemplate =
+            motionTemplate("Lyrics Master") {
+                parameters {
+                    string("songTitle")
+                    string("backgroundVideoPath")
                 }
 
-                // Overlay Song Title
-                val songTitle = data.getString("songTitle")
-                assertEquals("Amazing Grace", songTitle)
-                
-                typeWriterTextView(
-                    text = songTitle!!,
-                    startFrame = 0,
-                    endFrame = 60
-                )
+                content {
+                    val bgVideoPath = data.getString("backgroundVideoPath")
+                    assertNotNull(bgVideoPath)
 
-                // Test audio function
-                audio(File(appContext.cacheDir, "test_audio.mp3"), startFrame = 0, endFrame = 500)
+                    // Add a dummy background video view using the DSL extension
+                    // Even if the path is fake, we're testing the DSL registration
+                    videoFrameView(
+                        videoUri = android.net.Uri.parse(bgVideoPath!!),
+                        startFrame = 0,
+                        endFrame = 1000,
+                    )
+
+                    // Fetch list of lyrics from data
+                    val lyrics = data.get<List<LyricLine>>("lyricLines") ?: emptyList()
+                    assertEquals(2, lyrics.size)
+
+                    lyrics.forEach { line ->
+                        // Use the DSL to add text views for lyrics
+                        popUpTextView(
+                            text = line.text,
+                            startFrame = line.startFrame,
+                            endFrame = line.endFrame,
+                        )
+                    }
+
+                    // Overlay Song Title
+                    val songTitle = data.getString("songTitle")
+                    assertEquals("Amazing Grace", songTitle)
+
+                    typeWriterTextView(
+                        text = songTitle!!,
+                        startFrame = 0,
+                        endFrame = 60,
+                    )
+
+                    // Test audio function
+                    audio(File(appContext.cacheDir, "test_audio.mp3"), startFrame = 0, endFrame = 500)
+                }
             }
-        }
 
         assertEquals("Lyrics Master", lyricsVideoTemplate.name)
 
         // Mock data
-        val lyricsData = listOf(
-            LyricLine("Amazing grace how sweet the sound", 0, 100),
-            LyricLine("That saved a wretch like me", 101, 200)
-        )
-        
-        val data = TemplateData(mapOf(
-            "songTitle" to "Amazing Grace",
-            "backgroundVideoPath" to "/path/to/video.mp4",
-            "lyricLines" to lyricsData
-        ))
+        val lyricsData =
+            listOf(
+                LyricLine("Amazing grace how sweet the sound", 0, 100),
+                LyricLine("That saved a wretch like me", 101, 200),
+            )
+
+        val data =
+            TemplateData(
+                mapOf(
+                    "songTitle" to "Amazing Grace",
+                    "backgroundVideoPath" to "/path/to/video.mp4",
+                    "lyricLines" to lyricsData,
+                ),
+            )
 
         // Create the scope with REAL context and producer
         val scope = ContentScope(appContext, producer, data)
-        
+
         // This will now execute the content block, including DSL extension calls
         lyricsVideoTemplate.buildContent(scope)
 

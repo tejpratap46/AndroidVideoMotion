@@ -20,9 +20,9 @@ class BlurEffect(
 
     override fun forFrame(frame: Int): MotionView {
         if (motionView !is View) return motionView
-        
+
         val view = motionView as View
-        
+
         if (frame !in startFrame..endFrame) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 view.setRenderEffect(null)
@@ -43,8 +43,8 @@ class BlurEffect(
                 RenderEffect.createBlurEffect(
                     blurRadius,
                     blurRadius,
-                    Shader.TileMode.CLAMP
-                )
+                    Shader.TileMode.CLAMP,
+                ),
             )
         }
 

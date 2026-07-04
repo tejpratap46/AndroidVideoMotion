@@ -35,6 +35,7 @@ import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
 @Composable
+@Suppress("FunctionName")
 internal fun DragHandle(
     label: String,
     color: Color,

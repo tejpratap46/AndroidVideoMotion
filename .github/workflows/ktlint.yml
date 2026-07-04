@@ -27,3 +27,9 @@ jobs:
           report-path: build/*.xml # Support glob patterns by https://www.npmjs.com/package/@actions/glob
           ignore-warnings: true # Ignore Lint Warnings
         continue-on-error: false # If annotations contain error of severity, action-ktlint exit 1.
+      - name: Upload ktlint report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ktlint-report
+          path: build/ktlint-report.xml

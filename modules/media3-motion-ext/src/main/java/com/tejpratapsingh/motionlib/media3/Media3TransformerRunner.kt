@@ -22,7 +22,6 @@ import kotlin.coroutines.resumeWithException
  */
 @UnstableApi
 class Media3TransformerRunner {
-
     /**
      * Exports the [composition] to [outputFile] using Media3 [Transformer].
      */

@@ -15,35 +15,39 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class MotionTemplateSDUIProviderTest {
-
     @Test
     fun testProvideSDUI() {
         val appContext: Context = InstrumentationRegistry.getInstrumentation().targetContext
 
-        val template = motionTemplate("Test Template") {
-            parameters {
-                string("title")
+        val template =
+            motionTemplate("Test Template") {
+                parameters {
+                    string("title")
+                }
+                content {
+                    val title = data.getString("title") ?: "Default"
+                    popUpTextView(
+                        text = title,
+                        startFrame = 0,
+                        endFrame = 100,
+                    )
+                    audio(File(context.cacheDir, "test.mp3"), startFrame = 0, endFrame = 100)
+                }
             }
-            content {
-                val title = data.getString("title") ?: "Default"
-                popUpTextView(
-                    text = title,
-                    startFrame = 0,
-                    endFrame = 100
-                )
-                audio(File(context.cacheDir, "test.mp3"), startFrame = 0, endFrame = 100)
-            }
-        }
 
-        val data = TemplateData(mapOf(
-            "title" to "Hello SDUI"
-        ))
+        val data =
+            TemplateData(
+                mapOf(
+                    "title" to "Hello SDUI",
+                ),
+            )
 
-        val sdui = MotionTemplateSDUIProvider.provideSDUI(
-            context = appContext,
-            template = template,
-            data = data
-        )
+        val sdui =
+            MotionTemplateSDUIProvider.provideSDUI(
+                context = appContext,
+                template = template,
+                data = data,
+            )
 
         assertNotNull(sdui)
         assertTrue(sdui.has("views"))
@@ -52,10 +56,10 @@ class MotionTemplateSDUIProviderTest {
 
         val viewsArray = sdui.getAsJsonArray("views")
         assertEquals(1, viewsArray.size())
-        
+
         val firstView = viewsArray[0].asJsonObject
         assertTrue(firstView.has("type"))
-        
+
         val audiosArray = sdui.getAsJsonArray("audios")
         assertEquals(1, audiosArray.size())
     }

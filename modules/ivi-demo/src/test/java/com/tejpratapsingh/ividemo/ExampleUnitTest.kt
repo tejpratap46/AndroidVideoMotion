@@ -1,4 +1,4 @@
-package com.tejpratapsingh.ivi_demo
+package com.tejpratapsingh.ividemo
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

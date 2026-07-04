@@ -12,7 +12,10 @@ class LyricsMotionWorkerCancelReceiver : BroadcastReceiver() {
         const val EXTRA_WORK_ID = "extra_work_id"
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action == ACTION_CANCEL) {
             val workIdString = intent.getStringExtra(EXTRA_WORK_ID)
             if (workIdString != null) {
