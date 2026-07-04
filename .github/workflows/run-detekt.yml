@@ -2,20 +2,32 @@ name: run detekt
 
 on:
   pull_request:
-    paths:
-      - .github/workflows/detekt.yml
-      - 'src/**/*.kt'
-      - '**/*.kts'      # fixed: include kts in subdirs
-      - '**/*.kt'       # optional: catch kt files outside src/
-  workflow_dispatch:   # optional: allows manual runs from Actions UI
+    branches: [ main ]
 
 jobs:
-   detekt:
-     runs-on: ubuntu-latest
+  detekt:
+    runs-on: ubuntu-latest
 
-     steps:
-       - name: "checkout"
-         uses: actions/checkout@v4
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
 
-       - name: "detekt"
-         uses: natiginfo/action-detekt-all@2.0.0-alpha.1
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run detekt
+        run: ./gradlew detekt
+      - name: Upload Detekt Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-reports
+          path: "**/build/reports/detekt/"
