@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/modules/3d-filament-renderer" />
             <option value="$PROJECT_DIR$/modules/3d-opengl-renderer" />
             <option value="$PROJECT_DIR$/modules/app" />
+            <option value="$PROJECT_DIR$/modules/coil-motion-ext" />
             <option value="$PROJECT_DIR$/modules/core" />
             <option value="$PROJECT_DIR$/modules/ffmpeg-kit" />
             <option value="$PROJECT_DIR$/modules/ffmpeg-motion-ext" />
