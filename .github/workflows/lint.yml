@@ -1,0 +1,81 @@
+name: lint
+
+on:
+  workflow_dispatch:
+    inputs:
+      auto_fix:
+        description: 'Run ktlint and detekt auto-fixes, then open a pull request with any changes'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ktlint-detekt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run ktlint and detekt checks
+        if: ${{ !inputs.auto_fix }}
+        run: ./gradlew ktlintCheck detekt --continue
+
+      - name: Run ktlint and detekt auto-fixes
+        id: lint_autofix
+        if: ${{ inputs.auto_fix }}
+        run: ./gradlew ktlintFormat detekt --auto-correct --continue
+        continue-on-error: true
+
+      - name: Create pull request for lint fixes
+        if: ${{ always() && inputs.auto_fix }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'style: apply ktlint and detekt fixes'
+          title: 'style: apply ktlint and detekt fixes'
+          body: |
+            This pull request was created automatically by the manually triggered lint workflow.
+
+            It runs `./gradlew ktlintFormat detekt --auto-correct --continue` on top of `${{ github.ref_name }}` and includes any ktlint or detekt changes produced by the auto-fix run.
+
+            The auto-fix command is allowed to finish with lint failures so this pull request can still be opened with any fixes that were applied.
+          branch: automation/lint-autofix-${{ github.run_id }}
+          base: ${{ github.ref_name }}
+          delete-branch: true
+
+      - name: Upload ktlint reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ktlint-reports
+          path: '**/build/reports/ktlint/'
+
+      - name: Upload detekt reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detekt-reports
+          path: '**/build/reports/detekt/'
+
+      - name: Fail if auto-fix still reported lint errors
+        if: ${{ inputs.auto_fix && steps.lint_autofix.outcome == 'failure' }}
+        run: |
+          echo 'Auto-fix completed with remaining lint errors after creating a pull request for any applied fixes.'
+          exit 1
