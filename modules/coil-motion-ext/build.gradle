@@ -24,7 +24,7 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
-    namespace 'com.tejpratapsingh.motionlib.mlkit'
+    namespace 'com.tejpratapsingh.motionlib.coil'
     lint {
         targetSdk 36
     }
@@ -48,9 +48,14 @@ afterEvaluate {
 
 dependencies {
     api project(path: ':modules:core')
+    api project(path: ':modules:motionlib')
     api project(path: ':modules:sdui')
     implementation libs.androidx.appcompat
-    implementation libs.mlkit.subject.segmentation
+    implementation libs.coil
+    implementation libs.coil.video
+    implementation libs.coil.transformations
+    implementation libs.coil.transformations.gpu
+    implementation libs.coil.transformations.face.detection
 
     testImplementation libs.junit
 }

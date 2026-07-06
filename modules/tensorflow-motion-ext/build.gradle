@@ -51,6 +51,7 @@ dependencies {
     implementation libs.tensorflow.lite.support
 
     api project(path: ':modules:core')
+    api project(path: ':modules:sdui')
 
     testImplementation libs.junit
 }

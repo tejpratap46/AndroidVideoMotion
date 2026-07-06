@@ -36,6 +36,8 @@ crashlyticsVersion = "3.0.7"
 googleServicesVersion = "4.4.4"
 media3Version = "1.10.0"
 mlkitSubjectSegmentationVersion = "16.0.0-beta1"
+coilVersion = "2.7.0"
+coilTransformationsVersion = "2.0.2"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -102,6 +104,11 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3Version" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Version" }
 androidx-media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3Version" }
+coil = { module = "io.coil-kt:coil", version.ref = "coilVersion" }
+coil-video = { module = "io.coil-kt:coil-video", version.ref = "coilVersion" }
+coil-transformations = { module = "com.github.Commit451.coil-transformations:transformations", version.ref = "coilTransformationsVersion" }
+coil-transformations-gpu = { module = "com.github.Commit451.coil-transformations:transformations-gpu", version.ref = "coilTransformationsVersion" }
+coil-transformations-face-detection = { module = "com.github.Commit451.coil-transformations:transformations-face-detection", version.ref = "coilTransformationsVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

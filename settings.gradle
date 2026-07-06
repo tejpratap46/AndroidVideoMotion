@@ -33,6 +33,7 @@ include ':modules:motion-store'
 include ':modules:motion-video-player'
 include ':modules:motion-video-editor'
 include ':modules:ml-kit-ext'
+include ':modules:coil-motion-ext'
 
 if (!System.env.JITPACK) {
     include ':modules:app'
