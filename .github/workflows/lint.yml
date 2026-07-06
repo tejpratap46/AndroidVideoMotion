@@ -39,11 +39,13 @@ jobs:
         run: ./gradlew ktlintCheck detekt --continue
 
       - name: Run ktlint and detekt auto-fixes
+        id: lint_autofix
         if: ${{ inputs.auto_fix }}
         run: ./gradlew ktlintFormat detekt --auto-correct --continue
+        continue-on-error: true
 
       - name: Create pull request for lint fixes
-        if: ${{ inputs.auto_fix }}
+        if: ${{ always() && inputs.auto_fix }}
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'style: apply ktlint and detekt fixes'
@@ -52,6 +54,8 @@ jobs:
             This pull request was created automatically by the manually triggered lint workflow.
 
             It runs `./gradlew ktlintFormat detekt --auto-correct --continue` on top of `${{ github.ref_name }}` and includes any ktlint or detekt changes produced by the auto-fix run.
+
+            The auto-fix command is allowed to finish with lint failures so this pull request can still be opened with any fixes that were applied.
           branch: automation/lint-autofix-${{ github.run_id }}
           base: ${{ github.ref_name }}
           delete-branch: true
@@ -69,3 +73,9 @@ jobs:
         with:
           name: detekt-reports
           path: '**/build/reports/detekt/'
+
+      - name: Fail if auto-fix still reported lint errors
+        if: ${{ inputs.auto_fix && steps.lint_autofix.outcome == 'failure' }}
+        run: |
+          echo 'Auto-fix completed with remaining lint errors after creating a pull request for any applied fixes.'
+          exit 1
