@@ -1,0 +1,10 @@
+name: run detekt (disabled)
+
+on:
+  workflow_call:
+
+jobs:
+  use-lint-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'detekt is now handled by the on-demand lint workflow.'
