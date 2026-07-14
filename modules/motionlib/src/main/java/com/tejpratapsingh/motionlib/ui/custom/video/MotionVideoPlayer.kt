@@ -4,7 +4,6 @@ import android.R
 import android.content.Context
 import android.graphics.Color
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.SystemClock
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -25,6 +24,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 class MotionVideoPlayer(
     context: Context,
@@ -41,9 +41,8 @@ class MotionVideoPlayer(
 
     val seekBar: SeekBar =
         SeekBar(context).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                min = 1
-            } // Start from 1 to avoid confusion with frame 0
+            min = 1
+            // Start from 1 to avoid confusion with frame 0
             max = motionVideoProducer.totalFrames
 
             setOnSeekBarChangeListener(
@@ -228,7 +227,7 @@ class MotionVideoPlayer(
                         }
                     } else {
                         // Loop
-                        val resetFrame = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) seekBar.min else 0
+                        val resetFrame = seekBar.min
                         seekBar.progress = resetFrame
                         motionVideoProducer.motionComposerView.forFrame(resetFrame)
                         stopAllAudio()
@@ -238,7 +237,7 @@ class MotionVideoPlayer(
                         startFrameValue = resetFrame
                         lastRenderedFrame = resetFrame
                     }
-                    delay(10) // Check frequently enough for smooth playback but avoid 100% CPU usage
+                    delay(10.milliseconds) // Check frequently enough for smooth playback but avoid 100% CPU usage
                 }
             }
     }
@@ -264,6 +263,6 @@ class MotionVideoPlayer(
         val totalSeconds = frames / motionConfig.fps
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
-        return String.Companion.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 }
