@@ -46,8 +46,11 @@ function App() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#samples" className="hover:text-white transition-colors">Samples</a>
-            <button className="bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-emerald-400 transition-all active:scale-95">
-              Launch App
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-emerald-400 transition-all active:scale-95"
+            >
+              Join Waitlist
             </button>
           </div>
         </div>
@@ -75,15 +78,20 @@ function App() {
               LYRICS MOVE.
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed">
             Create professional-grade synchronized lyric videos with dynamic waveforms and cinematic animations. All powered by SDUI.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black px-10 py-4 rounded-2xl font-black text-lg transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
-              Get Started for Free
-            </button>
-            <a href="#samples" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 border border-white/10 px-10 py-4 rounded-2xl font-bold text-lg transition-all backdrop-blur-sm text-center">
+
+          <div className="max-w-3xl mx-auto mb-10">
+            <WaitlistForm compact />
+          </div>
+
+          <div className="flex justify-center">
+            <a href="#samples" className="inline-flex items-center gap-2 text-white/40 hover:text-emerald-400 font-bold transition-colors group">
               View Samples
+              <svg className="w-4 h-4 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
             </a>
           </div>
         </div>
@@ -150,6 +158,142 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function WaitlistForm({ compact = false }: { compact?: boolean }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    try {
+      const response = await fetch("https://waitlist.tejpratapsingh.com/api/waitlists/awBDxbe80XeQLlbkXECs/join", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setMessage('You have successfully joined the waitlist!');
+        setEmail('');
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setStatus('error');
+        setMessage(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      setStatus('error');
+      setMessage('Network error. Please check your connection.');
+    }
+  };
+
+  if (compact) {
+    return (
+      <div className="relative z-10 w-full">
+        {status === 'success' ? (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-8 text-center animate-fade-in backdrop-blur-xl">
+            <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/40">
+              <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">You're on the list!</h3>
+            <p className="text-emerald-400/80 text-sm mb-4">{message}</p>
+            <button
+              onClick={() => setStatus('idle')}
+              className="text-xs text-white/40 hover:text-white transition-colors underline underline-offset-4"
+            >
+              Join with another email
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="group relative">
+            {/* Form Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-[2rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+
+            <div className="relative p-2 bg-white/[0.03] border border-white/10 rounded-[2rem] backdrop-blur-2xl shadow-2xl">
+              <div className="flex flex-col md:flex-row gap-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:bg-white/10 focus:border-emerald-500/30 transition-all text-white placeholder:text-white/20"
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-black px-10 py-4 rounded-2xl transition-all shadow-xl shadow-emerald-500/20 active:scale-95 whitespace-nowrap"
+                >
+                  {status === 'loading' ? 'Joining...' : 'Get Early Access'}
+                </button>
+              </div>
+            </div>
+            {status === 'error' && (
+              <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-red-400 text-xs font-medium animate-shake">
+                {message}
+              </p>
+            )}
+          </form>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <section id="waitlist" className="py-24 px-6 relative overflow-hidden">
+      <div className="max-w-3xl mx-auto">
+        <div className="relative z-10 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 md:p-12 backdrop-blur-xl">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl md:text-5xl font-black mb-4">Join the Waitlist</h2>
+            <p className="text-white/50">Be the first to know when we launch and get early access to pro features.</p>
+          </div>
+
+          {status === 'success' ? (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 text-center text-emerald-400">
+              <p className="font-bold text-lg mb-2">Success!</p>
+              <p>{message}</p>
+              <button
+                onClick={() => setStatus('idle')}
+                className="mt-4 text-sm underline hover:text-white transition-colors"
+              >
+                Join with another email
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col gap-1">
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500/50 transition-all text-white"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black py-4 rounded-2xl text-lg transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+              >
+                {status === 'loading' ? 'Joining...' : 'Join Now'}
+              </button>
+              {status === 'error' && (
+                <p className="text-red-400 text-sm text-center mt-2">{message}</p>
+              )}
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
