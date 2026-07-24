@@ -83,7 +83,7 @@ AndroidVideoMotion/
 │   ├── motion-video-player/       # Playback-focused module
 │   └── ...                        # Additional feature modules
 ├── build.gradle.kts
-├── settings.gradle
+├── settings.gradle.kts
 └── README.md
 ```
 
