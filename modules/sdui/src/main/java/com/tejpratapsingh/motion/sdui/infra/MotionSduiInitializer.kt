@@ -74,6 +74,8 @@ object MotionSduiInitializer {
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val cursorChar = if (json.has("cursorChar")) json.get("cursorChar")?.asString else "|"
+            val blinkFrameRate = json.get("blinkFrameRate")?.asInt ?: 10
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             TypeWriterTextView(
@@ -83,6 +85,8 @@ object MotionSduiInitializer {
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
+                cursorChar = cursorChar,
+                blinkFrameRate = blinkFrameRate,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 effects = props.effects,
@@ -93,6 +97,8 @@ object MotionSduiInitializer {
             json.addProperty("text", view.text)
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            json.addProperty("cursorChar", view.cursorChar)
+            json.addProperty("blinkFrameRate", view.blinkFrameRate)
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
             view.textColor?.let { json.addProperty("textColor", it) }
             view.highlightColor?.let { json.addProperty("highlightColor", it) }

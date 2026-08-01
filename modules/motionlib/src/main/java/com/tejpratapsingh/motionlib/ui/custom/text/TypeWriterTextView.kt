@@ -24,6 +24,8 @@ class TypeWriterTextView(
     endFrame: Int,
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
+    val cursorChar: String? = "|",
+    val blinkFrameRate: Int = 0,
     textView: AppCompatTextView = AppCompatTextView(context),
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
@@ -70,7 +72,16 @@ class TypeWriterTextView(
 
         Timber.d("visibleCharsCount: $visibleCharsCount")
 
-        val spannableString = SpannableString(text)
+        // I can change the logic to something like this:
+        val showCursor = cursorChar != null && (blinkFrameRate <= 0 || frame / blinkFrameRate % 2 == 0)
+        val displayText = StringBuilder()
+        displayText.append(text.substring(0, visibleCharsCount))
+        if (showCursor) {
+            displayText.append(cursorChar)
+        }
+        displayText.append(text.substring(visibleCharsCount))
+
+        val spannableString = SpannableString(displayText.toString())
         val unwrittenColor =
             Color.argb(
                 (unwrittenTextAlpha * 255).toInt(),
@@ -78,12 +89,18 @@ class TypeWriterTextView(
                 Color.green(textView.currentTextColor),
                 Color.blue(textView.currentTextColor),
             )
-        spannableString.setSpan(
-            ForegroundColorSpan(unwrittenColor),
-            maxOf(0, visibleCharsCount),
-            text.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-        )
+
+        val unwrittenStart = visibleCharsCount + if (showCursor) cursorChar.length else 0
+
+        if (unwrittenStart < spannableString.length) {
+            spannableString.setSpan(
+                ForegroundColorSpan(unwrittenColor),
+                unwrittenStart,
+                spannableString.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+
         textView.text = spannableString
 
         textView.invalidate()
