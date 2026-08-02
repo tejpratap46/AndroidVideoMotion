@@ -7,10 +7,16 @@ plugins {
 
 android {
     namespace = "com.tejpratapsingh.motionlib.pytorch"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk =
+            libs.versions.minSdk
+                .get()
+                .toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -42,8 +48,7 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation(libs.pytorch.android.lite)
-    implementation(libs.pytorch.android.torchvision.lite)
+    implementation(libs.bundles.pytorch)
 
     api(project(":modules:core"))
     api(project(":modules:sdui"))

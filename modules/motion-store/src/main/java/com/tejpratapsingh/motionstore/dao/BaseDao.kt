@@ -152,7 +152,7 @@ abstract class BaseDao<T>(
     fun update(
         id: String,
         entity: T,
-    ): Int = db.update(tableName, toContentValues(entity), "$primaryKey = ?", arrayOf(id.toString()))
+    ): Int = db.update(tableName, toContentValues(entity), "$primaryKey = ?", arrayOf(id))
 
     /**
      * Insert if no conflict exists, replace otherwise (CONFLICT_REPLACE).
@@ -169,7 +169,7 @@ abstract class BaseDao<T>(
     // ── Delete ───────────────────────────────────────────────────────────────
 
     /** Delete the row with the given [id]. Returns number of rows deleted. */
-    fun deleteById(id: String): Int = db.delete(tableName, "$primaryKey = ?", arrayOf(id.toString()))
+    fun deleteById(id: String): Int = db.delete(tableName, "$primaryKey = ?", arrayOf(id))
 
     /**
      * Delete rows matching [whereClause], or ALL rows if whereClause is null.
