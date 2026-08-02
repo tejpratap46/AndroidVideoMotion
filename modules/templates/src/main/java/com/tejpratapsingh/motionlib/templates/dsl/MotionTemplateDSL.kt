@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.templates.dsl
 
 import android.content.Context
+import android.net.Uri
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
@@ -42,12 +43,21 @@ class ContentScope(
     ): MotionLayoutInfo = MotionLayoutInfo(width, height, padding, margin, gravity)
 
     fun audio(
+        audioUri: Uri,
+        startFrame: Int = 0,
+        endFrame: Int = -1,
+        delayFrame: Int = 0,
+    ) {
+        producer.addAudio(MotionAudio(audioUri, startFrame, endFrame, delayFrame))
+    }
+
+    fun audio(
         file: File,
         startFrame: Int = 0,
         endFrame: Int = -1,
         delayFrame: Int = 0,
     ) {
-        producer.addAudio(MotionAudio(file, startFrame, endFrame, delayFrame))
+        audio(Uri.fromFile(file), startFrame, endFrame, delayFrame)
     }
 }
 

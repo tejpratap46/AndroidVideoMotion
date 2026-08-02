@@ -45,6 +45,7 @@ import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.delay
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 @Suppress("FunctionName")
@@ -114,7 +115,7 @@ fun MotionVideoPlayerCompose(
                     }
                     lastFrameTime = currentTime
                 }
-                delay(10) // Smooth check
+                delay(10.milliseconds) // Smooth check
             }
         }
     }
@@ -130,7 +131,7 @@ fun MotionVideoPlayerCompose(
                     if (player == null) {
                         val mediaPlayer =
                             MediaPlayer().apply {
-                                setDataSource(audio.file.absolutePath)
+                                setDataSource(context, audio.audioUri)
                                 prepare()
                                 start()
                             }
@@ -138,12 +139,10 @@ fun MotionVideoPlayerCompose(
                     } else if (!player.isPlaying) {
                         player.start()
                     }
-                } else {
-                    if (player != null) {
-                        if (player.isPlaying) player.pause()
-                        player.release()
-                        activePlayers.remove(audio)
-                    }
+                } else if (player != null) {
+                    if (player.isPlaying) player.pause()
+                    player.release()
+                    activePlayers.remove(audio)
                 }
             }
         } else {

@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionlib.ffmpeg
 import android.content.Context
 import android.graphics.Bitmap
 import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFmpegKitConfig
 import com.arthenica.ffmpegkit.ReturnCode
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -102,18 +103,19 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
         // -r: Output framerate (often the same as input, but can be different)
 //        val query = "-y -framerate ${motionConfig.fps} -start_number 1 -i \"$inputPattern\" -c:v libx264 -pix_fmt yuv420p -r ${motionConfig.fps} \"${outputFile.path}\""
 
-        val query =
+        val arguments =
             buildFfmpegCommand(
+                context = context,
                 inputPattern = inputPattern,
                 fps = motionConfig.fps,
                 outputFile = outputFile,
                 audioTracks = motionAudio,
                 startNumber = 1,
                 mixAudio = true, // Change to false if you want separate audio tracks
-            ).joinToString(" ")
+            )
 
-        Timber.d("Executing FFmpeg query: $query")
-        val session = FFmpegKit.execute(query)
+        Timber.d("Executing FFmpeg with arguments: $arguments")
+        val session = FFmpegKit.executeWithArguments(arguments.toTypedArray())
 
         val returnCode = session.returnCode
         if (ReturnCode.isSuccess(returnCode)) {
@@ -136,6 +138,7 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
     }
 
     fun buildFfmpegCommand(
+        context: Context,
         inputPattern: String, // e.g. "/sdcard/frames/frame_%d.png"
         fps: Int,
         outputFile: File,
@@ -160,7 +163,13 @@ class FfmpegVideoProducerAdapter : VideoProducerAdapter {
 
         // Add audio inputs
         audioTracks.forEach { track ->
-            command.addAll(listOf("-i", track.file.absolutePath))
+            val audioPath =
+                if (track.audioUri.scheme == "content") {
+                    FFmpegKitConfig.getSafParameter(context, track.audioUri, "r")
+                } else {
+                    track.audioUri.toString()
+                }
+            command.addAll(listOf("-i", audioPath))
         }
 
         if (mixAudio && audioTracks.isNotEmpty()) {

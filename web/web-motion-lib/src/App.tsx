@@ -27,7 +27,7 @@ val config = MotionConfig(
 package com.tejpratapsingh.motionlib.core
 
 data class MotionAudio(
-    val file: File,
+    val audioUri: Uri,
     var startFrame: Int = 0,
     var endFrame: Int = 0,
     var delayFrame: Int = 0,
@@ -35,7 +35,7 @@ data class MotionAudio(
 
 // usage
 val narration = MotionAudio(
-    file = File("/storage/emulated/0/Download/narration.mp3"),
+    audioUri = Uri.parse("file:///storage/emulated/0/Download/narration.mp3"),
     startFrame = 0,
     endFrame = 360,
 )

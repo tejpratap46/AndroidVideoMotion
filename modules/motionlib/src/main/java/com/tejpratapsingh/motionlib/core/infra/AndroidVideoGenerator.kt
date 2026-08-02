@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.core.infra
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaCodec
@@ -48,7 +49,7 @@ class AndroidVideoGenerator {
      * @param outputFile The [File] object where the generated video will be saved.
      *                   If an error occurs during generation and this file exists, it will be deleted.
      * @param motionAudio A list of [MotionAudio] objects to be mixed into the video.
-     *                     Each [MotionAudio] defines the audio file, start/end times for trimming,
+     *                     Each [MotionAudio] defines the audio URI, start/end times for trimming,
      *                     and the insertion point in the final video. Defaults to an empty list.
      * @throws IOException If there is an error during file I/O operations (e.g., creating the output file).
      * @throws RuntimeException If there is an unexpected error during the MediaCodec or MediaMuxer
@@ -57,6 +58,7 @@ class AndroidVideoGenerator {
      */
     @Throws(IOException::class)
     fun generateVideo(
+        context: Context,
         bitmaps: List<Bitmap> = emptyList(),
         inputDir: File? = null,
         outputFile: File,
@@ -97,7 +99,7 @@ class AndroidVideoGenerator {
             val audioTrackFormats = mutableListOf<MediaFormat>()
             for (audio in motionAudio) {
                 val extractor = MediaExtractor()
-                extractor.setDataSource(audio.file.absolutePath)
+                extractor.setDataSource(context, audio.audioUri, null)
                 for (i in 0 until extractor.trackCount) {
                     val fmt = extractor.getTrackFormat(i)
                     val mime = fmt.getString(MediaFormat.KEY_MIME) ?: ""
@@ -208,7 +210,7 @@ class AndroidVideoGenerator {
             // Now copy audio samples into the muxer (timeline aligned by frames -> microseconds)
             if (motionAudio.isNotEmpty() && muxerAudioTrackIndices.isNotEmpty()) {
                 Timber.d("generateVideo: adding audio")
-                muxAudioTracks(mediaMuxer, motionAudio, motionConfig.fps, muxerAudioTrackIndices)
+                muxAudioTracks(context, mediaMuxer, motionAudio, motionConfig.fps, muxerAudioTrackIndices)
             }
 
             Timber.i("Video generation complete: ${outputFile.absolutePath}")
@@ -238,6 +240,7 @@ class AndroidVideoGenerator {
 
     @SuppressLint("WrongConstant")
     private fun muxAudioTracks(
+        context: Context,
         mediaMuxer: MediaMuxer,
         audioSources: List<MotionAudio>,
         fps: Int,
@@ -250,7 +253,7 @@ class AndroidVideoGenerator {
 
         for ((sourceIndex, audio) in audioSources.withIndex()) {
             val extractor = MediaExtractor()
-            extractor.setDataSource(audio.file.absolutePath)
+            extractor.setDataSource(context, audio.audioUri, null)
 
             var audioTrackIndex = -1
             for (i in 0 until extractor.trackCount) {
