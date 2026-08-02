@@ -86,6 +86,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         }
 
         androidVideoGenerator.generateVideo(
+            context = context,
             inputDir = subDir,
             motionAudio = motionAudio,
             outputFile = outputFile,

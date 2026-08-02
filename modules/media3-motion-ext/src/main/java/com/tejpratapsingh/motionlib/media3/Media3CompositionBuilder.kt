@@ -68,7 +68,7 @@ class Media3CompositionBuilder {
         val mediaItem =
             MediaItem
                 .Builder()
-                .setUri(Uri.fromFile(audio.file))
+                .setUri(audio.audioUri)
                 .setClippingConfiguration(
                     MediaItem.ClippingConfiguration
                         .Builder()

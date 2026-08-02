@@ -155,7 +155,7 @@ class MotionVideoPlayer(
                     // First time: create player
                     val mediaPlayer =
                         MediaPlayer().apply {
-                            setDataSource(audio.file.absolutePath)
+                            setDataSource(context, audio.audioUri)
                             prepare()
                             start()
                         }

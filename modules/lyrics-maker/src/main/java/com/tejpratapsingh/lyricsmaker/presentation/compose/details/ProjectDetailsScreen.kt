@@ -18,18 +18,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +51,7 @@ import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.compose.foundation.layout.Row
 
 @Composable
 @Suppress("ktlint:standard:function-naming")
@@ -73,6 +79,35 @@ fun ProjectDetailsScreen(
         remember(workInfos) {
             workInfos.any { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
         }
+
+    var showReRenderConfirmation by remember { mutableStateOf(false) }
+
+    if (showReRenderConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showReRenderConfirmation = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReRenderConfirmation = false
+                        LyricsMotionWorker.startWork(context, project.id)
+                    },
+                ) {
+                    Text("Re-render")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReRenderConfirmation = false }) {
+                    Text("Cancel")
+                }
+            },
+            title = {
+                Text(text = "Re-render Video?")
+            },
+            text = {
+                Text(text = "Are you sure you want to re-render this video? This will overwrite the existing video file.")
+            },
+        )
+    }
 
     // Use a fresh Box and ignore the passed 'modifier' (which contains Scaffold padding)
     // to fix the "extra space above" issue and make it truly immersive.
@@ -135,39 +170,84 @@ fun ProjectDetailsScreen(
                             }
                     }
 
-                    Button(
-                        onClick = {
-                            if (isVideoGenerated) {
-                                onShareClick(project)
-                            } else {
-                                LyricsMotionWorker.startWork(context, project.id)
-                            }
-                        },
-                        enabled = !isRendering,
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = if (isVideoGenerated) Icons.Rounded.Share else Icons.Rounded.PlayCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text =
+                        Button(
+                            onClick = {
                                 if (isVideoGenerated) {
-                                    "Share Project"
-                                } else if (isRendering) {
-                                    "Rendering..."
+                                    onShareClick(project)
                                 } else {
-                                    "Generate Video"
+                                    LyricsMotionWorker.startWork(context, project.id)
+                                }
+                            },
+                            enabled = !isRendering,
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Icon(
+                                imageVector =
+                                    if (isRendering) {
+                                        Icons.Rounded.PlayCircle
+                                    } else if (isVideoGenerated) {
+                                        Icons.Rounded.Share
+                                    } else {
+                                        Icons.Rounded.PlayCircle
+                                    },
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text =
+                                    if (isRendering) {
+                                        "Rendering..."
+                                    } else if (isVideoGenerated) {
+                                        "Share Project"
+                                    } else {
+                                        "Generate Video"
+                                    },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+
+                        if (isVideoGenerated) {
+                            Spacer(modifier = Modifier.width(12.dp))
+                            IconButton(
+                                onClick = {
+                                    showReRenderConfirmation = true
                                 },
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                                enabled = !isRendering,
+                                modifier =
+                                    Modifier
+                                        .size(56.dp)
+                                        .background(
+                                            color =
+                                                if (isRendering) {
+                                                    MaterialTheme.colorScheme.surfaceVariant
+                                                } else {
+                                                    MaterialTheme.colorScheme.secondaryContainer
+                                                },
+                                            shape = RoundedCornerShape(16.dp),
+                                        ),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Refresh,
+                                    contentDescription = "Re-render",
+                                    tint =
+                                        if (isRendering) {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        } else {
+                                            MaterialTheme.colorScheme.onSecondaryContainer
+                                        },
+                                )
+                            }
+                        }
                     }
                 }
             }
