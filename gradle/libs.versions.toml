@@ -169,7 +169,7 @@ tensorflow-lite = [
     "tensorflow-lite-support",
     "tensorflow-lite"
 ]
-pytourch = [
+pytorch = [
     "pytorch_android_lite",
     "pytorch_android_torchvision_lite"
 ]

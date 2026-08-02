@@ -48,7 +48,7 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation(libs.bundles.pytourch)
+    implementation(libs.bundles.pytorch)
 
     api(project(":modules:core"))
     api(project(":modules:sdui"))
