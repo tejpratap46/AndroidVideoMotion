@@ -43,6 +43,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(libs.bundles.filament)
 
     api(project(":modules:motionlib"))

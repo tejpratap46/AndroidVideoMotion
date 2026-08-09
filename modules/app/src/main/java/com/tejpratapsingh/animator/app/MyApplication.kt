@@ -2,7 +2,10 @@ package com.tejpratapsingh.animator.app
 
 import android.app.Application
 import com.tejpratapsingh.animator.notification.NotificationFactory
-import com.tejpratapsingh.motionlib.tensorflow.TensorFlowImageProcessor
+import com.tejpratapsingh.motionlib.core.di.coreModule
+import com.tejpratapsingh.motionlib.tensorflow.di.tensorflowModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 import timber.log.Timber
 
 class MyApplication : Application() {
@@ -13,7 +16,9 @@ class MyApplication : Application() {
 
         NotificationFactory.createNotificationChannels(this)
 
-//        PyTorchImageProcessor.init(applicationContext)
-        TensorFlowImageProcessor.init(applicationContext)
+        startKoin {
+            androidContext(this@MyApplication)
+            modules(coreModule, tensorflowModule)
+        }
     }
 }

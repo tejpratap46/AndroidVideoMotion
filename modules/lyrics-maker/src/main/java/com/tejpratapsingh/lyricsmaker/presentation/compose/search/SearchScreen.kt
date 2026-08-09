@@ -2,6 +2,7 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -63,22 +65,21 @@ fun SearchScreen(
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) {
+        val density = LocalDensity.current
+        val headerHeightDp = with(density) { headerHeightPx.toDp() }
+
         // Main Content
         Box(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .offset {
-                        IntOffset(
-                            x = 0,
-                            y = (headerHeightPx + scrollBehavior.state.heightOffset).toInt(),
-                        )
-                    }.padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp),
         ) {
             when (val state = uiState) {
                 is LyricsUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = headerHeightDp, bottom = 16.dp),
                     ) {
                         item {
                             Card(
@@ -114,17 +115,17 @@ fun SearchScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = lyric.trackName ?: "",
+                                            text = lyric.trackName,
                                             style = MaterialTheme.typography.titleMedium,
                                         )
                                         Text(
-                                            text = lyric.artistName ?: "",
+                                            text = lyric.artistName,
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                         if (!lyric.albumName.isNullOrEmpty()) {
                                             Text(
-                                                text = lyric.albumName!!,
+                                                text = lyric.albumName,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
@@ -137,7 +138,7 @@ fun SearchScreen(
                 }
 
                 is LyricsUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize().padding(top = headerHeightDp)) {
                         Text(
                             text = state.message,
                             color = MaterialTheme.colorScheme.error,
@@ -147,13 +148,13 @@ fun SearchScreen(
                 }
 
                 is LyricsUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize().padding(top = headerHeightDp)) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
 
                 else -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize().padding(top = headerHeightDp)) {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -180,19 +181,23 @@ fun SearchScreen(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .onGloballyPositioned {
-                        headerHeightPx = it.size.height.toFloat()
-                    }.offset {
+                    .offset {
                         IntOffset(
                             x = 0,
                             y = scrollBehavior.state.heightOffset.toInt(),
                         )
-                    }.statusBarsPadding()
-                    .zIndex(1f),
+                    }.zIndex(1f),
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier =
+                    Modifier
+                        .statusBarsPadding()
+                        .padding(16.dp)
+                        .onGloballyPositioned {
+                            headerHeightPx = it.size.height.toFloat()
+                            scrollBehavior.state.heightOffsetLimit = -it.size.height.toFloat()
+                        },
             ) {
                 Text(
                     text = "Search Lyrics",

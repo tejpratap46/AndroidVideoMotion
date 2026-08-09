@@ -31,6 +31,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     api(project(":modules:motionlib"))
     api(project(":modules:core"))
     

@@ -16,4 +16,9 @@ interface MotionView : OnMotionFrameListener {
     fun addEffect(effect: MotionEffect)
 
     fun getViewBitmap(): Bitmap
+
+    /**
+     * Returns true if all required assets for this view are available in cache.
+     */
+    fun isCached(cacheManager: MotionCacheManager): Boolean = true
 }

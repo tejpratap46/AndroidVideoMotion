@@ -5,6 +5,10 @@ import android.content.Context
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.tejpratapsingh.lyricsmaker.domain.sdui.MultiLyricsContainerSdui
+import com.tejpratapsingh.lyricsmaker.di.appModule
+import com.tejpratapsingh.lyricsmaker.di.lyricsDataModule
+import com.tejpratapsingh.motion.download.di.downloadModule
+import com.tejpratapsingh.motionlib.core.di.coreModule
 import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
@@ -14,6 +18,8 @@ import com.tejpratapsingh.motionstore.infra.PreferenceManager
 import com.tejpratapsingh.motionstore.infra.SyncManager
 import com.tejpratapsingh.motionstore.worker.SyncWorker
 import com.tejpratapsingh.motionstore.worker.SyncWorkerFactory
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 import timber.log.Timber
 
 class LyricsApp :
@@ -34,6 +40,11 @@ class LyricsApp :
         super.onCreate()
 
         Timber.plant(Timber.DebugTree())
+
+        startKoin {
+            androidContext(this@LyricsApp)
+            modules(coreModule, downloadModule, lyricsDataModule, appModule)
+        }
 
         FirebaseApp.initializeApp(this)
 //        SyncWorker.scheduleImmediate(this)

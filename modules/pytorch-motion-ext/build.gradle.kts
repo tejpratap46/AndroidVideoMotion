@@ -42,6 +42,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(libs.pytorch.android.lite)
     implementation(libs.pytorch.android.torchvision.lite)
 

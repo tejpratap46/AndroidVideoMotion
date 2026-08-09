@@ -45,6 +45,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(project(":modules:core"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.work.runtime.ktx)

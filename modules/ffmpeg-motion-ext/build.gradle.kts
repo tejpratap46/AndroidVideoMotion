@@ -42,6 +42,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(libs.bundles.smart.exception)
 
     implementation(project(":modules:core"))

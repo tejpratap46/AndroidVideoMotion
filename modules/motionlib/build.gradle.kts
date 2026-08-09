@@ -49,6 +49,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     api(project(":modules:core"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

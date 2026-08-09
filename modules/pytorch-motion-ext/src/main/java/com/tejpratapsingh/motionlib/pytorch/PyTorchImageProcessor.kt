@@ -6,9 +6,9 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.pytorch.removebg.RemoveBg
 import com.tejpratapsingh.motionlib.pytorch.superres.ImageUpscaler
 
-object PyTorchImageProcessor {
-    private lateinit var backgroundRemover: RemoveBg
-    private lateinit var superResolutionProcessor: ImageUpscaler
+class PyTorchImageProcessor(context: Context) {
+    private val backgroundRemover = RemoveBg(context)
+    private val superResolutionProcessor = ImageUpscaler(context)
 
     /**
      * Plugin for background removal using PyTorch.
@@ -32,18 +32,5 @@ object PyTorchImageProcessor {
                 superResolutionProcessor.upscaleImage(input)
                     ?: throw IllegalStateException("Super Resolution processing failed")
         }
-    }
-
-    /**
-     * Initializes the PyTorchImageProcessor with the given context.
-     * This method should be called once, typically in the Application class.
-     *
-     * @param context The application context.
-     */
-    @JvmStatic
-    @Synchronized
-    fun init(context: Context) {
-        backgroundRemover = RemoveBg(context)
-        superResolutionProcessor = ImageUpscaler(context)
     }
 }

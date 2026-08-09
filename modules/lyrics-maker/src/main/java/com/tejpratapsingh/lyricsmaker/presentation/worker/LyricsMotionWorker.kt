@@ -126,10 +126,12 @@ class LyricsMotionWorker(
                     createCancelPendingIntent(),
                 ).build()
 
-        updateNotification(progressNotificationId, notification)
+        val updated = updateNotification(progressNotificationId, notification)
 
-        // If you need to update the foreground notification specifically (often handled by the initial setForegroundAsync)
-        setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
+        // Only update foreground info if the notification was actually updated (throttled)
+        if (updated) {
+            setForegroundAsync(createForegroundInfo(progressNotificationId, notification))
+        }
     }
 
     override suspend fun onCompleted(videoFile: File) {
@@ -164,7 +166,7 @@ class LyricsMotionWorker(
                     pendingOpenFileIntent,
                 ).build()
 
-        updateNotification(completedNotificationId, completedNotification)
+        updateNotification(completedNotificationId, completedNotification, force = true)
     }
 
     @Volatile
@@ -173,10 +175,11 @@ class LyricsMotionWorker(
     private fun updateNotification(
         notificationId: Int,
         notification: Notification,
-    ) {
+        force: Boolean = false,
+    ): Boolean {
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastNotificationUpdateTime < 1000) {
-            return
+        if (!force && currentTime - lastNotificationUpdateTime < 1000) {
+            return false
         }
         lastNotificationUpdateTime = currentTime
 
@@ -186,10 +189,12 @@ class LyricsMotionWorker(
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             notificationManager.notify(notificationId, notification)
+            return true
         } else {
             // Handle the case where permission is not granted.
             // Maybe log an error or inform the user in a different way.
             Timber.w("POST_NOTIFICATIONS permission not granted. Cannot show notification.")
+            return false
         }
     }
 

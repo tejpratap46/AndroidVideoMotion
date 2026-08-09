@@ -1,6 +1,8 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -14,10 +16,16 @@ import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectDetail
 import com.tejpratapsingh.lyricsmaker.presentation.compose.lyrics.SyncedLyricsSelector
 import com.tejpratapsingh.lyricsmaker.presentation.compose.projects.ProjectsRoute
 import com.tejpratapsingh.lyricsmaker.presentation.compose.search.SearchScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.settings.ManageCacheScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.settings.SettingsScreen
 import com.tejpratapsingh.lyricsmaker.presentation.compose.templates.LyricsTemplateSelector
 import com.tejpratapsingh.lyricsmaker.presentation.motion.extractLyricsTemplateData
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
+import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.SettingsViewModel
+import com.tejpratapsingh.motion.download.ui.MotionDownloadProgressScreen
+import com.tejpratapsingh.motion.download.ui.MotionDownloadUiState
+import com.tejpratapsingh.motion.download.ui.MotionDownloadViewModel
 import com.tejpratapsingh.motioneditor.ui.MotionEditorScreen
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
@@ -33,6 +41,8 @@ fun AppNavHost(
     projectsViewModel: ProjectsViewModel,
     onProjectClick: (MotionProject) -> Unit = {},
     lyricsViewModel: LyricsViewModel,
+    downloadViewModel: MotionDownloadViewModel,
+    settingsViewModel: SettingsViewModel,
     modifier: Modifier,
 ) {
     NavHost(navController = navController, startDestination = currentScreen.route) {
@@ -43,6 +53,21 @@ fun AppNavHost(
                     navController.navigate(Screen.Search.route)
                 },
                 onProjectClick = onProjectClick,
+                modifier = modifier,
+            )
+        }
+        composable(route = Screen.Settings.route) {
+            SettingsScreen(
+                onManageCacheClick = {
+                    navController.navigate(Screen.ManageCache.route)
+                },
+                modifier = modifier,
+            )
+        }
+        composable(route = Screen.ManageCache.route) {
+            ManageCacheScreen(
+                viewModel = settingsViewModel,
+                onBack = { navController.popBackStack() },
                 modifier = modifier,
             )
         }
@@ -159,6 +184,36 @@ fun AppNavHost(
             }
         }
 
+        composable(route = Screen.AssetDownload.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")
+            val projects = projectsViewModel.projects.collectAsStateWithLifecycle()
+            val project = projects.value.find { it.id == projectId }
+
+            project?.let {
+                val uiState by downloadViewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(project) {
+                    if (uiState is MotionDownloadUiState.Idle) {
+                        downloadViewModel.reset()
+                        downloadViewModel.startDownload(it.sdui.toString())
+                    }
+                }
+
+                MotionDownloadProgressScreen(
+                    viewModel = downloadViewModel,
+                    onNext = {
+                        projectsViewModel.loadProjects()
+
+                        navController.navigate(Screen.VideoEditor.createRoute(it.id)) {
+                            popUpTo(Screen.AssetDownload.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = modifier,
+                )
+            }
+        }
+
         composable(route = Screen.VideoEditor.route) { backStackEntry ->
             val projectId = backStackEntry.arguments?.getString("projectId")
             val projects = projectsViewModel.projects.collectAsStateWithLifecycle()
@@ -180,6 +235,12 @@ fun AppNavHost(
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToAssetDownload = { id ->
+                        navController.navigate(Screen.AssetDownload.createRoute(id))
+                    },
+                    onCheckPendingDownloads = { sdui ->
+                        downloadViewModel.hasPendingDownloads(sdui)
+                    },
                     modifier = modifier,
                 )
             }
@@ -200,6 +261,12 @@ fun AppNavHost(
                         }
                     },
                     onShareClick = { p -> projectsViewModel.shareProject(p) },
+                    onNavigateToAssetDownload = { id ->
+                        navController.navigate(Screen.AssetDownload.createRoute(id))
+                    },
+                    onCheckPendingDownloads = { sdui ->
+                        downloadViewModel.hasPendingDownloads(sdui)
+                    },
                     modifier = modifier,
                 )
             }

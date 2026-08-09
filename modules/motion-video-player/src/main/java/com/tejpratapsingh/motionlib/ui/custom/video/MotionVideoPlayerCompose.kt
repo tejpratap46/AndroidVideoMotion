@@ -57,6 +57,7 @@ fun MotionVideoPlayerCompose(
     showControls: Boolean = true,
     onFrameChange: (Int) -> Unit = {},
     onPlayingChange: (Boolean) -> Unit = {},
+    onBeforePlay: () -> Boolean = { true },
 ) {
     val context = LocalContext.current
     val motionConfig: MotionConfig = remember { provideCurrentConfig() }
@@ -251,11 +252,23 @@ fun MotionVideoPlayerCompose(
 
                         IconButton(
                             onClick = {
-                                if (isPlaying == null) {
-                                    internalIsPlaying = !internalIsPlaying
-                                    onPlayingChange(internalIsPlaying)
+                                val nextPlayingState = if (isPlaying == null) !internalIsPlaying else !isPlaying
+                                if (nextPlayingState) {
+                                    if (onBeforePlay()) {
+                                        if (isPlaying == null) {
+                                            internalIsPlaying = true
+                                            onPlayingChange(true)
+                                        } else {
+                                            onPlayingChange(true)
+                                        }
+                                    }
                                 } else {
-                                    onPlayingChange(!isPlaying)
+                                    if (isPlaying == null) {
+                                        internalIsPlaying = false
+                                        onPlayingChange(false)
+                                    } else {
+                                        onPlayingChange(false)
+                                    }
                                 }
                             },
                             modifier =

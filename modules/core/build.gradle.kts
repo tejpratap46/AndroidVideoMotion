@@ -27,9 +27,12 @@ android {
 
 dependencies {
     api(libs.androidx.core.ktx)
+    api(libs.koin.android)
     api(libs.gson)
     api(libs.bundles.ktor)
     api(libs.timber)
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
