@@ -20,4 +20,12 @@ sealed class Screen(
     object VideoEditor : Screen("video_editor/{projectId}") {
         fun createRoute(projectId: String) = "video_editor/$projectId"
     }
+
+    object AssetDownload : Screen("asset_download/{projectId}") {
+        fun createRoute(projectId: String) = "asset_download/$projectId"
+    }
+
+    object Settings : Screen("settings")
+
+    object ManageCache : Screen("manage_cache")
 }

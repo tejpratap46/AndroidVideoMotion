@@ -14,16 +14,29 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.R
@@ -35,7 +48,10 @@ import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsUiState
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModelFactory
+import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.SettingsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
+import com.tejpratapsingh.motion.download.MotionDownloadManager
+import com.tejpratapsingh.motion.download.ui.MotionDownloadViewModel
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionstore.extensions.copyProjectNameToClipboard
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
@@ -43,6 +59,8 @@ import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.worker.SyncWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.net.URLConnection
 
@@ -54,7 +72,11 @@ class SearchActivity : ComponentActivity() {
         )
     }
 
-    private val lyricsViewModel: LyricsViewModel by viewModels()
+    private val lyricsViewModel: LyricsViewModel by viewModel()
+
+    private val downloadViewModel: MotionDownloadViewModel by viewModel()
+
+    private val settingsViewModel: SettingsViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,17 +104,64 @@ class SearchActivity : ComponentActivity() {
 
             LaunchedEffect(socialMeta) {
                 if (socialMeta.title != null || socialMeta.description != null) {
-                    navController.navigate(Screen.Search.route) {
-                        launchSingleTop = true
+                    // Avoid redundant navigation if we are already on the Search screen
+                    if (navController.currentDestination?.route != Screen.Search.route) {
+                        navController.navigate(Screen.Search.route) {
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
 
             AnimatorTheme {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+
+                val showBottomBar =
+                    currentDestination?.route in
+                        listOf(
+                            Screen.Projects.route,
+                            Screen.Settings.route,
+                        )
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                ) { _ ->
+                    bottomBar = {
+                        if (showBottomBar) {
+                            NavigationBar {
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Rounded.Folder, contentDescription = null) },
+                                    label = { Text("Projects") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == Screen.Projects.route } == true,
+                                    onClick = {
+                                        navController.navigate(Screen.Projects.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                )
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
+                                    label = { Text("Settings") },
+                                    selected = currentDestination?.hierarchy?.any { it.route == Screen.Settings.route } == true,
+                                    onClick = {
+                                        navController.navigate(Screen.Settings.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                    },
+                ) { innerPadding ->
                     AppNavHost(
                         navController = navController,
                         projectsViewModel = projectsViewModel,
@@ -100,7 +169,9 @@ class SearchActivity : ComponentActivity() {
                             navController.navigate(Screen.ProjectDetails.createRoute(motionProject.id))
                         },
                         lyricsViewModel = lyricsViewModel,
-                        modifier = Modifier, // Padding handled by internal screens
+                        downloadViewModel = downloadViewModel,
+                        settingsViewModel = settingsViewModel,
+                        modifier = Modifier.padding(innerPadding),
                     )
                 }
             }

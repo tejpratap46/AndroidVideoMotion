@@ -45,6 +45,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-store"))
     implementation(libs.androidx.appcompat)

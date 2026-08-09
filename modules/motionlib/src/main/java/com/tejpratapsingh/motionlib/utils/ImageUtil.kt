@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import timber.log.Timber
 import java.io.InputStream
 
 object ImageUtil {
@@ -32,6 +33,7 @@ object ImageUtil {
         try {
             BitmapFactory.decodeResource(context.resources, R.drawable.default_bg)
         } catch (e: Exception) {
+            Timber.e(e)
             null
         }
 

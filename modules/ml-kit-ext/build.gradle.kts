@@ -49,6 +49,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     api(project(":modules:core"))
     api(project(":modules:sdui"))
     implementation(libs.androidx.appcompat)

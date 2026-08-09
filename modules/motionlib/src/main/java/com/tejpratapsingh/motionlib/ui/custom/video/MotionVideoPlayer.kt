@@ -30,6 +30,8 @@ class MotionVideoPlayer(
     context: Context,
     private val motionVideoProducer: MotionVideoProducer,
 ) : ContourLayout(context) {
+    var onBeforePlay: () -> Boolean = { true }
+
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var playbackJob: Job? = null
 
@@ -79,7 +81,9 @@ class MotionVideoPlayer(
                 if (isPlaying) {
                     pausePlayback()
                 } else {
-                    startPlayback()
+                    if (onBeforePlay()) {
+                        startPlayback()
+                    }
                 }
             }
         }

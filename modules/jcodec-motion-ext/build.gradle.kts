@@ -42,6 +42,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(project(":modules:core"))
 
     implementation(libs.bundles.jcodec)

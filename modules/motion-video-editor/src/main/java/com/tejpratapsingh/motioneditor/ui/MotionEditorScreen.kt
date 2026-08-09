@@ -47,6 +47,8 @@ fun MotionEditorScreen(
     project: MotionProject,
     onBackClick: () -> Unit,
     onSaveClick: (MotionProject) -> Unit,
+    onNavigateToAssetDownload: (String) -> Unit,
+    onCheckPendingDownloads: (String) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -76,6 +78,15 @@ fun MotionEditorScreen(
                 motionVideoProducer = motionVideoProducer,
                 currentFrame = currentFrame,
                 onFrameChange = { currentFrame = it },
+                onBeforePlay = {
+                    val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                    if (hasPending) {
+                        onNavigateToAssetDownload(project.id)
+                        false
+                    } else {
+                        true
+                    }
+                },
                 modifier =
                     Modifier
                         .weight(1f)
@@ -159,7 +170,14 @@ fun MotionEditorScreen(
 
         // Overlay Save Button (Tick)
         IconButton(
-            onClick = { onSaveClick(project) },
+            onClick = {
+                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                if (hasPending) {
+                    onNavigateToAssetDownload(project.id)
+                } else {
+                    onSaveClick(project)
+                }
+            },
             modifier =
                 Modifier
                     .statusBarsPadding()
@@ -201,6 +219,8 @@ fun PreviewMotionEditorScreen() {
                 project = sampleProject,
                 onBackClick = {},
                 onSaveClick = {},
+                onNavigateToAssetDownload = {},
+                onCheckPendingDownloads = { false },
             )
         }
     }

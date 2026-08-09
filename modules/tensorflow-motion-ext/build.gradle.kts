@@ -48,7 +48,7 @@ afterEvaluate {
 }
 
 dependencies {
-
+    implementation(libs.koin.android)
 //    implementation libs.tensorflow.lite
     implementation(libs.tensorflow.lite.support)
 

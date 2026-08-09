@@ -6,9 +6,9 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.tensorflow.removebg.CarBgRemover
 import com.tejpratapsingh.motionlib.tensorflow.superres.SuperResolutionProcessor
 
-object TensorFlowImageProcessor {
-    private lateinit var backgroundRemover: CarBgRemover
-    private lateinit var superResolutionProcessor: SuperResolutionProcessor
+class TensorFlowImageProcessor(context: Context) {
+    private val backgroundRemover = CarBgRemover(context)
+    private val superResolutionProcessor = SuperResolutionProcessor(context, "ESRGAN_gh.tflite")
 
     /**
      * Plugin for super-resolution using TensorFlow Lite.
@@ -28,18 +28,5 @@ object TensorFlowImageProcessor {
         object : MotionPlugin {
             override fun apply(input: Bitmap): Bitmap = backgroundRemover.removeBackground(input)
         }
-    }
-
-    /**
-     * Initializes the TensorFlow image processor with the given context.
-     * This method should be called before using any of the plugins.
-     *
-     * @param context The application context.
-     */
-    @JvmStatic
-    @Synchronized
-    fun init(context: Context) {
-        backgroundRemover = CarBgRemover(context)
-        superResolutionProcessor = SuperResolutionProcessor(context, "ESRGAN_gh.tflite")
     }
 }

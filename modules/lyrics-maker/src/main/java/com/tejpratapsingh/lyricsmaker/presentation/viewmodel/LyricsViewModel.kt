@@ -3,15 +3,11 @@ package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LrcLibApiService
-import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LrcLibApiServiceImpl
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LyricsRepository
-import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LyricsRepositoryImpl
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.SearchParams
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,11 +35,9 @@ sealed class LyricsUiState {
 /**
  * ViewModel for lyrics operations
  */
-class LyricsViewModel : ViewModel() {
-    private val okHttpClient = OkHttpProvider.httpClient
-    private val gson = Gson()
-    private val apiService: LrcLibApiService = LrcLibApiServiceImpl(okHttpClient, gson)
-    private val repository: LyricsRepository = LyricsRepositoryImpl(apiService)
+class LyricsViewModel(
+    private val repository: LyricsRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<LyricsUiState>(LyricsUiState.Initial)
     val uiState: StateFlow<LyricsUiState> = _uiState.asStateFlow()

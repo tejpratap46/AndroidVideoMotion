@@ -30,6 +30,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.koin.android)
     implementation(project(":modules:core"))
     implementation(project(":modules:sdui"))
     implementation(project(":modules:motionlib"))

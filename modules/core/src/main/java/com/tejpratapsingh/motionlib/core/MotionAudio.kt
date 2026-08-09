@@ -15,4 +15,15 @@ data class MotionAudio(
     val startFrame: Int, // trim start frame
     val endFrame: Int, // trim end frame
     val delayFrame: Int, // delay in frames
-)
+) {
+    /**
+     * Returns true if the audio asset is available in cache.
+     */
+    fun isCached(cacheManager: MotionCacheManager): Boolean {
+        return if (audioUri.scheme == "http" || audioUri.scheme == "https") {
+            cacheManager.isCached(audioUri)
+        } else {
+            true
+        }
+    }
+}

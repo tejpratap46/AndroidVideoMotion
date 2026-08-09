@@ -1,5 +1,9 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
+import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LyricsRepository
+import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.GetParams
+import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.LyricsResponse
+import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.SearchParams
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.setCurrentConfig
@@ -19,7 +23,10 @@ class LyricsViewModelTest {
     fun setUp() {
         // Ensure a deterministic fps so time-based assertions are stable.
         setCurrentConfig(MotionConfig(fps = 24))
-        viewModel = LyricsViewModel()
+        viewModel = LyricsViewModel(object : LyricsRepository {
+            override suspend fun searchLyrics(params: SearchParams): Result<List<LyricsResponse>> = Result.success(emptyList())
+            override suspend fun getLyrics(params: GetParams): Result<LyricsResponse> = Result.failure(Exception("Not implemented"))
+        })
     }
 
     // ------------------------------------------------------------------

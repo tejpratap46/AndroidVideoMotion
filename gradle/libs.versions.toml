@@ -42,6 +42,9 @@ media3Version = "1.10.1"
 mlkitSubjectSegmentationVersion = "16.0.0-beta1"
 coilVersion = "2.7.0"
 coilTransformationsVersion = "2.0.2"
+ketchVersion = "2.0.6"
+mmkvVersion = "2.4.1"
+koinVersion = "4.2.2"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -114,6 +117,11 @@ coil-video = { module = "io.coil-kt:coil-video", version.ref = "coilVersion" }
 coil-transformations = { module = "com.github.Commit451.coil-transformations:transformations", version.ref = "coilTransformationsVersion" }
 coil-transformations-gpu = { module = "com.github.Commit451.coil-transformations:transformations-gpu", version.ref = "coilTransformationsVersion" }
 coil-transformations-face-detection = { module = "com.github.Commit451.coil-transformations:transformations-face-detection", version.ref = "coilTransformationsVersion" }
+ketch = { module = "com.github.khushpanchal:Ketch", version.ref = "ketchVersion" }
+mmkv = { module = "com.tencent:mmkv", version.ref = "mmkvVersion" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinVersion" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinVersion" }
+koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

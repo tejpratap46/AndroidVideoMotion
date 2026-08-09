@@ -75,6 +75,14 @@ export const useApplyEffects = (viewProps: MotionViewProps, currentFrame: number
         const ty = fromY + (toY - fromY) * progress;
         style.transform = `${style.transform || ''} translateY(${ty}px)`;
       }
+    } else if (effect.type === 'VintageEffect') {
+      const fromIntensity = effect.fromIntensity ?? 0;
+      const toIntensity = effect.toIntensity ?? 1;
+      const intensity = fromIntensity + (toIntensity - fromIntensity) * progress;
+
+      style.filter = `${style.filter || ''} sepia(${intensity * 100}%)`;
+      // We use a box-shadow inner as a simple vignette approximation
+      style.boxShadow = `inset 0 0 ${intensity * 150}px rgba(0,0,0,${intensity * 0.8})`;
     }
   });
 

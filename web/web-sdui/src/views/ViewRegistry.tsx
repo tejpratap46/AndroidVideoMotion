@@ -9,6 +9,9 @@ import { PopUpTextView } from './PopUpTextView';
 import { MultiLyricsContainer } from './MultiLyricsContainer';
 import { WordBlinkTextView } from './WordBlinkTextView';
 import { MotionImageView } from './MotionImageView';
+import { RainbowPopUpTextView } from './RainbowPopUpTextView';
+import { AccentMiddlePopUpTextView } from './AccentMiddlePopUpTextView';
+import { TranslucentMotionView } from './TranslucentMotionView';
 
 export const ViewRegistry: Record<string, React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }>> = {
   TransparentTextView: TransparentTextView,
@@ -23,6 +26,10 @@ export const ViewRegistry: Record<string, React.FC<{ props: MotionViewProps; cur
   RadialAudioWaveformView: AudioWaveformView,
   PopUpTextView: PopUpTextView,
   MultiLyricsContainer: MultiLyricsContainer,
+  RainbowPopUpTextView: RainbowPopUpTextView,
+  AccentMiddlePopUpTextView: AccentMiddlePopUpTextView,
+  TranslucentMotionView: TranslucentMotionView,
+  CoilVideoPlayer: VideoFrameView,
 };
 
 export const MotionViewRenderer: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {

@@ -43,6 +43,7 @@ android {
 dependencies {
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-video-editor"))
+    implementation(project(":modules:motion-download-manager"))
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
     implementation(libs.androidx.activity)

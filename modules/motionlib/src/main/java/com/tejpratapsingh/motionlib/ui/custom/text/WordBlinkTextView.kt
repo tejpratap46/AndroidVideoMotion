@@ -69,14 +69,12 @@ class WordBlinkTextView(
                     Pair(0f, wordCount.toFloat()),
                 ).toInt()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            (textView as TextView).setAutoSizeTextTypeUniformWithConfiguration(
-                12,
-                100,
-                1,
-                TypedValue.COMPLEX_UNIT_SP,
-            )
-        }
+        (textView as TextView).setAutoSizeTextTypeUniformWithConfiguration(
+            12,
+            100,
+            1,
+            TypedValue.COMPLEX_UNIT_SP,
+        )
 
         Timber.d("visibleWordCount: $visibleWordCount")
 
