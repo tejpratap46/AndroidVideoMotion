@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.templates.extensions
 
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
@@ -21,6 +22,7 @@ fun ContentScope.popUpTextView(
     unwrittenTextAlpha: Float = 0f,
     maxTranslationY: Float = 50f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -36,6 +38,7 @@ fun ContentScope.popUpTextView(
     unwrittenTextAlpha,
     maxTranslationY,
     textView,
+    fontAsset,
     textSizeVariant,
     textColor,
     highlightColor,
@@ -53,6 +56,7 @@ fun ContentScope.typeWriterTextView(
     cursorChar: String? = "|",
     blinkFrameRate: Int = 10,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
@@ -68,6 +72,7 @@ fun ContentScope.typeWriterTextView(
     cursorChar,
     blinkFrameRate,
     textView,
+    fontAsset,
     textSizeVariant,
     textColor,
     effects = effects,
@@ -82,6 +87,7 @@ fun ContentScope.wordWriterTextView(
     writingSpeed: Float = 0f,
     unwrittenTextAlpha: Float = 0f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -96,6 +102,7 @@ fun ContentScope.wordWriterTextView(
     writingSpeed,
     unwrittenTextAlpha,
     textView,
+    fontAsset,
     textSizeVariant,
     textColor,
     highlightColor,
@@ -108,13 +115,22 @@ fun ContentScope.transparentTextView(
     text: String,
     startFrame: Int,
     endFrame: Int,
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
     layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
     block: (TransparentTextView.() -> Unit)? = null,
-) = TransparentTextView(context, text, startFrame, endFrame, textSizeVariant, textColor, effects = effects)
-    .apply { this.layoutInfo = layoutInfo }
+) = TransparentTextView(
+    context,
+    text,
+    startFrame,
+    endFrame,
+    fontAsset,
+    textSizeVariant,
+    textColor,
+    effects = effects
+).apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }
 
@@ -123,6 +139,7 @@ fun ContentScope.wordBlinkTextView(
     startFrame: Int,
     endFrame: Int,
     writingSpeed: Float = 0f,
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
@@ -134,6 +151,7 @@ fun ContentScope.wordBlinkTextView(
     startFrame,
     endFrame,
     writingSpeed,
+    fontAsset = fontAsset,
     textSizeVariant = textSizeVariant,
     textColor = textColor,
     effects = effects,
@@ -149,6 +167,7 @@ fun ContentScope.rainbowPopUpTextView(
     unwrittenTextAlpha: Float = 0f,
     maxTranslationY: Float = 50f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -164,6 +183,7 @@ fun ContentScope.rainbowPopUpTextView(
     unwrittenTextAlpha,
     maxTranslationY,
     textView,
+    fontAsset,
     textSizeVariant,
     textColor,
     highlightColor,
@@ -181,6 +201,7 @@ fun ContentScope.accentMiddlePopUpTextView(
     maxTranslationY: Float = 50f,
     accentColor: Int = android.graphics.Color.YELLOW,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -197,6 +218,7 @@ fun ContentScope.accentMiddlePopUpTextView(
     maxTranslationY,
     accentColor,
     textView,
+    fontAsset,
     textSizeVariant,
     textColor,
     highlightColor,

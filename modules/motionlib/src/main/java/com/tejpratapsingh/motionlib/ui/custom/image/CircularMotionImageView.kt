@@ -8,7 +8,8 @@ import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionCacheManager
+import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -20,13 +21,18 @@ import org.koin.core.component.inject
 
 class CircularMotionImageView(
     context: Context,
-    val imageUri: Uri,
+    val asset: MotionAsset,
     startFrame: Int,
     endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
-) : BaseContourMotionView(context, startFrame, endFrame, effects = effects), KoinComponent {
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects),
+    KoinComponent {
+    /**
+     * For backward compatibility, the image URI.
+     */
+    val imageUri: Uri get() = asset.getUri()
 
-    private val cacheManager: MotionCacheManager by inject()
+    private val cacheManager: MotionAssetManager by inject()
 
     private val imageView: ImageView =
         ImageView(context).apply {
@@ -76,7 +82,7 @@ class CircularMotionImageView(
 
         // Load image into ImageView for preview
         runBlocking {
-            val localUri = cacheManager.getCachedUri(imageUri) ?: imageUri
+            val localUri = cacheManager.getCachedUri(asset) ?: imageUri
             val bitmap = ImageUtil.fetchBitmap(context, localUri)
             imageView.setImageBitmap(bitmap)
         }
@@ -86,4 +92,7 @@ class CircularMotionImageView(
         super.forFrame(frame)
         return this
     }
+
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

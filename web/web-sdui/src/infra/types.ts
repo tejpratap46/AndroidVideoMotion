@@ -10,10 +10,18 @@ export interface VideoAspectRatio {
   label: string;
 }
 
+export interface MotionAssetProps {
+  type: string;
+  uri: string;
+  metadata?: Record<string, any>;
+  [key: string]: any;
+}
+
 export interface MotionViewProps {
   type: string;
   startFrame: number;
   endFrame: number;
+  asset?: MotionAssetProps;
   loop?: {
     start: number;
     end: number;

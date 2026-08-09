@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -27,6 +28,7 @@ class WordWriterTextView(
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -38,6 +40,7 @@ class WordWriterTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        fontAsset = fontAsset,
         textSizeVariant = textSizeVariant,
         textColor = textColor,
         highlightColor = highlightColor,

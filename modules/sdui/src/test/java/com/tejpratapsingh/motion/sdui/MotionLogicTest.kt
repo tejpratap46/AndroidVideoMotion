@@ -7,6 +7,7 @@ import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.toJson
 import com.tejpratapsingh.motion.sdui.infra.toMotionAudio
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -83,7 +84,7 @@ class MotionLogicTest {
 
         val originalAudio =
             MotionAudio(
-                audioUri = mockUri,
+                asset = SimpleMotionAsset(mockUri),
                 startFrame = 0,
                 endFrame = 100,
                 delayFrame = 10,
@@ -92,10 +93,10 @@ class MotionLogicTest {
         val json = originalAudio.toJson()
         val restoredAudio = json.toMotionAudio(mockContext)
 
-        // Since mockUri.toString() might be empty/null when mocked without setup, 
+        // Since mockUri.toString() might be empty/null when mocked without setup,
         // let's ensure it has some value for comparison if it was serialized.
         // Actually, the toJson uses audioUri.toString().
-        
+
         assertEquals(originalAudio.startFrame, restoredAudio.startFrame)
         assertEquals(originalAudio.endFrame, restoredAudio.endFrame)
         assertEquals(originalAudio.delayFrame, restoredAudio.delayFrame)

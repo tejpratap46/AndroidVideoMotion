@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.net.Uri
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.animator.ui.view.ContourDevice
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
@@ -66,7 +67,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     val motionAudio =
         listOf(
             MotionAudio(
-                audioUri = Uri.fromFile(file),
+                asset = SimpleMotionAsset(Uri.fromFile(file)),
                 delayFrame = motionView.startFrame,
                 startFrame = motionView.startFrame,
                 endFrame = motionView.endFrame,

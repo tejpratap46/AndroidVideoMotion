@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -135,7 +137,7 @@ fun ManageCacheScreen(
                             url = url,
                             path = path,
                             onDelete = { viewModel.deleteAsset(url) },
-                            onOpen = { openFile(context, path) },
+                            onOpen = { mimeType -> openFile(context, path, mimeType) },
                         )
                     }
                 }
@@ -149,18 +151,20 @@ fun CacheItemCard(
     url: String,
     path: String,
     onDelete: () -> Unit,
-    onOpen: () -> Unit,
+    onOpen: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val fileName = url.substringAfterLast("/")
     var thumbnail by remember(path) { mutableStateOf(ThumbnailCache.get(path)) }
-    val isImage =
-        remember(fileName) {
-            val extension = fileName.substringAfterLast(".", "").lowercase()
-            extension in listOf("jpg", "jpeg", "png", "webp", "gif")
+    val mimeType =
+        remember(path) {
+            val extension = File(path).extension.lowercase()
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }
+    val isImage = remember(mimeType) { mimeType?.startsWith("image/") == true }
+    val isVideo = remember(mimeType) { mimeType?.startsWith("video/") == true }
 
-    LaunchedEffect(path) {
+    LaunchedEffect(path, isImage) {
         if (isImage && thumbnail == null) {
             withContext(Dispatchers.IO) {
                 val file = File(path)
@@ -182,7 +186,7 @@ fun CacheItemCard(
             modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .clickable { onOpen() },
+                .clickable { onOpen(mimeType) },
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -205,8 +209,14 @@ fun CacheItemCard(
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
+                    val icon =
+                        when {
+                            isImage -> Icons.Rounded.Image
+                            isVideo -> Icons.Rounded.PlayCircle
+                            else -> Icons.Rounded.Description
+                        }
                     Icon(
-                        imageVector = if (isImage) Icons.Rounded.Image else Icons.Rounded.Description,
+                        imageVector = icon,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -259,6 +269,7 @@ fun CacheItemCard(
 private fun openFile(
     context: Context,
     path: String,
+    mimeType: String?,
 ) {
     val file = File(path)
     if (!file.exists()) return
@@ -272,7 +283,7 @@ private fun openFile(
 
     val intent =
         Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, context.contentResolver.getType(uri))
+            setDataAndType(uri, mimeType ?: context.contentResolver.getType(uri))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 

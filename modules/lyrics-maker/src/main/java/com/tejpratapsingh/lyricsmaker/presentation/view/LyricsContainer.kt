@@ -15,6 +15,7 @@ import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositor
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
@@ -32,13 +33,18 @@ import timber.log.Timber
 
 class LyricsContainer(
     context: Context,
-    songName: String,
+    val songName: String,
     startFrame: Int,
     endFrame: Int,
     val lyrics: List<SyncedLyricFrame>,
-    image: String? = null,
+    val asset: MotionAsset? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseFrameMotionView(context) {
+    /**
+     * For backward compatibility, the image path.
+     */
+    val image: String? get() = asset?.getUri()?.toString()
+
     private val cvLyrics: ViewGroup
     private val tvSongName: TextView
     private val ivAlbumArt: ImageView
@@ -84,7 +90,7 @@ class LyricsContainer(
                 if (image != null) {
                     val client = HttpClient(CIO)
                     Timber.i("Using image from social meta: $image")
-                    setImageBitmap(client.fetchBitmap(image))
+                    setImageBitmap(client.fetchBitmap(image!!))
                     client.close()
                     return@runBlocking
                 } else {
@@ -138,4 +144,7 @@ class LyricsContainer(
     }
 
     override fun getViewBitmap(): Bitmap = this.toBitmap()
+
+    override val assets: List<MotionAsset>
+        get() = asset?.let { listOf(it) } ?: emptyList()
 }

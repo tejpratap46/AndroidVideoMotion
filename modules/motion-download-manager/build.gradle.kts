@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(project(":modules:core"))
     implementation(project(":modules:sdui"))
+    implementation(project(":modules:motion-store"))
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)

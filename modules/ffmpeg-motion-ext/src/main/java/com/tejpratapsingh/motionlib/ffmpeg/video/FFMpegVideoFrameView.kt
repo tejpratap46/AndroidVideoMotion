@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.loadBitmapsFromDirectory
@@ -13,13 +14,18 @@ import java.io.File
 
 class FFMpegVideoFrameView(
     context: Context,
-    val videoFile: File,
+    val asset: MotionAsset,
     override val startFrame: Int,
     override val endFrame: Int,
     override var loop: Pair<Int, Int> = Pair(0, 0),
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
+    /**
+     * For backward compatibility, the video file.
+     */
+    val videoFile: File get() = File(asset.getUri().path!!)
+
     override val effects: MutableList<MotionEffect> = mutableListOf()
 
     override fun addEffect(effect: MotionEffect) {
@@ -62,4 +68,7 @@ class FFMpegVideoFrameView(
     }
 
     override fun getViewBitmap(): Bitmap = currentFrameBitmap
+
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

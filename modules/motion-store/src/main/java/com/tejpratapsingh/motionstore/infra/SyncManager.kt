@@ -1,5 +1,6 @@
 package com.tejpratapsingh.motionstore.infra
 
+import timber.log.Timber
 import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
 import com.tejpratapsingh.motionstore.dao.SyncableDao
 import com.tejpratapsingh.motionstore.domain.BackendAdapter
@@ -38,6 +39,7 @@ class SyncManager(
     }
 
     suspend fun sync(daoList: List<SyncableDao<*>>): List<SyncResult> {
+        Timber.d("Starting sync for tables: ${daoList.joinToString { it.tableName }}")
         _status.value = SyncStatus.Running(daoList.joinToString { it.tableName })
         val results =
             daoList
@@ -45,15 +47,17 @@ class SyncManager(
                     scope.async { syncTable(dao) }
                 }.awaitAll()
         _status.value = SyncStatus.Completed(results)
+        Timber.d("Sync cycle completed. Results summary: $results")
         return results
     }
 
     suspend fun <T : SyncableEntity> syncTable(dao: SyncableDao<T>): SyncResult {
+        Timber.d("Syncing table: ${dao.tableName}")
         _status.value = SyncStatus.Running(dao.tableName)
         return try {
             val downloadResult = download(dao)
             val uploadResult = upload(dao)
-            SyncResult(
+            val result = SyncResult(
                 tableName = dao.tableName,
                 downloaded = downloadResult.saved,
                 conflicts = downloadResult.conflicts,
@@ -61,22 +65,30 @@ class SyncManager(
                 uploaded = uploadResult.uploaded,
                 uploadFailed = uploadResult.failed,
             )
+            Timber.d("Sync finished for table: ${dao.tableName}. Result: $result")
+            result
         } catch (e: SyncException) {
+            Timber.e(e, "SyncException for table: ${dao.tableName}")
             SyncResult(tableName = dao.tableName, error = e)
         } catch (e: Exception) {
+            Timber.e(e, "Unexpected error during sync for table: ${dao.tableName}")
             SyncResult(tableName = dao.tableName, error = SyncException.UnknownError(e))
         }
     }
 
     private suspend fun <T : SyncableEntity> download(dao: SyncableDao<T>): DownloadStats {
         val since = downloadedTracker.getDownloadedTill(dao.tableName)
+        Timber.d("[${dao.tableName}] Downloading changes since: $since")
 
         val serverRows =
             try {
                 backend.fetchSince(dao.tableName, since, DeviceInfo.id)
             } catch (e: Exception) {
+                Timber.e(e, "[${dao.tableName}] Download fetch failed")
                 throw SyncException.NetworkError("Download failed for '${dao.tableName}'", e)
             }
+
+        Timber.d("[${dao.tableName}] Fetched ${serverRows.size} rows from server")
 
         var saved = 0
         var conflicts = 0
@@ -92,12 +104,14 @@ class SyncManager(
 
             when {
                 localEntity == null -> {
+                    Timber.v("[${dao.tableName}] Inserting new record: $serverId")
                     val entity = dao.fromServerRow(row)
                     dao.insert(entity)
                     saved++
                 }
 
                 serverUpdatedOn >= localEntity.syncTracker.updatedOn -> {
+                    Timber.v("[${dao.tableName}] Conflict/Update for record: $serverId")
                     val entity = dao.fromServerRow(row, localId = localEntity.id)
                     dao.update(localEntity.id, entity)
                     conflicts++
@@ -105,6 +119,7 @@ class SyncManager(
                 }
 
                 else -> {
+                    Timber.v("[${dao.tableName}] Skipping older record: $serverId")
                     skipped++
                 }
             }
@@ -113,14 +128,18 @@ class SyncManager(
         }
 
         if (highWaterMark > since) {
+            Timber.d("[${dao.tableName}] Updating high water mark to: $highWaterMark")
             downloadedTracker.setDownloadedTill(dao.tableName, highWaterMark)
         }
 
-        return DownloadStats(saved, conflicts, skipped)
+        val stats = DownloadStats(saved, conflicts, skipped)
+        Timber.d("[${dao.tableName}] Download summary: $stats")
+        return stats
     }
 
     private suspend fun <T : SyncableEntity> upload(dao: SyncableDao<T>): UploadStats {
         val dirtyRows = dao.findDirty()
+        Timber.d("[${dao.tableName}] Found ${dirtyRows.size} dirty rows to upload")
         var uploaded = 0
         val failed = 0
 
@@ -129,6 +148,7 @@ class SyncManager(
 
         for (entity in dirtyRows) {
             try {
+                Timber.v("[${dao.tableName}] Uploading entity: ${entity.id} (serverId=${entity.syncTracker.serverId})")
                 val payload =
                     dao.toServerMap(entity).toMutableMap().apply {
                         put(SyncTracker.COL_UPDATED_BY, DeviceInfo.id)
@@ -145,20 +165,25 @@ class SyncManager(
                         (response[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong()
                             ?: System.currentTimeMillis()
                     dao.markUploaded(entity.id, serverId, uploadedAt)
+                    Timber.v("[${dao.tableName}] Created on server: $serverId")
                 } else {
                     val response = backend.update(dao.tableName, entity.syncTracker.serverId!!, payload)
                     val uploadedAt =
                         (response[SyncTracker.COL_UPLOADED_AT] as? Number)?.toLong()
                             ?: System.currentTimeMillis()
                     dao.markSynced(entity.id, uploadedAt)
+                    Timber.v("[${dao.tableName}] Updated on server: ${entity.syncTracker.serverId}")
                 }
                 uploaded++
             } catch (e: Exception) {
+                Timber.e(e, "[${dao.tableName}] Upload failed for entity ${entity.id}")
                 throw SyncException.NetworkError("Upload failed for ${dao.tableName}", e)
             }
         }
 
-        return UploadStats(uploaded, failed)
+        val stats = UploadStats(uploaded, failed)
+        Timber.d("[${dao.tableName}] Upload summary: $stats")
+        return stats
     }
 
     // ── Internal data holders ─────────────────────────────────────────────────

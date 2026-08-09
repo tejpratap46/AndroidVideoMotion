@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
 import androidx.core.graphics.createBitmap
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
@@ -15,11 +16,16 @@ import kotlinx.coroutines.runBlocking
 
 class MediaFrameView(
     context: Context,
-    videoUri: Uri,
+    val asset: MotionAsset,
     startFrame: Int,
     endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
+    /**
+     * For backward compatibility, the video URI.
+     */
+    val videoUri: Uri get() = asset.getUri()
+
     private val imageView =
         ImageView(context).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
@@ -65,4 +71,7 @@ class MediaFrameView(
     }
 
     override fun getViewBitmap(): Bitmap = this.toBitmap()
+
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

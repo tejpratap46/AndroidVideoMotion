@@ -2,6 +2,7 @@ package com.tejpratapsingh.motion.sdui.infra
 
 import android.content.Context
 import com.google.gson.JsonObject
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionPlugin
@@ -27,6 +28,9 @@ object MotionSdui {
 
     private val audioFactories = mutableMapOf<String, MotionAudioFactory>()
     private val audioSerializers = mutableMapOf<Class<out MotionAudio>, MotionAudioSerializer<out MotionAudio>>()
+
+    private val assetFactories = mutableMapOf<String, MotionAssetFactory>()
+    private val assetSerializers = mutableMapOf<Class<out MotionAsset>, MotionAssetSerializer<out MotionAsset>>()
 
     /**
      * Register a [MotionView] for deserialization.
@@ -128,6 +132,26 @@ object MotionSdui {
         audioSerializers[clazz] = serializer
     }
 
+    /**
+     * Register a [MotionAsset] for deserialization.
+     */
+    fun registerAsset(
+        type: String,
+        factory: MotionAssetFactory,
+    ) {
+        assetFactories[type] = factory
+    }
+
+    /**
+     * Register a [MotionAsset] for serialization.
+     */
+    fun <T : MotionAsset> registerAssetSerializer(
+        clazz: Class<T>,
+        serializer: MotionAssetSerializer<T>,
+    ) {
+        assetSerializers[clazz] = serializer
+    }
+
     internal fun getViewFactory(type: String): MotionViewFactory? = viewFactories[type]
 
     @Suppress("UNCHECKED_CAST")
@@ -157,6 +181,12 @@ object MotionSdui {
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionAudio> getAudioSerializer(clazz: Class<out T>): MotionAudioSerializer<T>? =
         audioSerializers[clazz] as? MotionAudioSerializer<T>
+
+    internal fun getAssetFactory(type: String): MotionAssetFactory? = assetFactories[type]
+
+    @Suppress("UNCHECKED_CAST")
+    internal fun <T : MotionAsset> getAssetSerializer(clazz: Class<out T>): MotionAssetSerializer<T>? =
+        assetSerializers[clazz] as? MotionAssetSerializer<T>
 }
 
 fun interface MotionViewFactory {
@@ -219,6 +249,20 @@ fun interface MotionAudioFactory {
 fun interface MotionAudioSerializer<T : MotionAudio> {
     fun serialize(
         audio: T,
+        json: JsonObject,
+    )
+}
+
+fun interface MotionAssetFactory {
+    fun create(
+        context: Context,
+        json: JsonObject,
+    ): MotionAsset
+}
+
+fun interface MotionAssetSerializer<T : MotionAsset> {
+    fun serialize(
+        asset: T,
         json: JsonObject,
     )
 }

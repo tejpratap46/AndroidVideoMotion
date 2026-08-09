@@ -195,7 +195,7 @@ fun AppNavHost(
                 LaunchedEffect(project) {
                     if (uiState is MotionDownloadUiState.Idle) {
                         downloadViewModel.reset()
-                        downloadViewModel.startDownload(it.sdui.toString())
+                        downloadViewModel.startDownload(it)
                     }
                 }
 
@@ -238,8 +238,8 @@ fun AppNavHost(
                     onNavigateToAssetDownload = { id ->
                         navController.navigate(Screen.AssetDownload.createRoute(id))
                     },
-                    onCheckPendingDownloads = { sdui ->
-                        downloadViewModel.hasPendingDownloads(sdui)
+                    onCheckPendingDownloads = { _ ->
+                        downloadViewModel.hasPendingDownloads(it)
                     },
                     modifier = modifier,
                 )
@@ -264,8 +264,8 @@ fun AppNavHost(
                     onNavigateToAssetDownload = { id ->
                         navController.navigate(Screen.AssetDownload.createRoute(id))
                     },
-                    onCheckPendingDownloads = { sdui ->
-                        downloadViewModel.hasPendingDownloads(sdui)
+                    onCheckPendingDownloads = { _ ->
+                        downloadViewModel.hasPendingDownloads(it)
                     },
                     modifier = modifier,
                 )
