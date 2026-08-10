@@ -26,8 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
@@ -38,6 +36,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
@@ -50,7 +49,6 @@ import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModelFactory
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.SettingsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
-import com.tejpratapsingh.motion.download.MotionDownloadManager
 import com.tejpratapsingh.motion.download.ui.MotionDownloadViewModel
 import com.tejpratapsingh.motion.metadataextractor.presentation.ShareReceiverActivity
 import com.tejpratapsingh.motionstore.extensions.copyProjectNameToClipboard
@@ -63,6 +61,7 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.net.URLConnection
+import kotlin.time.Duration.Companion.milliseconds
 
 class SearchActivity : ComponentActivity() {
     private val projectsViewModel: ProjectsViewModel by viewModels {
@@ -131,7 +130,12 @@ class SearchActivity : ComponentActivity() {
                         if (showBottomBar) {
                             NavigationBar {
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Rounded.Folder, contentDescription = null) },
+                                    icon = {
+                                        Icon(
+                                            Icons.Rounded.Folder,
+                                            contentDescription = null,
+                                        )
+                                    },
                                     label = { Text("Projects") },
                                     selected = currentDestination?.hierarchy?.any { it.route == Screen.Projects.route } == true,
                                     onClick = {
@@ -145,7 +149,12 @@ class SearchActivity : ComponentActivity() {
                                     },
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
+                                    icon = {
+                                        Icon(
+                                            Icons.Rounded.Settings,
+                                            contentDescription = null,
+                                        )
+                                    },
                                     label = { Text("Settings") },
                                     selected = currentDestination?.hierarchy?.any { it.route == Screen.Settings.route } == true,
                                     onClick = {
@@ -178,6 +187,22 @@ class SearchActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    WorkManager
+                        .getInstance(this@SearchActivity)
+                        .getWorkInfosByTagLiveData(SyncWorker.TAG_IMMEDIATE)
+                        .observe(this@SearchActivity) { workInfos ->
+                            if (workInfos.isNullOrEmpty()) return@observe
+
+                            val finished = workInfos.all { it.state.isFinished }
+                            if (finished) {
+                                projectsViewModel.loadProjects()
+                                projectsViewModel.setRefreshing(false)
+                            }
+                        }
+                }
+            }
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lyricsViewModel.uiState.collect {
@@ -195,6 +220,13 @@ class SearchActivity : ComponentActivity() {
                     projectsViewModel.syncEvent.collect {
                         Timber.d("onCreate: syncEvent called")
                         Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
+                        SyncWorker.scheduleImmediate(this@SearchActivity)
+                    }
+                }
+
+                launch {
+                    projectsViewModel.syncAllEvent.collect {
+                        Timber.d("onCreate: syncAllEvent called")
                         SyncWorker.scheduleImmediate(this@SearchActivity)
                     }
                 }
@@ -280,13 +312,13 @@ class SearchActivity : ComponentActivity() {
             val negativeButton = errorDialog.getButton(DialogInterface.BUTTON_POSITIVE)
 
             for (i in (retrySeconds - 1) downTo 1) {
-                delay(1000)
+                delay(1000.milliseconds)
                 if (errorDialog.isShowing) {
                     negativeButton.text = getString(R.string.retry, i)
                 }
             }
 
-            delay(1000)
+            delay(1000.milliseconds)
             if (errorDialog.isShowing) {
                 errorDialog.dismiss()
                 lyricsViewModel.searchLyrics(lyricsViewModel.query.value)

@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -32,6 +33,14 @@ fun MotionView.toJson(): JsonObject {
             effectsArray.add(effect.toJson())
         }
         json.add("effects", effectsArray)
+    }
+
+    if (assets.isNotEmpty()) {
+        val assetsArray = JsonArray()
+        assets.forEach { asset ->
+            assetsArray.add(asset.toJson())
+        }
+        json.add("assets", assetsArray)
     }
 
     if (this is IComposerView) {
@@ -90,7 +99,7 @@ fun JsonObject.toMotionView(context: Context): MotionView {
 /**
  * Helper to parse common [MotionView] properties.
  */
-fun JsonObject.parseMotionViewProps(): MotionViewProps {
+fun JsonObject.parseMotionViewProps(context: Context): MotionViewProps {
     val startFrame = get("startFrame")?.asInt ?: 0
     val endFrame = get("endFrame")?.asInt ?: 0
     val loop =
@@ -118,7 +127,17 @@ fun JsonObject.parseMotionViewProps(): MotionViewProps {
             MotionLayoutInfo()
         }
 
-    return MotionViewProps(startFrame, endFrame, loop, effects, layoutInfo)
+    val assets = mutableListOf<MotionAsset>()
+    if (has("assets")) {
+        val assetsArray = get("assets").asJsonArray
+        assetsArray.forEach { assetJson ->
+            if (assetJson is JsonObject) {
+                assets.add(assetJson.toMotionAsset(context))
+            }
+        }
+    }
+
+    return MotionViewProps(startFrame, endFrame, loop, effects, layoutInfo, assets)
 }
 
 data class MotionViewProps(
@@ -127,6 +146,7 @@ data class MotionViewProps(
     val loop: Pair<Int, Int>,
     val effects: List<MotionEffect>,
     val layoutInfo: MotionLayoutInfo,
+    val assets: List<MotionAsset>,
 )
 
 /**

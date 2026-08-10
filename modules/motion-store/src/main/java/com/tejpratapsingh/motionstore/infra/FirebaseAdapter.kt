@@ -7,6 +7,7 @@ import com.google.firebase.firestore.Query
 import com.tejpratapsingh.motionstore.domain.BackendAdapter
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 
 /**
  * [BackendAdapter] backed by Cloud Firestore.
@@ -47,16 +48,19 @@ class FirebaseAdapter(
         deviceId: String,
     ): List<Map<String, Any?>> =
         try {
+            val sinceTimestamp = convertNanosToTimestamp(since)
+            Timber.d("Firestore: fetchSince(table=$tableName, since=$since ($sinceTimestamp), deviceId=$deviceId)")
             val snapshot =
                 firestore
                     .collection(tableName)
-                    .whereGreaterThan(SyncTracker.COL_UPLOADED_AT, convertNanosToTimestamp(since))
+                    .whereGreaterThan(SyncTracker.COL_UPLOADED_AT, sinceTimestamp)
                     .whereNotEqualTo(SyncTracker.COL_UPDATED_BY, deviceId)
                     .orderBy(SyncTracker.COL_UPDATED_BY)
                     .orderBy(SyncTracker.COL_UPLOADED_AT, Query.Direction.ASCENDING)
                     .get()
                     .await()
 
+            Timber.d("Firestore: fetchSince(table=$tableName) returned ${snapshot.size()} documents")
             snapshot.documents.map { doc ->
                 doc.data.orEmpty().toMutableMap().apply {
                     // Expose Firestore document ID as serverId for consistency
@@ -64,8 +68,7 @@ class FirebaseAdapter(
                 }
             }
         } catch (e: Exception) {
-            // Log and return empty list if network is unavailable or host cannot be resolved
-            e.printStackTrace()
+            Timber.e(e, "Firestore: fetchSince(table=$tableName) failed")
             emptyList()
         }
 
@@ -74,24 +77,28 @@ class FirebaseAdapter(
         data: Map<String, Any?>,
     ): Map<String, Any?> =
         try {
+            Timber.d("Firestore: create(table=$tableName, data=$data)")
             val payload =
                 data
                     .toMutableMap()
                     .apply { put(SyncTracker.COL_UPLOADED_AT, FieldValue.serverTimestamp()) }
 
             val docRef = firestore.collection(tableName).add(payload).await()
+            Timber.d("Firestore: Document created with ID: ${docRef.id} in $tableName")
 
             // Read the created doc back so we return the full server state
             val created = docRef.get().await()
-            created.data.orEmpty().toMutableMap().apply {
+            val result = created.data.orEmpty().toMutableMap().apply {
                 put(SyncTracker.COL_SERVER_ID, docRef.id)
                 put(
                     SyncTracker.COL_UPLOADED_AT,
                     created.getTimestamp(SyncTracker.COL_UPLOADED_AT)?.nanoseconds,
                 )
             }
+            Timber.v("Firestore: create(table=$tableName) returning result: $result")
+            result
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Firestore: create(table=$tableName) failed")
             data // Return original data on failure or handle as needed
         }
 
@@ -101,6 +108,7 @@ class FirebaseAdapter(
         data: Map<String, Any?>,
     ): Map<String, Any?> =
         try {
+            Timber.d("Firestore: update(table=$tableName, serverId=$serverId, data=$data)")
             val payload =
                 data
                     .toMutableMap()
@@ -111,19 +119,22 @@ class FirebaseAdapter(
                 .document(serverId)
                 .set(payload)
                 .await()
+            Timber.d("Firestore: Document $serverId updated in $tableName")
 
             val docRef = firestore.collection(tableName).document(serverId)
             val updatedDoc = docRef.get().await()
 
-            payload.apply {
+            val result = payload.apply {
                 put(SyncTracker.COL_SERVER_ID, serverId)
                 put(
                     SyncTracker.COL_UPLOADED_AT,
                     updatedDoc.getTimestamp(SyncTracker.COL_UPLOADED_AT)?.nanoseconds,
                 )
             }
+            Timber.v("Firestore: update(table=$tableName) returning result: $result")
+            result
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Firestore: update(table=$tableName, serverId=$serverId) failed")
             data
         }
 
@@ -132,13 +143,15 @@ class FirebaseAdapter(
         serverId: String,
     ) {
         try {
+            Timber.d("Firestore: delete(table=$tableName, serverId=$serverId)")
             firestore
                 .collection(tableName)
                 .document(serverId)
                 .delete()
                 .await()
+            Timber.d("Firestore: Document $serverId deleted from $tableName")
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Firestore: delete(table=$tableName, serverId=$serverId) failed")
         }
     }
 }

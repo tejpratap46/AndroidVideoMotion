@@ -9,6 +9,7 @@ import coil.ImageLoader
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import coil.request.videoFrameMillis
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -21,11 +22,16 @@ import kotlinx.coroutines.runBlocking
  */
 class CoilVideoPlayer(
     context: Context,
-    val videoUri: Uri,
+    val asset: MotionAsset,
     startFrame: Int,
     endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
+    /**
+     * For backward compatibility, the video URI.
+     */
+    val videoUri: Uri get() = asset.getUri()
+
     private val imageView =
         ImageView(context).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
@@ -89,4 +95,7 @@ class CoilVideoPlayer(
     }
 
     override fun getViewBitmap(): Bitmap = currentBitmap ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

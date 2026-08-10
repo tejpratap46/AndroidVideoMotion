@@ -59,6 +59,20 @@ export const MyNewView: React.FC<{ props: MotionViewProps; currentFrame: number;
 };
 ```
 
+### Handling Assets (MotionAsset)
+Android views often use `MotionAsset` (e.g., `ImageAsset`, `VideoAsset`, `FontAsset`). These are serialized as objects with a `type` and `uri`.
+
+In the Web implementation, use `getAssetUri` from `../infra/assetUtils` to extract the URI.
+
+**Types Update:** Ensure `asset?: MotionAssetProps` is in `MotionViewProps`.
+
+```tsx
+import { getAssetUri } from '../infra/assetUtils';
+
+// Inside your component:
+const imageUri = getAssetUri(props.asset) || props.fallbackUri;
+```
+
 ### Mapping an Effect
 If you are adding a new effect, you must add it to the `useApplyEffects` hook.
 

@@ -1,12 +1,13 @@
 package com.tejpratapsingh.motionlib.coil.infra
 
 import android.graphics.PointF
-import androidx.core.net.toUri
 import com.commit451.coiltransformations.CropTransformation
 import com.google.gson.JsonArray
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.parseMotionEffectProps
 import com.tejpratapsingh.motion.sdui.infra.parseMotionViewProps
+import com.tejpratapsingh.motion.sdui.infra.toJson
+import com.tejpratapsingh.motion.sdui.infra.toMotionAsset
 import com.tejpratapsingh.motionlib.coil.effects.CoilBlurEffect
 import com.tejpratapsingh.motionlib.coil.effects.CoilBrightnessEffect
 import com.tejpratapsingh.motionlib.coil.effects.CoilCenterOnFaceEffect
@@ -241,13 +242,11 @@ object CoilMotionSduiInitializer {
 
         // Register CoilVideoPlayer
         MotionSdui.registerView(CoilVideoPlayer::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
-            val videoUriStr =
-                json.get("videoUri")?.asString
-                    ?: throw IllegalArgumentException("videoUri required for CoilVideoPlayer")
+            val props = json.parseMotionViewProps(context)
+            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
             CoilVideoPlayer(
                 context = context,
-                videoUri = videoUriStr.toUri(),
+                asset = asset,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 effects = props.effects,
@@ -255,7 +254,7 @@ object CoilMotionSduiInitializer {
         }
         MotionSdui.registerViewSerializer(CoilVideoPlayer::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
-            json.addProperty("videoUri", view.videoUri.toString())
+            json.add("asset", view.asset.toJson())
         }
 
         // --- Effects ---

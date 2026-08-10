@@ -9,6 +9,7 @@ import com.tejpratapsingh.lyricsmaker.R
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
 import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
 import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
@@ -21,9 +22,14 @@ class MultiLyricsContainer(
     val songName: String,
     startFrame: Int,
     endFrame: Int,
-    val image: String? = null,
+    val asset: MotionAsset? = null,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseFrameMotionView(context) {
+    /**
+     * For backward compatibility, the image path.
+     */
+    val image: String? get() = asset?.getUri()?.toString()
+
     private val ivAlbumArt: ImageView
     val fakeChartView: FakeAudioChartView
 
@@ -52,7 +58,7 @@ class MultiLyricsContainer(
             runBlocking {
                 var bitmap: Bitmap? = null
                 if (image != null) {
-                    bitmap = repository.getAlbumArtBitmap(image)
+                    bitmap = repository.getAlbumArtBitmap(image!!)
                 } else {
                     Timber.i("Fetching from musicbrainz")
                     val songDetails = songName.split(" - ")
@@ -92,4 +98,7 @@ class MultiLyricsContainer(
     }
 
     override fun getViewBitmap(): Bitmap = this.toBitmap()
+
+    override val assets: List<MotionAsset>
+        get() = asset?.let { listOf(it) } ?: emptyList()
 }

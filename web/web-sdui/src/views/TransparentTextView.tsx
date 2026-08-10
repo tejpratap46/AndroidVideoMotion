@@ -1,9 +1,12 @@
 import React from 'react';
 import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
+import { getAssetUri } from '../infra/assetUtils';
 
 export const TransparentTextView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
   const style = useApplyEffects(props, currentFrame, config);
+
+  const fontFamily = props.fontAsset ? getAssetUri(props.fontAsset) : undefined;
 
   return (
     <div
@@ -19,6 +22,7 @@ export const TransparentTextView: React.FC<{ props: MotionViewProps; currentFram
         fontSize: '2rem',
         color: 'white',
         textAlign: 'center',
+        fontFamily: fontFamily,
         ...style,
       }}
     >

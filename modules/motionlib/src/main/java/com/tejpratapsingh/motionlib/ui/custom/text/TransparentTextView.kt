@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -12,6 +13,7 @@ class TransparentTextView(
     text: String,
     startFrame: Int,
     endFrame: Int,
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
@@ -21,6 +23,7 @@ class TransparentTextView(
         startFrame = startFrame,
         endFrame = endFrame,
         textView = AppCompatTextView(context),
+        fontAsset = fontAsset,
         textSizeVariant = textSizeVariant,
         textColor = textColor,
         effects = effects,

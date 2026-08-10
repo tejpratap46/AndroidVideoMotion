@@ -38,6 +38,9 @@ class ProjectsViewModel(
     private val _syncEvent = MutableSharedFlow<MotionProject>()
     val syncEvent: SharedFlow<MotionProject> = _syncEvent.asSharedFlow()
 
+    private val _syncAllEvent = MutableSharedFlow<Unit>()
+    val syncAllEvent: SharedFlow<Unit> = _syncAllEvent.asSharedFlow()
+
     init {
         loadProjects()
     }
@@ -57,10 +60,12 @@ class ProjectsViewModel(
     fun refresh() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            // re-fetch your projects here
-            loadProjects()
-            _isRefreshing.value = false
+            _syncAllEvent.emit(Unit)
         }
+    }
+
+    fun setRefreshing(refreshing: Boolean) {
+        _isRefreshing.value = refreshing
     }
 
     fun deleteProject(

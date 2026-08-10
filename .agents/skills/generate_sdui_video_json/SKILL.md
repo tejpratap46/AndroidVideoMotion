@@ -36,7 +36,39 @@ The root JSON object defines the video project.
 
 ---
 
-## 1. MotionView
+## 1. MotionAsset
+
+Assets are used by views and audio components to represent media or resources. They are polymorphic objects.
+
+- `type`: (Required) String name of the asset type.
+- `uri`: (Required) String URI of the resource.
+- `metadata`: (Optional) Object containing custom implementation-specific metadata.
+
+### Available MotionAsset Types
+
+| Type | Additional Parameters |
+| :--- | :--- |
+| `SimpleMotionAsset` | - |
+| `ImageAsset` | - |
+| `VideoAsset` | - |
+| `FontAsset` | `fontName` (Optional String) |
+
+Example `FontAsset` with metadata:
+```json
+{
+  "type": "FontAsset",
+  "uri": "https://example.com/font.ttf",
+  "fontName": "CustomFont",
+  "metadata": {
+    "weight": "bold",
+    "isItalic": false
+  }
+}
+```
+
+---
+
+## 2. MotionView
 
 All `MotionView` objects share these base properties:
 
@@ -50,32 +82,42 @@ All `MotionView` objects share these base properties:
   - `padding`: `{ "left": Int, "top": Int, "right": Int, "bottom": Int }`.
   - `margin`: `{ "left": Int, "top": Int, "right": Int, "bottom": Int }`.
   - `gravity`: Pipe-separated string (e.g., `"center|top"`, `"left|bottom"`).
+- `assets`: (Optional) Array of `MotionAsset` objects. These are the resources required by the view.
 - `effects`: (Optional) Array of `MotionEffect` objects.
+
+### Asset Management in MotionView
+
+Each `MotionView` implementation manages its required resources through `MotionAsset` objects. In SDUI, these are typically provided via:
+- `asset`: For main media resources (e.g., in `MotionImageView`, `VideoFrameView`).
+- `fontAsset`: For custom typography (e.g., in `TransparentTextView`).
+- `assets`: A generic array for additional required resources.
+
+The engine uses these to ensure all assets are prepared and cached before rendering.
 
 ### Available MotionView Types and Specific Parameters
 
 | Type | Parameters |
 | :--- | :--- |
-| `TransparentTextView` | `text` (String), `textSizeVariant` (`H1`-`H6`, `P`), `textColor` (Hex String) |
-| `TypeWriterTextView` | `text` (String), `writingSpeed` (Float), `unwrittenTextAlpha` (Float), `cursorChar` (String, default `\|`), `blinkFrameRate` (Int), `textSizeVariant`, `textColor` |
-| `WordWriterTextView` | `text`, `writingSpeed`, `unwrittenTextAlpha`, `textSizeVariant`, `textColor`, `highlightColor` (Hex String) |
-| `WordBlinkTextView` | `text`, `writingSpeed`, `textSizeVariant`, `textColor` |
-| `PopUpTextView` | `text`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY` (Float), `textSizeVariant`, `textColor`, `highlightColor` |
-| `RainbowPopUpTextView` | `text`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY`, `textSizeVariant`, `textColor`, `highlightColor` |
-| `AccentMiddlePopUpTextView` | `text`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY`, `accentColor` (Int Color), `textSizeVariant`, `textColor`, `highlightColor` |
-| `CircularMotionImageView` | `imageUri` (String URI) |
-| `MotionImageView` | `imageUri` (String URI) |
-| `VideoFrameView` | `videoUri` (String URI) |
+| `TransparentTextView` | `text` (String), `fontAsset` (`MotionAsset`), `textSizeVariant` (`H1`-`H6`, `P`), `textColor` (Hex String) |
+| `TypeWriterTextView` | `text`, `fontAsset`, `writingSpeed` (Float), `unwrittenTextAlpha` (Float), `cursorChar` (String, default `\|`), `blinkFrameRate` (Int), `textSizeVariant`, `textColor` |
+| `WordWriterTextView` | `text`, `fontAsset`, `writingSpeed`, `unwrittenTextAlpha`, `textSizeVariant`, `textColor`, `highlightColor` (Hex String) |
+| `WordBlinkTextView` | `text`, `fontAsset`, `writingSpeed`, `textSizeVariant`, `textColor` |
+| `PopUpTextView` | `text`, `fontAsset`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY` (Float), `textSizeVariant`, `textColor`, `highlightColor` |
+| `RainbowPopUpTextView` | `text`, `fontAsset`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY`, `textSizeVariant`, `textColor`, `highlightColor` |
+| `AccentMiddlePopUpTextView` | `text`, `fontAsset`, `writingSpeed`, `unwrittenTextAlpha`, `maxTranslationY`, `accentColor` (Int Color), `textSizeVariant`, `textColor`, `highlightColor` |
+| `CircularMotionImageView` | `asset` (`MotionAsset`) |
+| `MotionImageView` | `asset` (`MotionAsset`) |
+| `VideoFrameView` | `asset` (`MotionAsset`) |
 | `GradientView` | `orientation` (`HORIZONTAL`, `VERTICAL`), `colors` (Array of Hex Strings) |
 | `TranslucentMotionView` | `color` (Hex String), `alpha` (Float 0.0-1.0) |
 | `CircularAudioWaveformView` | `amplitudes` (Array of Floats) |
 | `RadialAudioWaveformView` | `amplitudes` (Array of Floats) |
-| `CoilVideoPlayer` | `videoUri` (String URI), `plugins` (Array of Coil Plugins) |
-| `MultiLyricsContainer` | `songName` (String), `image` (String URI) |
+| `CoilVideoPlayer` | `asset` (`MotionAsset`), `plugins` (Array of Coil Plugins) |
+| `MultiLyricsContainer` | `songName` (String), `asset` (`MotionAsset`) |
 
 ---
 
-## 2. MotionEffect
+## 3. MotionEffect
 
 All `MotionEffect` objects share these base properties:
 
@@ -120,7 +162,7 @@ All `MotionEffect` objects share these base properties:
 
 ---
 
-## 3. MotionTransition
+## 4. MotionTransition
 
 Transitions are used in the `sequence` array between two views.
 
@@ -144,7 +186,7 @@ Transitions are used in the `sequence` array between two views.
 Used in the `audios` root array.
 
 - `type`: `"MotionAudio"`
-- `audioUri`: String URI
+- `asset`: `MotionAsset` (Object)
 - `startFrame`: Int
 - `endFrame`: Int
 - `delayFrame`: Int

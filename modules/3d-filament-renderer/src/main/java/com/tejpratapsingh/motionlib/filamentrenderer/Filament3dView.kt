@@ -20,6 +20,7 @@ import com.google.android.filament.Viewport
 import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.Utils
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.provideCurrentConfig
@@ -28,13 +29,18 @@ import java.nio.ByteBuffer
 
 class Filament3dView(
     private val context: Context,
-    private val modelAssetPath: String,
+    val asset: MotionAsset,
     override val startFrame: Int,
     override val endFrame: Int,
     override var loop: Pair<Int, Int> = Pair(0, 0),
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
+    /**
+     * For backward compatibility, the model asset path.
+     */
+    val modelAssetPath: String get() = asset.getUri().toString().removePrefix("asset:///")
+
     override val effects: MutableList<MotionEffect> = mutableListOf()
 
     override fun addEffect(effect: MotionEffect) {
@@ -213,6 +219,9 @@ class Filament3dView(
         val bitmap = getModelBitmap(buffer)
         return bitmap
     }
+
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 
     fun destroy() {
         cleanupFilament()

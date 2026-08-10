@@ -11,6 +11,7 @@ import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.withTranslation
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -33,6 +34,7 @@ class AccentMiddlePopUpTextView(
     val maxTranslationY: Float = 50f,
     val accentColor: Int = Color.YELLOW,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     highlightColor: String? = null,
@@ -44,6 +46,7 @@ class AccentMiddlePopUpTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        fontAsset = fontAsset,
         textSizeVariant = textSizeVariant,
         textColor = textColor,
         highlightColor = highlightColor,

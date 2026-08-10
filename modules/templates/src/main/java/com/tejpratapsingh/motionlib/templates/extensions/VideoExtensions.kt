@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.templates.extensions
 
 import android.net.Uri
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
@@ -14,7 +15,7 @@ fun ContentScope.videoFrameView(
     effects: List<MotionEffect> = emptyList(),
     layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
     block: (VideoFrameView.() -> Unit)? = null,
-) = VideoFrameView(context, videoUri, startFrame, endFrame, effects = effects)
+) = VideoFrameView(context, SimpleMotionAsset(videoUri), startFrame, endFrame, effects = effects)
     .apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }
@@ -26,7 +27,7 @@ fun ContentScope.mediaFrameView(
     effects: List<MotionEffect> = emptyList(),
     layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
     block: (MediaFrameView.() -> Unit)? = null,
-) = MediaFrameView(context, mediaUri, startFrame, endFrame, effects = effects)
+) = MediaFrameView(context, SimpleMotionAsset(mediaUri), startFrame, endFrame, effects = effects)
     .apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }

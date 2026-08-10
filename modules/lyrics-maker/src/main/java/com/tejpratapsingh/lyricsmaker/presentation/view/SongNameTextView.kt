@@ -2,6 +2,7 @@ package com.tejpratapsingh.lyricsmaker.presentation.view
 
 import android.content.Context
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -13,7 +14,7 @@ class SongNameTextView(
     startFrame: Int,
     endFrame: Int,
     textView: AppCompatTextView = AppCompatTextView(context),
-    fontUrl: String? = null,
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
@@ -23,7 +24,7 @@ class SongNameTextView(
         startFrame = startFrame,
         endFrame = endFrame,
         textView = textView,
-        fontUrl = fontUrl,
+        fontAsset = fontAsset,
         textSizeVariant = textSizeVariant,
         textColor = textColor,
         effects = effects,

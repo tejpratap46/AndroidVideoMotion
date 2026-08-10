@@ -9,17 +9,21 @@ import com.ketch.Ketch
 import com.ketch.Status
 import com.tejpratapsingh.motion.download.model.AssetDownloadProgress
 import com.tejpratapsingh.motion.download.model.DownloadProgress
-import com.tejpratapsingh.motionlib.core.MotionCacheManager
+import com.tejpratapsingh.motion.sdui.infra.MotionAssetExtractor
+import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionAssetManager
+import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformWhile
+import timber.log.Timber
 import java.io.File
 
-class MotionDownloadManager(
+class MotionAssetManagerImpl(
     private val context: Context,
-) : MotionCacheManager {
+) : MotionAssetManager {
     init {
         MMKV.initialize(context)
     }
@@ -27,11 +31,14 @@ class MotionDownloadManager(
     private val kv = MMKV.mmkvWithID("motion_download_cache")
     private val ketch = Ketch.builder().build(context)
 
-    override fun getCachedUri(remoteUri: Uri): Uri? {
+    override fun getCachedUri(asset: MotionAsset): Uri? {
+        val remoteUri = asset.getUri()
         val path = kv.decodeString(remoteUri.toString())
         return if (path != null && File(path).exists() && File(path).isFile) {
+            Timber.d("Cache hit for asset: $remoteUri")
             Uri.fromFile(File(path))
         } else {
+            Timber.d("Cache miss for asset: $remoteUri")
             null
         }
     }
@@ -50,11 +57,13 @@ class MotionDownloadManager(
         return assets
     }
 
-    override fun deleteCachedAsset(remoteUrl: String) {
+    override fun deleteCachedAsset(asset: MotionAsset) {
+        val remoteUrl = asset.getUri().toString()
         val path = kv.decodeString(remoteUrl)
         if (path != null) {
             val file = File(path)
             if (file.exists()) {
+                Timber.d("Deleting cached file: $path")
                 file.delete()
             }
         }
@@ -62,6 +71,7 @@ class MotionDownloadManager(
     }
 
     override fun clearAll() {
+        Timber.d("Clearing all cached assets")
         val allKeys = kv.allKeys() ?: return
         allKeys.forEach { key ->
             val path = kv.decodeString(key)
@@ -76,15 +86,23 @@ class MotionDownloadManager(
     }
 
     /**
-     * Finds all HTTP/HTTPS links in [sduiJson], downloads them using Ketch via WorkManager,
+     * Finds all assets in [project], downloads them using Ketch via WorkManager,
      * and returns a flow of [DownloadProgress].
      */
-    fun downloadAssets(sduiJson: String): Flow<DownloadProgress> =
+    fun downloadAssets(project: MotionProject): Flow<DownloadProgress> =
         flow {
-            val urls = extractUrls(sduiJson)
-            val total = urls.size
+            Timber.d("Starting asset download for project: ${project.id}")
+            val assets =
+                MotionAssetExtractor
+                    .extractAssets(context, project.sdui)
+                    .filter { asset ->
+                        val uri = asset.getUri()
+                        uri.scheme == "http" || uri.scheme == "https"
+                    }
+            val total = assets.size
 
             if (total == 0) {
+                Timber.d("No remote assets to download for project: ${project.id}")
                 emit(
                     DownloadProgress(
                         totalFiles = 0,
@@ -96,10 +114,14 @@ class MotionDownloadManager(
                 return@flow
             }
 
+            Timber.d("Found $total remote assets to download/verify")
+
+            val urls = assets.map { it.getUri().toString() }
+
             // Enqueue Worker
             val workRequest =
                 OneTimeWorkRequestBuilder<MotionDownloadWorker>()
-                    .setInputData(workDataOf(MotionDownloadWorker.KEY_SDUI_JSON to sduiJson))
+                    .setInputData(workDataOf(MotionDownloadWorker.KEY_PROJECT_ID to project.id))
                     .build()
             WorkManager.getInstance(context).enqueue(workRequest)
 
@@ -132,7 +154,7 @@ class MotionDownloadManager(
                                 AssetDownloadProgress(
                                     id = url.hashCode(),
                                     url = url,
-                                    fileName = url.substringAfterLast("/"),
+                                    fileName = url.substringBefore("?").substringBefore("#").substringAfterLast("/"),
                                     progress = 100,
                                     status = Status.SUCCESS.name,
                                 )
@@ -140,19 +162,23 @@ class MotionDownloadManager(
                                 AssetDownloadProgress(
                                     id = url.hashCode(),
                                     url = url,
-                                    fileName = url.substringAfterLast("/"),
+                                    fileName = url.substringBefore("?").substringBefore("#").substringAfterLast("/"),
                                     progress = 0,
                                     status = Status.QUEUED.name,
                                 )
                             }
                         }
 
-                    val totalProgress = if (total > 0) assetProgressList.sumOf { it.progress } / total else 0
+                    val totalProgress = assetProgressList.sumOf { it.progress } / total
                     val downloadedCount =
                         assetProgressList.count { it.status == Status.SUCCESS.name }
                     val failedCount = assetProgressList.count { it.status == Status.FAILED.name }
 
                     val isComplete = downloadedCount + failedCount == total
+
+                    if (isComplete) {
+                        Timber.d("Download complete for project: ${project.id}. Success: $downloadedCount, Failed: $failedCount")
+                    }
 
                     DownloadProgress(
                         totalFiles = total,
@@ -172,24 +198,23 @@ class MotionDownloadManager(
         ketch.retry(id)
     }
 
-    fun hasPendingDownloads(sduiJson: String): Boolean {
-        val urls = extractUrls(sduiJson)
-        if (urls.isEmpty()) return false
+    fun hasPendingDownloads(project: MotionProject): Boolean {
+        val assets =
+            MotionAssetExtractor
+                .extractAssets(context, project.sdui)
+                .filter { asset ->
+                    val uri = asset.getUri()
+                    uri.scheme == "http" || uri.scheme == "https"
+                }
+        if (assets.isEmpty()) return false
 
-        return urls.any { url ->
+        return assets.any { asset ->
+            val url = asset.getUri().toString()
             val cachedPath = kv.decodeString(url)
             cachedPath == null || !File(cachedPath).exists() || !File(cachedPath).isFile
         }
     }
 
     companion object {
-        fun extractUrls(sduiJson: String): List<String> {
-            val urlRegex = """https?://[^\s"'<>{}|\\^`\[\]]+""".toRegex()
-            return urlRegex
-                .findAll(sduiJson)
-                .map { it.value }
-                .toSet()
-                .toList()
-        }
     }
 }

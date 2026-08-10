@@ -1,15 +1,16 @@
 package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.tejpratapsingh.motionlib.core.MotionCacheManager
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
+import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class SettingsViewModel(
-    private val cacheManager: MotionCacheManager
+    private val cacheManager: MotionAssetManager,
 ) : ViewModel() {
-
     private val _cachedAssets = MutableStateFlow<Map<String, String>>(emptyMap())
     val cachedAssets: StateFlow<Map<String, String>> = _cachedAssets.asStateFlow()
 
@@ -22,7 +23,7 @@ class SettingsViewModel(
     }
 
     fun deleteAsset(url: String) {
-        cacheManager.deleteCachedAsset(url)
+        cacheManager.deleteCachedAsset(SimpleMotionAsset(url.toUri()))
         loadCachedAssets()
     }
 

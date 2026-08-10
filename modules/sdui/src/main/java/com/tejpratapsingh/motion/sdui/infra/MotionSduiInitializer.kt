@@ -3,6 +3,10 @@ package com.tejpratapsingh.motion.sdui.infra
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.google.gson.JsonArray
+import com.tejpratapsingh.motionlib.assettype.FontAsset
+import com.tejpratapsingh.motionlib.assettype.ImageAsset
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
+import com.tejpratapsingh.motionlib.assettype.VideoAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.motion.transitions.BlurTransition
@@ -44,10 +48,46 @@ import com.tejpratapsingh.motionlib.ui.effects.ZoomOutEffect
  */
 object MotionSduiInitializer {
     fun initialize() {
+        // Register SimpleMotionAsset
+        MotionSdui.registerAsset(SimpleMotionAsset::class.java.simpleName) { _, json ->
+            val uri = json.get("uri")?.asString ?: throw IllegalArgumentException("uri required for SimpleMotionAsset")
+            val metadata = json.get("metadata")?.asJsonObject
+            SimpleMotionAsset(uri.toUri(), metadata)
+        }
+        MotionSdui.registerAssetSerializer(SimpleMotionAsset::class.java) { _, _ -> }
+
+        // Register ImageAsset
+        MotionSdui.registerAsset(ImageAsset::class.java.simpleName) { _, json ->
+            val uri = json.get("uri")?.asString ?: throw IllegalArgumentException("uri required for ImageAsset")
+            val metadata = json.get("metadata")?.asJsonObject
+            ImageAsset(uri.toUri(), metadata)
+        }
+        MotionSdui.registerAssetSerializer(ImageAsset::class.java) { _, _ -> }
+
+        // Register VideoAsset
+        MotionSdui.registerAsset(VideoAsset::class.java.simpleName) { _, json ->
+            val uri = json.get("uri")?.asString ?: throw IllegalArgumentException("uri required for VideoAsset")
+            val metadata = json.get("metadata")?.asJsonObject
+            VideoAsset(uri.toUri(), metadata)
+        }
+        MotionSdui.registerAssetSerializer(VideoAsset::class.java) { _, _ -> }
+
+        // Register FontAsset
+        MotionSdui.registerAsset(FontAsset::class.java.simpleName) { _, json ->
+            val uri = json.get("uri")?.asString ?: throw IllegalArgumentException("uri required for FontAsset")
+            val fontName = json.get("fontName")?.asString
+            val metadata = json.get("metadata")?.asJsonObject
+            FontAsset(uri.toUri(), fontName, metadata)
+        }
+        MotionSdui.registerAssetSerializer(FontAsset::class.java) { asset, json ->
+            asset.fontName?.let { json.addProperty("fontName", it) }
+        }
+
         // Register TransparentTextView
         MotionSdui.registerView(TransparentTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             TransparentTextView(
@@ -55,6 +95,7 @@ object MotionSduiInitializer {
                 text = text,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 effects = props.effects,
@@ -63,6 +104,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(TransparentTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
             view.textColor?.let { json.addProperty("textColor", it) }
             view.highlightColor?.let { json.addProperty("highlightColor", it) }
@@ -70,12 +112,13 @@ object MotionSduiInitializer {
 
         // Register TypeWriterTextView
         MotionSdui.registerView(TypeWriterTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val cursorChar = if (json.has("cursorChar")) json.get("cursorChar")?.asString else "|"
             val blinkFrameRate = json.get("blinkFrameRate")?.asInt ?: 10
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             TypeWriterTextView(
@@ -87,6 +130,7 @@ object MotionSduiInitializer {
                 unwrittenTextAlpha = unwrittenTextAlpha,
                 cursorChar = cursorChar,
                 blinkFrameRate = blinkFrameRate,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 effects = props.effects,
@@ -95,6 +139,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(TypeWriterTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("cursorChar", view.cursorChar)
@@ -106,10 +151,11 @@ object MotionSduiInitializer {
 
         // Register WordWriterTextView
         MotionSdui.registerView(WordWriterTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             val highlightColor = json.get("highlightColor")?.asString
@@ -120,6 +166,7 @@ object MotionSduiInitializer {
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 highlightColor = highlightColor,
@@ -129,6 +176,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(WordWriterTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
@@ -138,9 +186,10 @@ object MotionSduiInitializer {
 
         // Register WordBlinkTextView
         MotionSdui.registerView(WordBlinkTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             WordBlinkTextView(
@@ -149,6 +198,7 @@ object MotionSduiInitializer {
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 writingSpeed = writingSpeed,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 effects = props.effects,
@@ -157,6 +207,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(WordBlinkTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
             view.textColor?.let { json.addProperty("textColor", it) }
@@ -165,11 +216,12 @@ object MotionSduiInitializer {
 
         // Register PopUpTextView
         MotionSdui.registerView(PopUpTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             val highlightColor = json.get("highlightColor")?.asString
@@ -181,6 +233,7 @@ object MotionSduiInitializer {
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
                 maxTranslationY = maxTranslationY,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 highlightColor = highlightColor,
@@ -190,6 +243,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(PopUpTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
@@ -200,11 +254,12 @@ object MotionSduiInitializer {
 
         // Register RainbowPopUpTextView
         MotionSdui.registerView(RainbowPopUpTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             val highlightColor = json.get("highlightColor")?.asString
@@ -216,6 +271,7 @@ object MotionSduiInitializer {
                 writingSpeed = writingSpeed,
                 unwrittenTextAlpha = unwrittenTextAlpha,
                 maxTranslationY = maxTranslationY,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 highlightColor = highlightColor,
@@ -225,6 +281,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(RainbowPopUpTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
@@ -235,12 +292,13 @@ object MotionSduiInitializer {
 
         // Register AccentMiddlePopUpTextView
         MotionSdui.registerView(AccentMiddlePopUpTextView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val text = json.get("text")?.asString ?: ""
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
             val accentColor = json.get("accentColor")?.asInt ?: android.graphics.Color.YELLOW
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
             val highlightColor = json.get("highlightColor")?.asString
@@ -253,6 +311,7 @@ object MotionSduiInitializer {
                 unwrittenTextAlpha = unwrittenTextAlpha,
                 maxTranslationY = maxTranslationY,
                 accentColor = accentColor,
+                fontAsset = fontAsset,
                 textSizeVariant = textSizeVariant,
                 textColor = textColor,
                 highlightColor = highlightColor,
@@ -262,6 +321,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(AccentMiddlePopUpTextView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
@@ -273,13 +333,11 @@ object MotionSduiInitializer {
 
         // Register CircularMotionImageView
         MotionSdui.registerView(CircularMotionImageView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
-            val imageUriStr =
-                json.get("imageUri")?.asString
-                    ?: ""
+            val props = json.parseMotionViewProps(context)
+            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
             CircularMotionImageView(
                 context = context,
-                imageUri = imageUriStr.toUri(),
+                asset = asset,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 effects = props.effects,
@@ -287,18 +345,16 @@ object MotionSduiInitializer {
         }
         MotionSdui.registerViewSerializer(CircularMotionImageView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
-            json.addProperty("imageUri", view.imageUri.toString())
+            json.add("asset", view.asset.toJson())
         }
 
         // Register MotionImageView
         MotionSdui.registerView(MotionImageView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
-            val imageUriStr =
-                json.get("imageUri")?.asString
-                    ?: ""
+            val props = json.parseMotionViewProps(context)
+            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
             MotionImageView(
                 context = context,
-                imageUri = imageUriStr.toUri(),
+                asset = asset,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 effects = props.effects,
@@ -306,16 +362,16 @@ object MotionSduiInitializer {
         }
         MotionSdui.registerViewSerializer(MotionImageView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
-            json.addProperty("imageUri", view.imageUri.toString())
+            json.add("asset", view.asset.toJson())
         }
 
         // Register VideoFrameView
         MotionSdui.registerView(VideoFrameView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
-            val videoUriStr = json.get("videoUri")?.asString ?: throw IllegalArgumentException("videoUri required for VideoFrameView")
+            val props = json.parseMotionViewProps(context)
+            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
             VideoFrameView(
                 context = context,
-                videoUri = videoUriStr.toUri(),
+                asset = asset,
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,
                 effects = props.effects,
@@ -323,12 +379,12 @@ object MotionSduiInitializer {
         }
         MotionSdui.registerViewSerializer(VideoFrameView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
-            json.addProperty("videoUri", view.videoUri.toString())
+            json.add("asset", view.asset.toJson())
         }
 
         // Register GradientView
         MotionSdui.registerView(GradientView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val orientationStr = json.get("orientation")?.asString ?: "VERTICAL"
             val orientation =
                 try {
@@ -369,7 +425,7 @@ object MotionSduiInitializer {
 
         // Register TranslucentMotionView
         MotionSdui.registerView(TranslucentMotionView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val color = json.get("color")?.asString ?: "#00000000"
             val alpha = json.get("alpha")?.asFloat ?: 1.0f
             TranslucentMotionView(
@@ -391,7 +447,7 @@ object MotionSduiInitializer {
 
         // Register CircularAudioWaveformView
         MotionSdui.registerView(CircularAudioWaveformView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val amplitudesJson = json.getAsJsonArray("amplitudes")
             val amplitudes = mutableListOf<Float>()
             amplitudesJson?.forEach { amplitudes.add(it.asFloat) }
@@ -413,7 +469,7 @@ object MotionSduiInitializer {
 
         // Register RadialAudioWaveformView
         MotionSdui.registerView(RadialAudioWaveformView::class.java.simpleName) { context, json ->
-            val props = json.parseMotionViewProps()
+            val props = json.parseMotionViewProps(context)
             val amplitudesJson = json.getAsJsonArray("amplitudes")
             val amplitudes = mutableListOf<Float>()
             amplitudesJson?.forEach { amplitudes.add(it.asFloat) }

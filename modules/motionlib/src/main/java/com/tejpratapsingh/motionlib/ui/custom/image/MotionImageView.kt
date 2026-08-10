@@ -5,7 +5,8 @@ import android.net.Uri
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionCacheManager
+import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -22,13 +23,18 @@ import timber.log.Timber
  */
 class MotionImageView(
     context: Context,
-    val imageUri: Uri,
+    val asset: MotionAsset,
     startFrame: Int,
     endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects),
     KoinComponent {
-    private val cacheManager: MotionCacheManager by inject()
+    /**
+     * For backward compatibility, the image URI.
+     */
+    val imageUri: Uri get() = asset.getUri()
+
+    private val cacheManager: MotionAssetManager by inject()
 
     private val imageView: ImageView =
         ImageView(context).apply {
@@ -65,7 +71,7 @@ class MotionImageView(
 
         // Load image into ImageView for preview
         runBlocking {
-            val localUri = cacheManager.getCachedUri(imageUri) ?: imageUri
+            val localUri = cacheManager.getCachedUri(asset) ?: imageUri
             Timber.d("localUri: $localUri")
             val bitmap = ImageUtil.fetchBitmap(context, localUri)
             imageView.setImageBitmap(bitmap)
@@ -77,10 +83,6 @@ class MotionImageView(
         return this
     }
 
-    override fun isCached(cacheManager: MotionCacheManager): Boolean =
-        if (imageUri.scheme == "http" || imageUri.scheme == "https") {
-            cacheManager.isCached(imageUri)
-        } else {
-            true
-        }
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

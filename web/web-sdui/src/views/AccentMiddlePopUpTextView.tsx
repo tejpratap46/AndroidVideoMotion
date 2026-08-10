@@ -2,6 +2,7 @@ import React from 'react';
 import type { MotionViewProps, MotionConfig } from '../infra/types';
 import { useApplyEffects } from '../effects/useApplyEffects';
 import { interpolateForRange, Easing } from '../infra/interpolation';
+import { getAssetUri } from '../infra/assetUtils';
 
 export const AccentMiddlePopUpTextView: React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }> = ({ props, currentFrame, config }) => {
   const style = useApplyEffects(props, currentFrame, config);
@@ -13,6 +14,7 @@ export const AccentMiddlePopUpTextView: React.FC<{ props: MotionViewProps; curre
   const unwrittenTextAlpha = props.unwrittenTextAlpha ?? 0;
   const maxTranslationY = props.maxTranslationY ?? 50;
   const accentColor = props.accentColor || "#FFFF00"; // Default Yellow
+  const fontFamily = props.fontAsset ? getAssetUri(props.fontAsset) : undefined;
 
   const words = text.split(" ");
   const wordCount = words.length;
@@ -47,6 +49,7 @@ export const AccentMiddlePopUpTextView: React.FC<{ props: MotionViewProps; curre
         textAlign: 'center',
         padding: '0 20px',
         boxSizing: 'border-box',
+        fontFamily: fontFamily,
         ...style,
       }}
     >

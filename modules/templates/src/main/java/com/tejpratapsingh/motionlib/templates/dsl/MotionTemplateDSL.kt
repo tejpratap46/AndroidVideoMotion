@@ -2,6 +2,7 @@ package com.tejpratapsingh.motionlib.templates.dsl
 
 import android.content.Context
 import android.net.Uri
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
@@ -48,7 +49,14 @@ class ContentScope(
         endFrame: Int = -1,
         delayFrame: Int = 0,
     ) {
-        producer.addAudio(MotionAudio(audioUri, startFrame, endFrame, delayFrame))
+        producer.addAudio(
+            MotionAudio(
+                asset = SimpleMotionAsset(audioUri),
+                startFrame = startFrame,
+                endFrame = endFrame,
+                delayFrame = delayFrame,
+            ),
+        )
     }
 
     fun audio(

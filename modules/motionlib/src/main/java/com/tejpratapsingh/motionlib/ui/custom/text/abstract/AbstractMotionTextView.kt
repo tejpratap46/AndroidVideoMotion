@@ -5,6 +5,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextSizeProvider
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
@@ -23,7 +24,7 @@ import com.tejpratapsingh.motionlib.utils.getWebFont
  * @param endFrame The frame index where the text stops appearing. If -1, it stays indefinitely or until the end of the video.
  * @param textView The underlying [AppCompatTextView] used for rendering.
  * @param writingSpeed The speed factor for text "writing" animations. Defaults to 1.0f.
- * @param fontUrl Optional URL for a custom web font.
+ * @param fontAsset Optional [MotionAsset] for a custom web font.
  * @param textSizeVariant Optional variant for text size (e.g., TITLE, BODY).
  * @param textColor Optional hex color string for the text.
  * @param highlightColor Optional hex color string for highlighting parts of the text.
@@ -36,7 +37,7 @@ abstract class AbstractMotionTextView(
     endFrame: Int,
     val textView: AppCompatTextView,
     val writingSpeed: Float = 1f,
-    val fontUrl: String? = null,
+    val fontAsset: MotionAsset? = null,
     val textSizeVariant: MotionTextVariant? = null,
     val textColor: String? = null,
     val highlightColor: String? = null,
@@ -83,8 +84,8 @@ abstract class AbstractMotionTextView(
                     // Fallback or log error if the color string is invalid
                 }
             }
-            if (fontUrl != null) {
-                typeface = getWebFont(fontUrl)
+            fontAsset?.let {
+                typeface = getWebFont(it.getUri().toString())
             }
         }
 

@@ -4,7 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
-import com.tejpratapsingh.motionlib.core.MotionCacheManager
+import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -17,14 +18,22 @@ import kotlin.math.roundToLong
 
 class VideoFrameView(
     context: Context,
-    val videoUri: Uri,
+    val asset: MotionAsset,
     startFrame: Int,
     endFrame: Int,
     effects: List<MotionEffect> = emptyList(),
-) : BaseContourMotionView(context, startFrame, endFrame, effects = effects), KoinComponent {
+) : BaseContourMotionView(context, startFrame, endFrame, effects = effects),
+    KoinComponent {
+    /**
+     * For backward compatibility, the video URI.
+     */
+    val videoUri: Uri get() = asset.getUri()
 
-    private val cacheManager: MotionCacheManager by inject()
-    private val localVideoUri = cacheManager.getCachedUri(videoUri) ?: videoUri
+    private val cacheManager: MotionAssetManager by inject()
+    private val localVideoUri =
+        asset.isCached(cacheManager).let { isCached ->
+            if (isCached) cacheManager.getCachedUri(asset) ?: videoUri else videoUri
+        }
 
     val fps = getVideoFpsWithRetriever(context, localVideoUri) ?: 30F
     val videoBitmaps =
@@ -71,11 +80,6 @@ class VideoFrameView(
 
     override fun getViewBitmap(): Bitmap = currentFrameBitmap
 
-    override fun isCached(cacheManager: MotionCacheManager): Boolean {
-        return if (videoUri.scheme == "http" || videoUri.scheme == "https") {
-            cacheManager.isCached(videoUri)
-        } else {
-            true
-        }
-    }
+    override val assets: List<MotionAsset>
+        get() = listOf(asset)
 }

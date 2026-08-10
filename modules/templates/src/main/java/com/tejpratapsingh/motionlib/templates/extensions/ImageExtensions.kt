@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.templates.extensions
 
 import android.net.Uri
+import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
@@ -14,7 +15,7 @@ fun ContentScope.motionImageView(
     effects: List<MotionEffect> = emptyList(),
     layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
     block: (MotionImageView.() -> Unit)? = null,
-) = MotionImageView(context, imageUri, startFrame, endFrame, effects = effects)
+) = MotionImageView(context, SimpleMotionAsset(imageUri), startFrame, endFrame, effects = effects)
     .apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }
@@ -26,7 +27,7 @@ fun ContentScope.circularMotionImageView(
     effects: List<MotionEffect> = emptyList(),
     layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
     block: (CircularMotionImageView.() -> Unit)? = null,
-) = CircularMotionImageView(context, imageUri, startFrame, endFrame, effects = effects)
+) = CircularMotionImageView(context, SimpleMotionAsset(imageUri), startFrame, endFrame, effects = effects)
     .apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }

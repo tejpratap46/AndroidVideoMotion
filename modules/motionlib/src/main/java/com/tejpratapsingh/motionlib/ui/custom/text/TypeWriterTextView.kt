@@ -7,6 +7,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -27,6 +28,7 @@ class TypeWriterTextView(
     val cursorChar: String? = "|",
     val blinkFrameRate: Int = 0,
     textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
     textColor: String? = null,
     effects: List<MotionEffect> = emptyList(),
@@ -37,6 +39,7 @@ class TypeWriterTextView(
         endFrame = endFrame,
         textView = textView,
         writingSpeed = writingSpeed,
+        fontAsset = fontAsset,
         textSizeVariant = textSizeVariant,
         textColor = textColor,
         effects = effects,
