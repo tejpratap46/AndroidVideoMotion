@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.text.Spannable
 import android.text.SpannableString
@@ -32,7 +31,7 @@ class AccentMiddlePopUpTextView(
     writingSpeed: Float = 0f,
     val unwrittenTextAlpha: Float = 0f,
     val maxTranslationY: Float = 50f,
-    val accentColor: Int = Color.YELLOW,
+    val accentColor: String? = "#FFFF00",
     textView: AppCompatTextView = AppCompatTextView(context),
     fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,
@@ -89,7 +88,12 @@ class AccentMiddlePopUpTextView(
         wordArray.forEachIndexed { index, word ->
             val wordProgress = (progress - index).coerceIn(0f, 1f)
 
-            val color = if (index == middleIndex) accentColor else textView.currentTextColor
+            val color =
+                if (index == middleIndex) {
+                    accentColor?.toColorInt() ?: textView.currentTextColor
+                } else {
+                    textView.currentTextColor
+                }
 
             val span =
                 AccentPopUpSpan(

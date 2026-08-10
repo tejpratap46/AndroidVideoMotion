@@ -31,7 +31,7 @@ class VideoFrameView(
 
     private val cacheManager: MotionAssetManager by inject()
     private val localVideoUri =
-        asset.isCached(cacheManager).let { isCached ->
+        asset.isCached(context, cacheManager).let { isCached ->
             if (isCached) cacheManager.getCachedUri(asset) ?: videoUri else videoUri
         }
 

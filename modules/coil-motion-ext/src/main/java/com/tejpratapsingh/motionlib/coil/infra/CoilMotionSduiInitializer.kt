@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.coil.infra
 
 import android.graphics.PointF
+import androidx.core.graphics.toColorInt
 import com.commit451.coiltransformations.CropTransformation
 import com.google.gson.JsonArray
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
@@ -289,7 +290,18 @@ object CoilMotionSduiInitializer {
         // Register CoilColorFilterEffect
         MotionSdui.registerEffect(CoilColorFilterEffect::class.java.simpleName) { json ->
             val props = json.parseMotionEffectProps()
-            val color = json.get("color")?.asInt ?: 0
+            val color =
+                json.get("color")?.let {
+                    if (it.isJsonPrimitive && it.asJsonPrimitive.isString) {
+                        try {
+                            it.asString.toColorInt()
+                        } catch (e: Exception) {
+                            0
+                        }
+                    } else {
+                        it.asInt
+                    }
+                } ?: 0
             CoilColorFilterEffect(
                 startFrame = props.startFrame,
                 endFrame = props.endFrame,

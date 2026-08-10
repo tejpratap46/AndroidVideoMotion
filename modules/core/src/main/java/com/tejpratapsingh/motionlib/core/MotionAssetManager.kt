@@ -12,6 +12,11 @@ interface MotionAssetManager {
     fun getCachedUri(asset: MotionAsset): Uri?
 
     /**
+     * Returns the local path if the [asset] is cached in the central store, otherwise returns null.
+     */
+    fun getLocalPath(asset: MotionAsset): String?
+
+    /**
      * Returns true if the [asset] is cached.
      */
     fun isCached(asset: MotionAsset): Boolean = getCachedUri(asset) != null

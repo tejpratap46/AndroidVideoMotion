@@ -26,6 +26,7 @@
             <option value="$PROJECT_DIR$/modules/ml-kit-ext" />
             <option value="$PROJECT_DIR$/modules/motion-download-manager" />
             <option value="$PROJECT_DIR$/modules/motion-store" />
+            <option value="$PROJECT_DIR$/modules/motion-tts-asset" />
             <option value="$PROJECT_DIR$/modules/motion-video-editor" />
             <option value="$PROJECT_DIR$/modules/motion-video-player" />
             <option value="$PROJECT_DIR$/modules/motionlib" />

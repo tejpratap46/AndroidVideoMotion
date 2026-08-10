@@ -41,9 +41,12 @@ android {
 }
 
 dependencies {
+    implementation(libs.koin.android)
+    implementation(libs.koin.workmanager)
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-video-editor"))
     implementation(project(":modules:motion-download-manager"))
+    implementation(project(":modules:motion-tts-asset"))
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
     implementation(libs.androidx.activity)
