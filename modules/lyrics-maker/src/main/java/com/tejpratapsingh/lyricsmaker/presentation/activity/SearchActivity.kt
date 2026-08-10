@@ -189,18 +189,7 @@ class SearchActivity : ComponentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 launch {
-                    WorkManager
-                        .getInstance(this@SearchActivity)
-                        .getWorkInfosByTagLiveData(SyncWorker.TAG_IMMEDIATE)
-                        .observe(this@SearchActivity) { workInfos ->
-                            if (workInfos.isNullOrEmpty()) return@observe
-
-                            val finished = workInfos.all { it.state.isFinished }
-                            if (finished) {
-                                projectsViewModel.loadProjects()
-                                projectsViewModel.setRefreshing(false)
-                            }
-                        }
+                    SyncWorker.scheduleImmediate(this@SearchActivity)
                 }
             }
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -220,13 +209,6 @@ class SearchActivity : ComponentActivity() {
                     projectsViewModel.syncEvent.collect {
                         Timber.d("onCreate: syncEvent called")
                         Toast.makeText(this@SearchActivity, "Sync", Toast.LENGTH_SHORT).show()
-                        SyncWorker.scheduleImmediate(this@SearchActivity)
-                    }
-                }
-
-                launch {
-                    projectsViewModel.syncAllEvent.collect {
-                        Timber.d("onCreate: syncAllEvent called")
                         SyncWorker.scheduleImmediate(this@SearchActivity)
                     }
                 }

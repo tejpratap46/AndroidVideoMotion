@@ -38,9 +38,6 @@ class ProjectsViewModel(
     private val _syncEvent = MutableSharedFlow<MotionProject>()
     val syncEvent: SharedFlow<MotionProject> = _syncEvent.asSharedFlow()
 
-    private val _syncAllEvent = MutableSharedFlow<Unit>()
-    val syncAllEvent: SharedFlow<Unit> = _syncAllEvent.asSharedFlow()
-
     init {
         loadProjects()
     }
@@ -48,6 +45,7 @@ class ProjectsViewModel(
     fun loadProjects() {
         viewModelScope.launch(Dispatchers.IO) {
             _projects.value = motionProject.findAll("${sortOrder.value} DESC")
+            _isRefreshing.value = false
         }
     }
 
@@ -60,12 +58,8 @@ class ProjectsViewModel(
     fun refresh() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            _syncAllEvent.emit(Unit)
+            loadProjects()
         }
-    }
-
-    fun setRefreshing(refreshing: Boolean) {
-        _isRefreshing.value = refreshing
     }
 
     fun deleteProject(
