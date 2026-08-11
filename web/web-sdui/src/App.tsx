@@ -644,7 +644,7 @@ function App() {
         <JsonFinder
           initialJson={JSON.stringify(defaultSDUI, null, 2)}
           onUpdate={handleJsonUpdate}
-          headerActions={<UserProfileMenu />}
+          headerActions={<UserProfileMenu sdui={sdui} />}
         />
       </div>
 
