@@ -129,7 +129,7 @@ fun ContentScope.transparentTextView(
     fontAsset,
     textSizeVariant,
     textColor,
-    effects = effects
+    effects = effects,
 ).apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }
     .also { addView(it) }
@@ -199,7 +199,7 @@ fun ContentScope.accentMiddlePopUpTextView(
     writingSpeed: Float = 0f,
     unwrittenTextAlpha: Float = 0f,
     maxTranslationY: Float = 50f,
-    accentColor: Int = android.graphics.Color.YELLOW,
+    accentColor: String = "#FFFF00",
     textView: AppCompatTextView = AppCompatTextView(context),
     fontAsset: MotionAsset? = null,
     textSizeVariant: MotionTextVariant? = null,

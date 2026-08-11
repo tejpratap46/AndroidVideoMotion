@@ -297,7 +297,7 @@ object MotionSduiInitializer {
             val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
             val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
             val maxTranslationY = json.get("maxTranslationY")?.asFloat ?: 50f
-            val accentColor = json.get("accentColor")?.asInt ?: android.graphics.Color.YELLOW
+            val accentColor = json.get("accentColor")?.asString
             val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
             val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
             val textColor = json.get("textColor")?.asString
@@ -325,7 +325,7 @@ object MotionSduiInitializer {
             json.addProperty("writingSpeed", view.writingSpeed)
             json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
             json.addProperty("maxTranslationY", view.maxTranslationY)
-            json.addProperty("accentColor", view.accentColor)
+            view.accentColor?.let { json.addProperty("accentColor", it) }
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
             view.textColor?.let { json.addProperty("textColor", it) }
             view.highlightColor?.let { json.addProperty("highlightColor", it) }

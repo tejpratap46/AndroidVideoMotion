@@ -23,22 +23,20 @@ import java.io.File
 
 class MotionAssetManagerImpl(
     private val context: Context,
+    private val ketch: Ketch,
+    private val kv: MMKV,
 ) : MotionAssetManager {
-    init {
-        MMKV.initialize(context)
+    override fun getCachedUri(asset: MotionAsset): Uri? {
+        return asset.getCachedUri(context, this)
     }
 
-    private val kv = MMKV.mmkvWithID("motion_download_cache")
-    private val ketch = Ketch.builder().build(context)
-
-    override fun getCachedUri(asset: MotionAsset): Uri? {
+    override fun getLocalPath(asset: MotionAsset): String? {
         val remoteUri = asset.getUri()
         val path = kv.decodeString(remoteUri.toString())
         return if (path != null && File(path).exists() && File(path).isFile) {
             Timber.d("Cache hit for asset: $remoteUri")
-            Uri.fromFile(File(path))
+            path
         } else {
-            Timber.d("Cache miss for asset: $remoteUri")
             null
         }
     }
@@ -119,11 +117,7 @@ class MotionAssetManagerImpl(
             val urls = assets.map { it.getUri().toString() }
 
             // Enqueue Worker
-            val workRequest =
-                OneTimeWorkRequestBuilder<MotionDownloadWorker>()
-                    .setInputData(workDataOf(MotionDownloadWorker.KEY_PROJECT_ID to project.id))
-                    .build()
-            WorkManager.getInstance(context).enqueue(workRequest)
+            MotionDownloadWorker.enqueueWork(context = context, project = project)
 
             // Observe Ketch progress
             ketch

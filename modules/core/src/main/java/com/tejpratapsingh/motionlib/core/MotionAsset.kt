@@ -2,7 +2,9 @@ package com.tejpratapsingh.motionlib.core
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import com.google.gson.JsonObject
+import java.io.File
 
 /**
  * Interface representing an asset used in motion video generation.
@@ -31,11 +33,25 @@ interface MotionAsset {
     suspend fun prepare(context: Context): Boolean
 
     /**
+     * Returns the local URI if the asset is cached/prepared, otherwise returns null.
+     */
+    fun getCachedUri(
+        context: Context,
+        cacheManager: MotionAssetManager,
+    ): Uri? {
+        val localPath = cacheManager.getLocalPath(this)
+        return localPath?.let { Uri.fromFile(File(it)) }
+    }
+
+    /**
      * Returns true if the asset is ready for use (e.g. exists in cache).
      *
      * @param cacheManager Cache manager to check for cached assets
      */
-    fun isCached(cacheManager: MotionAssetManager): Boolean = cacheManager.isCached(this)
+    fun isCached(
+        context: Context,
+        cacheManager: MotionAssetManager,
+    ): Boolean = getCachedUri(context, cacheManager) != null
 
     /**
      * Returns true if the asset is prepared and ready for use.
@@ -44,5 +60,5 @@ interface MotionAsset {
     fun isPrepared(
         context: Context,
         cacheManager: MotionAssetManager,
-    ): Boolean = isCached(cacheManager)
+    ): Boolean = isCached(context, cacheManager)
 }

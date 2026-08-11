@@ -15,6 +15,7 @@ appcompat_version = "1.7.1"
 material_version = "1.14.0"
 lifecycle_runtime_ktx = "2.11.0"
 picassoVersion = "2.71828"
+coroutinesVersion = "1.10.1"
 smartExceptionJavaVersion = "0.2.1"
 tensorflowLiteTaskVisionVersion = "0.5.0"
 tensorflowLiteVersion = "2.17.0"
@@ -56,6 +57,8 @@ filament-utils-android = { module = "com.google.android.filament:filament-utils-
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 gltfio-android = { module = "com.google.android.filament:gltfio-android", version.ref = "filamentAndroidVersion" }
 google-android-material = { group = "com.google.android.material", name = "material", version.ref = "material_version" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutinesVersion" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
 
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle_runtime_ktx" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work_version" }
@@ -122,6 +125,7 @@ mmkv = { module = "com.tencent:mmkv", version.ref = "mmkvVersion" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinVersion" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinVersion" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinVersion" }
+koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koinVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

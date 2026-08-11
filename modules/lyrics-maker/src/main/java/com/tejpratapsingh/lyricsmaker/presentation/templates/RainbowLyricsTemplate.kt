@@ -63,7 +63,7 @@ val RainbowLyricsTemplate: MotionTemplate =
                             startFrame = current.frame,
                             endFrame = next.frame,
                             textSizeVariant = MotionTextVariant.H1,
-                            accentColor = Color.CYAN,
+                            accentColor = "#FFFF00",
                             writingSpeed = 1.5f,
                             textView =
                                 AppCompatTextView(context).apply {
@@ -124,7 +124,7 @@ val RainbowLyricsTemplate: MotionTemplate =
                             endFrame = next.frame,
                             textSizeVariant = MotionTextVariant.H1,
                             writingSpeed = 1.5f,
-                            accentColor = Color.CYAN,
+                            accentColor = "#FFFF00",
                             textView =
                                 AppCompatTextView(context).apply {
                                     setPadding(32, 32, 32, 32)
