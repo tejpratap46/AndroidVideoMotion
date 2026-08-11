@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from "../context/AuthContext";
+import { CreateProjectModal } from "./CreateProjectModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,6 +137,31 @@ function deleteAtPath(root: JsonValue, path: (string | number)[]): JsonValue {
     return copy;
   }
   return root;
+}
+
+function searchJson(obj: any, query: string, path: (string | number)[] = [], results: (string | number)[][] = []) {
+  if (!query) return results;
+  const q = query.toLowerCase();
+
+  if (path.length > 0) {
+    const key = String(path[path.length - 1]);
+    if (key.toLowerCase().includes(q)) {
+      results.push(path);
+    }
+  }
+
+  if (obj === null) {
+    if ("null".includes(q)) results.push(path);
+  } else if (Array.isArray(obj)) {
+    obj.forEach((item, i) => searchJson(item, query, [...path, i], results));
+  } else if (typeof obj === "object") {
+    Object.entries(obj).forEach(([key, value]) => searchJson(value, query, [...path, key], results));
+  } else {
+    if (String(obj).toLowerCase().includes(q)) {
+      results.push(path);
+    }
+  }
+  return results;
 }
 
 // ─── Style constants ──────────────────────────────────────────────────────────
@@ -897,6 +924,72 @@ const css = `
   .jf-context-menu-item-icon {
     font-size: 13px;
   }
+
+  /* ── Search Bar ── */
+  .jf-search-bar {
+    display: flex;
+    align-items: center;
+    background: #0e0e11;
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 7px;
+    padding: 0 8px;
+    gap: 8px;
+    height: 28px;
+    min-width: 180px;
+    flex: 1;
+    max-width: 320px;
+  }
+  .jf-search-input {
+    background: transparent;
+    border: none;
+    color: #e8e8f0;
+    font-family: inherit;
+    font-size: 11px;
+    outline: none;
+    width: 100%;
+  }
+  .jf-search-input::placeholder { color: #58586a; }
+  .jf-search-clear {
+    color: #58586a;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .jf-search-clear:hover { color: #f87171; }
+  .jf-search-info {
+    font-size: 10px;
+    color: #58586a;
+    font-weight: 600;
+    white-space: nowrap;
+    user-select: none;
+    padding: 0 4px;
+  }
+  .jf-search-btns {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    border-left: 1px solid rgba(255,255,255,0.07);
+    padding-left: 4px;
+  }
+  .jf-search-nav-btn {
+    background: transparent;
+    border: none;
+    color: #9898b0;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+    height: 20px;
+    width: 20px;
+  }
+  .jf-search-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: #fff; }
+  .jf-search-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 `;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -1037,12 +1130,13 @@ interface ColumnPanelProps {
   isNew: boolean;
   focusedIndex: number;
   isKeyboardActive: boolean;
+  footer?: React.ReactNode;
 }
 
 const ColumnPanel: React.FC<ColumnPanelProps> = ({
   items, selectedKey, depth, onSelect, onDoubleClick, onContextMenu,
   editingKey, onSaveEdit, onCancelEdit, isNew,
-  focusedIndex, isKeyboardActive
+  focusedIndex, isKeyboardActive, footer
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLDivElement>(null);
@@ -1110,6 +1204,7 @@ const ColumnPanel: React.FC<ColumnPanelProps> = ({
           );
         })}
       </div>
+      {footer}
     </div>
   );
 };
@@ -1673,6 +1768,13 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
   const [focusedRow, setFocusedRow] = useState<number>(-1);
   const [keyboardMode, setKeyboardMode] = useState(false);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const { user } = useAuth();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<(string | number)[][]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+
   const [bulkPath, setBulkPath] = useState("views");
   const [bulkField, setBulkField] = useState("");
   const [bulkFormula, setBulkFormula] = useState("");
@@ -1768,6 +1870,93 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
       // parseAndLoad will handle the error display
       parseAndLoad(jsonText);
     }
+  };
+
+  const navigateToPath = useCallback((path: (string | number)[]) => {
+    if (!root) return;
+
+    const newCols: Column[] = [];
+    let current: any = root;
+
+    // First column is always root
+    newCols.push({ items: getChildren(current), selectedKey: path[0] ?? null });
+
+    for (let i = 0; i < path.length; i++) {
+      const key = path[i];
+      const items = getChildren(current);
+      const item = items.find(it => it.key === key);
+
+      if (item && isExpandable(item.value) && i < path.length - 1) {
+        current = item.value;
+        newCols.push({ items: getChildren(current), selectedKey: path[i + 1] ?? null });
+      } else if (item && (!isExpandable(item.value) || i === path.length - 1)) {
+        if (!isExpandable(item.value)) {
+          setSelectedItem(item);
+        } else {
+          setSelectedItem(null);
+        }
+      }
+    }
+
+    setColumns(newCols);
+    setFocusedCol(path.length - 1);
+    const lastCol = newCols[newCols.length - 1];
+    const lastKey = path[path.length - 1];
+    setFocusedRow(lastCol ? lastCol.items.findIndex(it => it.key === lastKey) : -1);
+    setKeyboardMode(true);
+
+    // Scroll columns
+    setTimeout(() => {
+      if (columnsWrapRef.current) {
+        const lastColEl = columnsWrapRef.current.children[path.length - 1] as HTMLElement;
+        if (lastColEl) {
+          columnsWrapRef.current.scrollTo({
+            left: lastColEl.offsetLeft - 50,
+            behavior: "smooth"
+          });
+        }
+      }
+    }, 100);
+  }, [root]);
+
+  // Handle Search
+  useEffect(() => {
+    if (!root || !searchTerm.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const results = searchJson(root, searchTerm.trim());
+      // Deduplicate by path string
+      const unique = Array.from(new Set(results.map(p => JSON.stringify(p))))
+        .map(s => JSON.parse(s) as (string | number)[]);
+
+      setSearchResults(unique);
+      if (unique.length > 0) {
+        setCurrentSearchIndex(0);
+        navigateToPath(unique[0]);
+      } else {
+        setCurrentSearchIndex(-1);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, root, navigateToPath]);
+
+  const handleNextSearch = () => {
+    if (searchResults.length === 0) return;
+    const nextIdx = (currentSearchIndex + 1) % searchResults.length;
+    setCurrentSearchIndex(nextIdx);
+    navigateToPath(searchResults[nextIdx]);
+  };
+
+  const handlePrevSearch = () => {
+    if (searchResults.length === 0) return;
+    const prevIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    setCurrentSearchIndex(prevIdx);
+    navigateToPath(searchResults[prevIdx]);
   };
 
   // Build path segments from columns + selected item
@@ -2212,6 +2401,48 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
           ))}
         </div>
 
+        {/* Search Bar */}
+        <div className="jf-search-bar">
+          <input
+            className="jf-search-input"
+            placeholder="Search keys or values..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleNextSearch();
+              if (e.key === "Escape") setSearchTerm("");
+            }}
+          />
+          {searchTerm && (
+            <div className="jf-search-clear" onClick={() => setSearchTerm("")} title="Clear search">
+              ×
+            </div>
+          )}
+          {searchResults.length > 0 && (
+            <div className="jf-search-info">
+              {currentSearchIndex + 1}/{searchResults.length}
+            </div>
+          )}
+          <div className="jf-search-btns">
+            <button
+              className="jf-search-nav-btn"
+              onClick={handlePrevSearch}
+              disabled={searchResults.length <= 1}
+              title="Previous match"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <button
+              className="jf-search-nav-btn"
+              onClick={handleNextSearch}
+              disabled={searchResults.length <= 1}
+              title="Next match"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
         <button
           className={`jf-btn success${exportFlash ? " done" : ""}`}
           onClick={handleExport}
@@ -2286,6 +2517,32 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
                       isNew={i === columns.length - 1 && i > 0}
                       focusedIndex={focusedCol === i ? focusedRow : -1}
                       isKeyboardActive={keyboardMode}
+                      footer={i === 0 && user && (
+                        <div
+                          className="jf-row"
+                          style={{
+                            marginTop: 8,
+                            justifyContent: "center",
+                            background: "rgba(37, 99, 235, 0.1)",
+                            border: "1px dashed rgba(37, 99, 235, 0.4)",
+                            borderRadius: 6,
+                            margin: "8px 10px",
+                            padding: "8px"
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowCreateModal(true);
+                          }}
+                        >
+                          <span style={{ fontSize: 12, color: "#6ba4ff", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="12" y1="5" x2="12" y2="19"></line>
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Save as Project
+                          </span>
+                        </div>
+                      )}
                     />
                   ))}
 
@@ -2363,6 +2620,16 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
             <span>Delete "{String(contextMenu.keyName)}"</span>
           </div>
         </div>
+      )}
+
+      {showCreateModal && root && (
+        <CreateProjectModal
+          initialSdui={root as any}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(id) => {
+            console.log('Project created:', id);
+          }}
+        />
       )}
     </div>
   );

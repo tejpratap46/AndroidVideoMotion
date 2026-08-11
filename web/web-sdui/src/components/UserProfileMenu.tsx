@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CreateProjectModal } from './CreateProjectModal';
-import type { MotionSDUI } from '../infra/types';
 
-export const UserProfileMenu: React.FC<{ sdui: MotionSDUI }> = ({ sdui }) => {
+export const UserProfileMenu: React.FC = () => {
   const { user, loading, error, isConfigured, signInWithGoogle, logout, clearError } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -175,21 +172,6 @@ export const UserProfileMenu: React.FC<{ sdui: MotionSDUI }> = ({ sdui }) => {
                   <button
                     onClick={() => {
                       setShowDropdown(false);
-                      setShowCreateModal(true);
-                    }}
-                    className="user-menu-item-btn"
-                    role="menuitem"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <span>New Project</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowDropdown(false);
                       logout();
                     }}
                     className="user-menu-signout-btn"
@@ -236,17 +218,6 @@ export const UserProfileMenu: React.FC<{ sdui: MotionSDUI }> = ({ sdui }) => {
             </button>
           )}
         </>
-      )}
-
-      {showCreateModal && (
-        <CreateProjectModal
-          initialSdui={sdui}
-          onClose={() => setShowCreateModal(false)}
-          onCreated={(id) => {
-            console.log('Project created:', id);
-            // Optional: refresh project list or redirect
-          }}
-        />
       )}
     </div>
   );
