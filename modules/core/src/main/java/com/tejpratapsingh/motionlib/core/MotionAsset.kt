@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import com.google.gson.JsonObject
+import java.io.File
 
 /**
  * Interface representing an asset used in motion video generation.
@@ -39,7 +40,7 @@ interface MotionAsset {
         cacheManager: MotionAssetManager,
     ): Uri? {
         val localPath = cacheManager.getLocalPath(this)
-        return localPath?.let { "file://$it".toUri() }
+        return localPath?.let { Uri.fromFile(File(it)) }
     }
 
     /**

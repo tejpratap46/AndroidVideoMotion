@@ -185,8 +185,8 @@ Transitions define how one view morphs into the next in a `sequence`. They are s
       "textColor": "#FFFFFF",
       "layout": { "gravity": "center" },
       "effects": [
-        { "type": "FadeInEffect", "startFrame": 0, "endFrame": 15 },
-        { "type": "VibrateEffect", "amplitude": 5, "frequency": 2 }
+        { "type": "FadeInEffect", "startFrame": 30, "endFrame": 45 },
+        { "type": "VibrateEffect", "startFrame": 30, "endFrame": 270, "amplitude": 5, "frequency": 2 }
       ]
     }
   ]
@@ -202,7 +202,7 @@ Transitions define how one view morphs into the next in a `sequence`. They are s
       "duration": 60,
       "asset": { "type": "ImageAsset", "uri": "file:///img1.jpg" }
     },
-    { "type": "CrossFadeTransition" },
+    { "type": "CrossFadeTransition", "duration": 30 },
     {
       "type": "MotionImageView",
       "duration": 60,

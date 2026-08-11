@@ -129,7 +129,13 @@ class MotionDownloadController(
                 }
                 allFinished && relevantDownloads.isNotEmpty()
             }
-            ListenableWorker.Result.success()
+            val hasFailures =
+                ketch
+                    .observeDownloads()
+                    .first()
+                    .filter { it.id in downloadIds }
+                    .any { it.status == Status.FAILED }
+            if (hasFailures) ListenableWorker.Result.failure() else ListenableWorker.Result.success()
         } catch (e: Exception) {
             Timber.e(e, "Error waiting for downloads")
             ListenableWorker.Result.retry()

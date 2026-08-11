@@ -47,49 +47,51 @@ class TTSAudioAsset(
         val deferred = CompletableDeferred<Boolean>()
         var tts: TextToSpeech? = null
 
-        tts =
-            TextToSpeech(context) { status ->
-                if (status == TextToSpeech.SUCCESS) {
-                    tts?.setOnUtteranceProgressListener(
-                        object : UtteranceProgressListener() {
-                            override fun onStart(utteranceId: String?) {
-                                Timber.d("TTS started for: $text")
-                            }
+        TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.setOnUtteranceProgressListener(
+                    object : UtteranceProgressListener() {
+                        override fun onStart(utteranceId: String?) {
+                            Timber.d("TTS started for: $text")
+                        }
 
-                            override fun onDone(utteranceId: String?) {
-                                Timber.d("TTS completed for: $text")
-                                deferred.complete(true)
-                            }
+                        override fun onDone(utteranceId: String?) {
+                            Timber.d("TTS completed for: $text")
+                            deferred.complete(true)
+                        }
 
-                            @Deprecated("Deprecated in Java")
-                            override fun onError(utteranceId: String?) {
-                                Timber.e("TTS error for: $text")
-                                deferred.complete(false)
-                            }
+                        @Deprecated("Deprecated in Java")
+                        override fun onError(utteranceId: String?) {
+                            Timber.e("TTS error for: $text")
+                            deferred.complete(false)
+                        }
 
-                            @Deprecated("Deprecated in Java")
-                            override fun onError(
-                                utteranceId: String?,
-                                errorCode: Int,
-                            ) {
-                                Timber.e("TTS error ($errorCode) for: $text")
-                                deferred.complete(false)
-                            }
-                        },
-                    )
+                        @Deprecated("Deprecated in Java")
+                        override fun onError(
+                            utteranceId: String?,
+                            errorCode: Int,
+                        ) {
+                            Timber.e("TTS error ($errorCode) for: $text")
+                            deferred.complete(false)
+                        }
+                    },
+                )
 
-                    val params = Bundle()
-                    params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, textHash)
-                    val result = tts?.synthesizeToFile(text, params, outputFile, textHash)
-                    if (result == TextToSpeech.ERROR) {
-                        Timber.e("TTS synthesizeToFile failed immediately")
-                        deferred.complete(false)
-                    }
-                } else {
-                    Timber.e("TTS initialization failed with status: $status")
+                val params = Bundle()
+                params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, textHash)
+                val result = tts?.synthesizeToFile(text, params, outputFile, textHash)
+                if (result == TextToSpeech.ERROR) {
+                    Timber.e("TTS synthesizeToFile failed immediately")
+                    deferred.complete(false)
+                } else if (result == null) {
+                    Timber.e("TTS instance was null during synthesizeToFile")
                     deferred.complete(false)
                 }
+            } else {
+                Timber.e("TTS initialization failed with status: $status")
+                deferred.complete(false)
             }
+        }.also { tts = it }
 
         val success =
             try {
@@ -98,8 +100,8 @@ class TTSAudioAsset(
                 Timber.e(e, "Error during TTS synthesis")
                 false
             } finally {
-                tts.stop()
-                tts.shutdown()
+                tts?.stop()
+                tts?.shutdown()
             }
 
         return success
