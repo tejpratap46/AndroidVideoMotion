@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -171,7 +171,16 @@ const css = `
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+    padding-bottom: 2px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .jf-toolbar::-webkit-scrollbar { display: none; }
+  .jf-toolbar > * { flex-shrink: 0; }
   .jf-logo {
     font-size: 13px;
     font-weight: 600;
@@ -185,7 +194,8 @@ const css = `
     display: flex;
     align-items: center;
     gap: 2px;
-    overflow: hidden;
+    overflow-x: auto;
+    white-space: nowrap;
     background: #0e0e11;
     border: 1px solid rgba(255,255,255,0.11);
     border-radius: 7px;
@@ -193,7 +203,10 @@ const css = `
     font-size: 11px;
     color: #58586a;
     min-width: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
+  .jf-breadcrumb::-webkit-scrollbar { display: none; }
   .jf-breadcrumb-seg {
     cursor: pointer;
     color: #9898b0;
@@ -235,22 +248,29 @@ const css = `
   }
   .jf-btn.success:hover { background: rgba(34,197,94,0.2); border-color: #22c55e; }
 
-  /* ── Input area ── */
-  .jf-input-wrap {
-    flex-shrink: 0;
-    background: #161619;
+  /* ── Syntax Highlighting JSON Editor ── */
+  .jf-editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: #141417;
     border: 1px solid rgba(255,255,255,0.11);
     border-radius: 10px;
     overflow: hidden;
   }
-  .jf-input-header {
+
+  .jf-editor-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 8px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     background: #0e0e11;
+    gap: 8px;
+    flex-shrink: 0;
   }
+
   .jf-input-label {
     font-size: 10px;
     font-weight: 600;
@@ -258,19 +278,147 @@ const css = `
     color: #58586a;
   }
   .jf-input-error { font-size: 11px; color: #f87171; }
-  .jf-textarea {
-    display: block;
+
+  .jf-btn-sm {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #a0a0b8;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.12s;
+  }
+  .jf-btn-sm:hover {
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.2);
+  }
+  .jf-btn-sm.danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+  }
+
+  .jf-editor-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    position: relative;
+    background: #121215;
+    overflow: hidden;
+  }
+
+  .jf-editor-gutter {
+    width: 44px;
+    flex-shrink: 0;
+    background: #0e0e11;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    user-select: none;
+    overflow: hidden;
+    font-family: 'Geist Mono', 'SF Mono', 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  .jf-gutter-num {
+    padding-right: 10px;
+    color: #4b5563;
+    transition: color 0.1s, background 0.1s;
+    height: 19.2px;
+    box-sizing: border-box;
+  }
+
+  .jf-gutter-num.active {
+    color: #6ba4ff;
+    font-weight: 600;
+    background: rgba(107,164,255,0.1);
+  }
+
+  .jf-editor-scroll {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .jf-editor-pre,
+  .jf-editor-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    background: transparent;
+    height: 100%;
+    margin: 0;
+    padding: 12px;
     border: none;
     outline: none;
-    color: #e8e8f0;
-    font-family: inherit;
-    font-size: 12px;
-    padding: 10px 14px;
-    resize: none;
-    line-height: 1.6;
+    box-sizing: border-box;
+    font-family: 'Geist Mono', 'SF Mono', 'JetBrains Mono', monospace !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    tab-size: 2 !important;
+    -moz-tab-size: 2 !important;
+    white-space: pre !important;
+    word-wrap: normal !important;
+    overflow-wrap: normal !important;
+    letter-spacing: 0;
   }
+
+  .jf-editor-pre {
+    pointer-events: none;
+    color: #e8e8f0;
+    background: transparent;
+    z-index: 1;
+    overflow: hidden;
+    min-width: 100%;
+  }
+
+  .jf-editor-pre code {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    white-space: pre !important;
+  }
+
+  .jf-editor-textarea {
+    color: transparent;
+    caret-color: #6ba4ff;
+    background: transparent;
+    z-index: 2;
+    resize: none;
+    overflow: auto;
+  }
+
+  .jf-editor-textarea::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: transparent;
+  }
+
+  .jf-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 14px;
+    background: #0e0e11;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-size: 11px;
+    color: #6b7280;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  /* Token syntax colors */
+  .jf-tok-key { color: #7dd3fc; font-weight: 500; }
+  .jf-tok-string { color: #86efac; }
+  .jf-tok-number { color: #fde047; }
+  .jf-tok-bool { color: #c084fc; font-weight: 500; }
+  .jf-tok-null { color: #f472b6; font-weight: 500; }
+  .jf-tok-punct { color: #94a3b8; }
+  .jf-tok-other { color: #f87171; }
 
   /* ── Finder window ── */
   .jf-finder {
@@ -293,8 +441,13 @@ const css = `
     background: #0e0e11;
     border-bottom: 1px solid rgba(255,255,255,0.07);
     flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .jf-traffic { display: flex; gap: 6px; }
+  .jf-titlebar::-webkit-scrollbar { display: none; }
+  .jf-traffic { display: flex; gap: 6px; flex-shrink: 0; }
   .jf-dot {
     width: 12px; height: 12px; border-radius: 50%;
     flex-shrink: 0;
@@ -309,8 +462,13 @@ const css = `
     font-weight: 500;
     color: #9898b0;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .jf-title-spacer { width: 46px; }
+  .jf-title::-webkit-scrollbar { display: none; }
+  .jf-title-spacer { width: 46px; flex-shrink: 0; }
 
   /* Columns scroll area */
   .jf-columns-wrap {
@@ -319,6 +477,8 @@ const css = `
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
   .jf-columns-wrap::-webkit-scrollbar { height: 4px; }
   .jf-columns-wrap::-webkit-scrollbar-track { background: transparent; }
@@ -663,7 +823,15 @@ const css = `
     border: 1px solid rgba(255,255,255,0.11);
     border-radius: 10px;
     flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .jf-formula-bar::-webkit-scrollbar { display: none; }
+  .jf-formula-bar > * { flex-shrink: 0; }
   .jf-formula-label {
     font-size: 10px;
     font-weight: 600;
@@ -685,7 +853,50 @@ const css = `
   .jf-formula-input:focus { border-color: #2563eb; }
   .jf-formula-input.path { width: 120px; }
   .jf-formula-input.field { width: 120px; }
-  .jf-formula-input.formula { flex: 1; }
+  .jf-formula-input.formula { width: 180px; }
+
+  /* Context Menu */
+  .jf-context-menu {
+    position: fixed;
+    z-index: 9999;
+    background: #161619;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 4px;
+    min-width: 150px;
+    font-family: inherit;
+    font-size: 12px;
+    animation: jf-context-menu-fade 0.08s ease-out;
+  }
+  @keyframes jf-context-menu-fade {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .jf-context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    color: #e8e8f0;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.1s;
+    user-select: none;
+  }
+  .jf-context-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .jf-context-menu-item.danger {
+    color: #f87171;
+  }
+  .jf-context-menu-item.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+  }
+  .jf-context-menu-item-icon {
+    font-size: 13px;
+  }
 `;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -819,6 +1030,7 @@ interface ColumnPanelProps {
   depth: number;
   onSelect: (item: ColumnItem) => void;
   onDoubleClick: (item: ColumnItem) => void;
+  onContextMenu?: (e: React.MouseEvent, item: ColumnItem) => void;
   editingKey: string | number | null;
   onSaveEdit: (val: JsonValue) => void;
   onCancelEdit: () => void;
@@ -828,7 +1040,7 @@ interface ColumnPanelProps {
 }
 
 const ColumnPanel: React.FC<ColumnPanelProps> = ({
-  items, selectedKey, depth, onSelect, onDoubleClick,
+  items, selectedKey, depth, onSelect, onDoubleClick, onContextMenu,
   editingKey, onSaveEdit, onCancelEdit, isNew,
   focusedIndex, isKeyboardActive
 }) => {
@@ -866,6 +1078,11 @@ const ColumnPanel: React.FC<ColumnPanelProps> = ({
               className={`jf-row${sel ? " selected" : ""}${editing ? " editing" : ""}${focused ? " focused" : ""}`}
               onClick={() => onSelect(item)}
               onDoubleClick={() => onDoubleClick(item)}
+              onContextMenu={(e) => {
+                if (onContextMenu) {
+                  onContextMenu(e, item);
+                }
+              }}
             >
               {editing ? (
                 <InlineEditor
@@ -1154,6 +1371,267 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ item, path, onEditValue, on
   );
 };
 
+// ─── JSON Syntax Highlighter & Code Editor Component ──────────────────────────
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function highlightJson(json: string): string {
+  if (!json) return "";
+
+  const jsonTokenRegex =
+    /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false)|(null)|([{}[\],])|([^\s"0-9a-zA-Z\-{}\[\],:]+)/g;
+
+  let html = json.replace(
+    jsonTokenRegex,
+    (_match, str, colon, num, bool, nullVal, punct, other) => {
+      if (str !== undefined) {
+        const escapedStr = escapeHtml(str);
+        if (colon !== undefined) {
+          return `<span class="jf-tok-key">${escapedStr}</span><span class="jf-tok-punct">${escapeHtml(colon)}</span>`;
+        }
+        return `<span class="jf-tok-string">${escapedStr}</span>`;
+      }
+      if (num !== undefined) {
+        return `<span class="jf-tok-number">${escapeHtml(num)}</span>`;
+      }
+      if (bool !== undefined) {
+        return `<span class="jf-tok-bool">${escapeHtml(bool)}</span>`;
+      }
+      if (nullVal !== undefined) {
+        return `<span class="jf-tok-null">${escapeHtml(nullVal)}</span>`;
+      }
+      if (punct !== undefined) {
+        return `<span class="jf-tok-punct">${escapeHtml(punct)}</span>`;
+      }
+      if (other !== undefined) {
+        return `<span class="jf-tok-other">${escapeHtml(other)}</span>`;
+      }
+      return escapeHtml(_match);
+    }
+  );
+
+  if (json.endsWith("\n")) {
+    html += "\n ";
+  }
+
+  return html;
+}
+
+interface JsonCodeEditorProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onValueChange: (val: string) => void;
+  parseError: string | null;
+  onExplore: () => void;
+}
+
+const JsonCodeEditor: React.FC<JsonCodeEditorProps> = ({
+  value,
+  onChange,
+  onValueChange,
+  parseError,
+  onExplore,
+}) => {
+  const [activeLine, setActiveLine] = useState(1);
+  const [cursorInfo, setCursorInfo] = useState({ line: 1, col: 1 });
+  const [copiedFlash, setCopiedFlash] = useState(false);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const preRef = useRef<HTMLPreElement>(null);
+  const gutterRef = useRef<HTMLDivElement>(null);
+
+  const highlightedCode = useMemo(() => highlightJson(value), [value]);
+
+  const updateCursorPos = (el: HTMLTextAreaElement) => {
+    const selStart = el.selectionStart || 0;
+    const textBefore = el.value.substring(0, selStart);
+    const lines = textBefore.split("\n");
+    const currentLine = lines.length;
+    const currentCol = lines[lines.length - 1].length + 1;
+    setActiveLine(currentLine);
+    setCursorInfo({ line: currentLine, col: currentCol });
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    if (preRef.current) {
+      preRef.current.scrollTop = target.scrollTop;
+      preRef.current.scrollLeft = target.scrollLeft;
+    }
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = target.scrollTop;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const target = e.currentTarget;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+
+      if (e.shiftKey) {
+        // Outdent
+        const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+        const linePrefix = value.substring(lineStart, start);
+        if (linePrefix.endsWith("  ")) {
+          const newValue = value.substring(0, start - 2) + value.substring(start);
+          onValueChange(newValue);
+          setTimeout(() => {
+            target.selectionStart = target.selectionEnd = start - 2;
+            updateCursorPos(target);
+          }, 0);
+        } else if (linePrefix.endsWith(" ")) {
+          const newValue = value.substring(0, start - 1) + value.substring(start);
+          onValueChange(newValue);
+          setTimeout(() => {
+            target.selectionStart = target.selectionEnd = start - 1;
+            updateCursorPos(target);
+          }, 0);
+        }
+      } else {
+        // Indent 2 spaces
+        const newValue = value.substring(0, start) + "  " + value.substring(end);
+        onValueChange(newValue);
+        setTimeout(() => {
+          target.selectionStart = target.selectionEnd = start + 2;
+          updateCursorPos(target);
+        }, 0);
+      }
+    } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (!parseError) {
+        onExplore();
+      }
+    }
+  };
+
+  const handleFormat = () => {
+    try {
+      const parsed = JSON.parse(value);
+      const formatted = JSON.stringify(parsed, null, 2);
+      onValueChange(formatted);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleMinify = () => {
+    try {
+      const parsed = JSON.parse(value);
+      const minified = JSON.stringify(parsed);
+      onValueChange(minified);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopiedFlash(true);
+    setTimeout(() => setCopiedFlash(false), 1500);
+  };
+
+  const handleClear = () => {
+    onValueChange("");
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const lines = value.split("\n");
+  const lineCount = lines.length;
+
+  return (
+    <div className="jf-editor-wrapper">
+      {/* Editor Header / Controls */}
+      <div className="jf-editor-header">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span className="jf-input-label">JSON EDITOR</span>
+          <button className="jf-btn-sm" onClick={handleFormat} title="Prettify JSON with 2-space indents">
+            ✨ Format
+          </button>
+          <button className="jf-btn-sm" onClick={handleMinify} title="Compress JSON to single line">
+            ⚡ Minify
+          </button>
+          <button className="jf-btn-sm" onClick={handleCopy} title="Copy JSON text">
+            {copiedFlash ? "✓ Copied" : "📋 Copy"}
+          </button>
+          {value && (
+            <button className="jf-btn-sm danger" onClick={handleClear} title="Clear text">
+              🧹 Clear
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {parseError && <span className="jf-input-error">⚠ {parseError}</span>}
+          <button className="jf-btn primary" onClick={onExplore} disabled={!!parseError}>
+            Explore →
+          </button>
+        </div>
+      </div>
+
+      {/* Code Editor Body */}
+      <div className="jf-editor-body">
+        {/* Line Numbers Gutter */}
+        <div className="jf-editor-gutter" ref={gutterRef}>
+          <div style={{ padding: "12px 0 24px 0" }}>
+            {Array.from({ length: lineCount }, (_, i) => i + 1).map((lineNum) => (
+              <div
+                key={lineNum}
+                className={`jf-gutter-num${lineNum === activeLine ? " active" : ""}`}
+              >
+                {lineNum}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scrollable Highlight + Textarea Area */}
+        <div className="jf-editor-scroll">
+          <pre className="jf-editor-pre" ref={preRef} aria-hidden="true">
+            <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+          </pre>
+          <textarea
+            ref={textareaRef}
+            className="jf-editor-textarea"
+            value={value}
+            onChange={(e) => {
+              onChange(e);
+              updateCursorPos(e.target);
+            }}
+            onScroll={handleScroll}
+            onClick={(e) => updateCursorPos(e.currentTarget)}
+            onKeyUp={(e) => updateCursorPos(e.currentTarget)}
+            onSelect={(e) => updateCursorPos(e.currentTarget)}
+            onKeyDown={handleKeyDown}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+          />
+        </div>
+      </div>
+
+      {/* Editor Footer / Stats Bar */}
+      <div className="jf-editor-footer">
+        <div>
+          <span>Lines: {lineCount}</span>
+          <span style={{ margin: "0 8px", opacity: 0.4 }}>|</span>
+          <span>Chars: {value.length.toLocaleString()}</span>
+        </div>
+        <div>
+          <span>Ln {cursorInfo.line}, Col {cursorInfo.col}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface JsonFinderProps {
@@ -1163,15 +1641,28 @@ interface JsonFinderProps {
   showInput?: boolean;
   /** Callback when JSON is updated. */
   onUpdate?: (data: JsonValue) => void;
+  /** Extra actions to render in top toolbar (e.g. user profile / auth options) */
+  headerActions?: React.ReactNode;
 }
 
 const JsonFinder: React.FC<JsonFinderProps> = ({
   initialJson = "",
   showInput = true,
   onUpdate,
+  headerActions,
 }) => {
   const [jsonText, setJsonText] = useState(initialJson);
   const [parseError, setParseError] = useState<string | null>(null);
+
+  const handleValueChange = useCallback((val: string) => {
+    setJsonText(val);
+    try {
+      JSON.parse(val);
+      setParseError(null);
+    } catch (err: unknown) {
+      setParseError((err as Error).message);
+    }
+  }, []);
   const [root, setRoot] = useState<JsonValue | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [selectedItem, setSelectedItem] = useState<ColumnItem | null>(null);
@@ -1185,6 +1676,24 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
   const [bulkPath, setBulkPath] = useState("views");
   const [bulkField, setBulkField] = useState("");
   const [bulkFormula, setBulkFormula] = useState("");
+
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    path: (string | number)[];
+    keyName: string | number;
+  } | null>(null);
+
+  useEffect(() => {
+    const closeMenu = () => setContextMenu(null);
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("contextmenu", closeMenu);
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("contextmenu", closeMenu);
+    };
+  }, []);
 
   const columnsEndRef = useRef<HTMLDivElement>(null);
   const columnsWrapRef = useRef<HTMLDivElement>(null);
@@ -1280,6 +1789,7 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
 
   const refreshFromRoot = useCallback((newRoot: JsonValue) => {
     setRoot(newRoot);
+    setJsonText(JSON.stringify(newRoot, null, 2));
     saveToStorage(newRoot);
     if (onUpdate) onUpdate(newRoot);
 
@@ -1332,9 +1842,19 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
 
     setColumns(newCols);
 
-    setTimeout(() => {
+    // Auto scroll horizontal columns wrap to reveal expanded column/item
+    const scrollToRight = () => {
+      if (columnsWrapRef.current) {
+        columnsWrapRef.current.scrollTo({
+          left: columnsWrapRef.current.scrollWidth,
+          behavior: "smooth"
+        });
+      }
       columnsEndRef.current?.scrollIntoView({ behavior: "smooth", inline: "end", block: "nearest" });
-    }, 30);
+    };
+
+    setTimeout(scrollToRight, 30);
+    requestAnimationFrame(scrollToRight);
   }, [columns]);
 
   const handleDoubleClick = useCallback((item: ColumnItem) => {
@@ -1378,6 +1898,56 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
       }
     }
   }, [columns, getPathSegments, onUpdate, root]);
+
+  const deleteItemAtPath = useCallback((itemPath: (string | number)[]) => {
+    if (!root || itemPath.length === 0) return;
+    const newRoot = deleteAtPath(root, itemPath);
+    setRoot(newRoot);
+    saveToStorage(newRoot);
+    if (onUpdate) onUpdate(newRoot);
+
+    const parentPath = itemPath.slice(0, -1);
+    
+    // Rebuild columns using parentPath
+    const newCols: Column[] = [];
+    let current = newRoot;
+    let currentItems = getChildren(current);
+    newCols.push({ items: currentItems, selectedKey: parentPath[0] ?? null });
+
+    for (let i = 0; i < parentPath.length; i++) {
+      const seg = parentPath[i];
+      const item = currentItems.find((c) => c.key === seg);
+      if (!item || !isExpandable(item.value)) break;
+      current = item.value;
+      currentItems = getChildren(current);
+      newCols.push({ items: currentItems, selectedKey: parentPath[i + 1] ?? null });
+    }
+
+    setColumns(newCols);
+    setSelectedItem(null);
+    setEditingKey(null);
+
+    const newText = JSON.stringify(newRoot, null, 2);
+    setJsonText(newText);
+  }, [root, saveToStorage, onUpdate]);
+
+  const handleRowContextMenu = useCallback((e: React.MouseEvent, colIndex: number, item: ColumnItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Highlight selected item for clear UX
+    handleSelect(colIndex, item);
+
+    const path = columns.slice(0, colIndex).map((col) => col.selectedKey as (string | number)).concat([item.key]);
+    
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      path,
+      keyName: item.key,
+    });
+  }, [columns, handleSelect]);
 
   const handleExport = () => {
     if (!root) return;
@@ -1658,131 +2228,142 @@ const JsonFinder: React.FC<JsonFinderProps> = ({
 
         {showInput && (
           <button className="jf-btn" onClick={() => setInputOpen((v) => !v)}>
-            {inputOpen ? "Hide input" : "Edit JSON"}
+            {inputOpen ? "🔍 Show Explorer" : "✏️ Edit JSON"}
           </button>
         )}
+
+        {headerActions}
       </div>
 
-      {/* JSON Input */}
-      {showInput && inputOpen && (
-        <div className="jf-input-wrap">
-          <div className="jf-input-header">
-            <span className="jf-input-label">JSON INPUT</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {parseError && <span className="jf-input-error">⚠ {parseError}</span>}
-              <button className="jf-btn primary" onClick={handleLoad} disabled={!!parseError}>
-                Explore →
-              </button>
+      {showInput && inputOpen ? (
+        /* JSON Editor View with Syntax Highlighting */
+        <JsonCodeEditor
+          value={jsonText}
+          onChange={handleTextChange}
+          onValueChange={handleValueChange}
+          parseError={parseError}
+          onExplore={handleLoad}
+        />
+      ) : (
+        /* Explorer View */
+        <>
+          <div className="jf-finder">
+            {/* Title bar */}
+            <div className="jf-titlebar">
+              <div className="jf-traffic">
+                <div className="jf-dot jf-dot-r" />
+                <div className="jf-dot jf-dot-y" />
+                <div className="jf-dot jf-dot-g" />
+              </div>
+              <div className="jf-title">
+                {currentPath}
+              </div>
+              <div className="jf-title-spacer" />
             </div>
-          </div>
-          <textarea
-            className="jf-textarea"
-            rows={8}
-            value={jsonText}
-            onChange={handleTextChange}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-          />
-        </div>
-      )}
 
-      {/* Finder window */}
-      <div className="jf-finder">
-        {/* Title bar */}
-        <div className="jf-titlebar">
-          <div className="jf-traffic">
-            <div className="jf-dot jf-dot-r" />
-            <div className="jf-dot jf-dot-y" />
-            <div className="jf-dot jf-dot-g" />
-          </div>
-          <div className="jf-title">
-            {currentPath}
-          </div>
-          <div className="jf-title-spacer" />
-        </div>
-
-        {/* Columns */}
-        <div className="jf-columns-wrap" ref={columnsWrapRef}>
-          {root === null ? (
-            <div className="jf-empty">
-              <div className="jf-empty-icon">📋</div>
-              <span>Paste JSON in the editor above and click "Explore →"</span>
-              <span style={{ fontSize: 11, opacity: 0.6 }}>Your data is auto-saved to browser storage</span>
-            </div>
-          ) : (
-            <>
-              {columns.map((col, i) => (
-                <ColumnPanel
-                  key={i}
-                  items={col.items}
-                  selectedKey={col.selectedKey}
-                  depth={i}
-                  onSelect={(item) => handleSelect(i, item)}
-                  onDoubleClick={handleDoubleClick}
-                  editingKey={editingKey}
-                  onSaveEdit={handleSaveInlineEdit}
-                  onCancelEdit={() => setEditingKey(null)}
-                  isNew={i === columns.length - 1 && i > 0}
-                  focusedIndex={focusedCol === i ? focusedRow : -1}
-                  isKeyboardActive={keyboardMode}
-                />
-              ))}
-
-              {/* Preview detail for leaf values */}
-              {selectedItem && (
+            {/* Columns */}
+            <div className="jf-columns-wrap" ref={columnsWrapRef}>
+              {root === null ? (
+                <div className="jf-empty">
+                  <div className="jf-empty-icon">📋</div>
+                  <span>Paste JSON in the editor and click "Explore →"</span>
+                  <span style={{ fontSize: 11, opacity: 0.6 }}>Your data is auto-saved to browser storage</span>
+                </div>
+              ) : (
                 <>
-                  <div className="jf-divider" />
-                  <PreviewPanel
-                    item={selectedItem}
-                    path={currentPath}
-                    onEditValue={handleSavePreviewEdit}
-                    onDelete={handleDelete}
-                  />
+                  {columns.map((col, i) => (
+                    <ColumnPanel
+                      key={i}
+                      items={col.items}
+                      selectedKey={col.selectedKey}
+                      depth={i}
+                      onSelect={(item) => handleSelect(i, item)}
+                      onDoubleClick={handleDoubleClick}
+                      onContextMenu={(e, item) => handleRowContextMenu(e, i, item)}
+                      editingKey={editingKey}
+                      onSaveEdit={handleSaveInlineEdit}
+                      onCancelEdit={() => setEditingKey(null)}
+                      isNew={i === columns.length - 1 && i > 0}
+                      focusedIndex={focusedCol === i ? focusedRow : -1}
+                      isKeyboardActive={keyboardMode}
+                    />
+                  ))}
+
+                  {/* Preview detail for leaf values */}
+                  {selectedItem && (
+                    <>
+                      <div className="jf-divider" />
+                      <PreviewPanel
+                        item={selectedItem}
+                        path={currentPath}
+                        onEditValue={handleSavePreviewEdit}
+                        onDelete={handleDelete}
+                      />
+                    </>
+                  )}
+
+                  {/* Empty right-side nudge when nothing selected */}
+                  {!selectedItem && columns.length > 0 && columns[columns.length - 1].selectedKey === null && (
+                    <div className="jf-empty" style={{ minWidth: 180 }}>
+                      <div className="jf-empty-icon">👆</div>
+                      <span>Select an item</span>
+                    </div>
+                  )}
                 </>
               )}
+              <div ref={columnsEndRef} />
+            </div>
+          </div>
 
-              {/* Empty right-side nudge when nothing selected */}
-              {!selectedItem && columns.length > 0 && columns[columns.length - 1].selectedKey === null && (
-                <div className="jf-empty" style={{ minWidth: 180 }}>
-                  <div className="jf-empty-icon">👆</div>
-                  <span>Select an item</span>
-                </div>
-              )}
-            </>
-          )}
-          <div ref={columnsEndRef} />
+          {/* Formula Bar */}
+          <div className="jf-formula-bar">
+            <span className="jf-formula-label">BULK EDIT ARRAY:</span>
+            <input
+              className="jf-formula-input path"
+              placeholder="Array Path (e.g. views)"
+              value={bulkPath}
+              onChange={(e) => setBulkPath(e.target.value)}
+            />
+            <span className="jf-formula-label">FIELD:</span>
+            <input
+              className="jf-formula-input field"
+              placeholder="Field Name"
+              value={bulkField}
+              onChange={(e) => setBulkField(e.target.value)}
+            />
+            <span className="jf-formula-label">FORMULA:</span>
+            <input
+              className="jf-formula-input formula"
+              placeholder="Value or Formula (e.g. 1.5, +10, *0.5)"
+              value={bulkFormula}
+              onChange={(e) => setBulkFormula(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleBulkApply()}
+            />
+            <button className="jf-btn primary" onClick={handleBulkApply}>
+              Apply
+            </button>
+          </div>
+        </>
+      )}
+
+      {contextMenu?.visible && (
+        <div
+          className="jf-context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="jf-context-menu-item danger"
+            onClick={() => {
+              deleteItemAtPath(contextMenu.path);
+              setContextMenu(null);
+            }}
+          >
+            <span className="jf-context-menu-item-icon">🗑️</span>
+            <span>Delete "{String(contextMenu.keyName)}"</span>
+          </div>
         </div>
-      </div>
-
-      {/* Formula Bar */}
-      <div className="jf-formula-bar">
-        <span className="jf-formula-label">BULK EDIT ARRAY:</span>
-        <input
-          className="jf-formula-input path"
-          placeholder="Array Path (e.g. views)"
-          value={bulkPath}
-          onChange={(e) => setBulkPath(e.target.value)}
-        />
-        <span className="jf-formula-label">FIELD:</span>
-        <input
-          className="jf-formula-input field"
-          placeholder="Field Name"
-          value={bulkField}
-          onChange={(e) => setBulkField(e.target.value)}
-        />
-        <span className="jf-formula-label">FORMULA:</span>
-        <input
-          className="jf-formula-input formula"
-          placeholder="Value or Formula (e.g. 1.5, +10, *0.5)"
-          value={bulkFormula}
-          onChange={(e) => setBulkFormula(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleBulkApply()}
-        />
-        <button className="jf-btn primary" onClick={handleBulkApply}>
-          Apply
-        </button>
-      </div>
+      )}
     </div>
   );
 };
