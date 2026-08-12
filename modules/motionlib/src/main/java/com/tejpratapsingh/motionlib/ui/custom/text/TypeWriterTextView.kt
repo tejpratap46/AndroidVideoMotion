@@ -14,7 +14,6 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
 import timber.log.Timber
 
@@ -45,17 +44,6 @@ class TypeWriterTextView(
         effects = effects,
     ) {
     init {
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
-
         textView.gravity = Gravity.CENTER
     }
 

@@ -11,7 +11,6 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.infra.VideoFrameHandler
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.runBlocking
 
 class MediaFrameView(
@@ -39,17 +38,6 @@ class MediaFrameView(
             x = leftTo { parent.left() }.rightTo { parent.right() },
             y = topTo { parent.top() }.bottomTo { parent.bottom() },
         )
-
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
 
         runBlocking {
             handler = VideoFrameHandler.create(context, videoUri)

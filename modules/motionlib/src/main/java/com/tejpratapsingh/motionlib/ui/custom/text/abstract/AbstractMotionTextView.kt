@@ -55,18 +55,6 @@ abstract class AbstractMotionTextView(
         }
 
     init {
-        // Set the contour dimensions based on the current configuration's aspect ratio.
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
-
         // Center the text within the TextView.
         textView.gravity = Gravity.CENTER
 
@@ -86,6 +74,22 @@ abstract class AbstractMotionTextView(
             }
             fontAsset?.let {
                 typeface = getWebFont(it.getUri().toString())
+            }
+        }
+
+        // Ensure internal coordinate system matches layoutInfo if set (e.g. when used in stacks)
+        contourWidthOf {
+            if (layoutInfo.width > 0) {
+                layoutInfo.width.toXInt()
+            } else {
+                provideCurrentConfig().aspectRatio.width.toXInt()
+            }
+        }
+        contourHeightOf {
+            if (layoutInfo.height > 0) {
+                layoutInfo.height.toYInt()
+            } else {
+                provideCurrentConfig().aspectRatio.height.toYInt()
             }
         }
 

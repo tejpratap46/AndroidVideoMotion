@@ -87,8 +87,22 @@ abstract class BaseLinearMotionView
             widthMeasureSpec: Int,
             heightMeasureSpec: Int,
         ) {
-            val desiredWidth = provideCurrentConfig().aspectRatio.width
-            val desiredHeight = provideCurrentConfig().aspectRatio.height
+            val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+            val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+            val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+            val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+            val desiredWidth = if (layoutInfo.width == MotionLayoutInfo.MATCH_PARENT && widthMode != MeasureSpec.UNSPECIFIED) {
+                widthSize
+            } else {
+                provideCurrentConfig().aspectRatio.width
+            }
+
+            val desiredHeight = if (layoutInfo.height == MotionLayoutInfo.MATCH_PARENT && heightMode != MeasureSpec.UNSPECIFIED) {
+                heightSize
+            } else {
+                provideCurrentConfig().aspectRatio.height
+            }
 
             val widthSpec = MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY)
             val heightSpec = MeasureSpec.makeMeasureSpec(desiredHeight, MeasureSpec.EXACTLY)

@@ -54,17 +54,6 @@ class VideoFrameView(
             y = topTo { parent.top() }.bottomTo { parent.bottom() },
         )
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
     }
 
     private lateinit var currentFrameBitmap: Bitmap

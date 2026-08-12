@@ -208,12 +208,18 @@ class LyricsMotionWorker(
                 "${appContext.packageName}.fileprovider",
                 videoFile,
             )
-        intent.setDataAndType(
-            videoFileUri,
-            URLConnection.guessContentTypeFromName(videoFile.name),
-        )
+
+        if (intent.action == Intent.ACTION_SEND) {
+            intent.type = URLConnection.guessContentTypeFromName(videoFile.name)
+            intent.putExtra(Intent.EXTRA_STREAM, videoFileUri)
+        } else {
+            intent.setDataAndType(
+                videoFileUri,
+                URLConnection.guessContentTypeFromName(videoFile.name),
+            )
+        }
+
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.putExtra(Intent.EXTRA_STREAM, videoFileUri)
 
         val pendingShareIntentFlags =
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

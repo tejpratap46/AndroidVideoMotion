@@ -1,8 +1,10 @@
 package com.tejpratapsingh.motion.sdui.infra
 
+import android.graphics.Color
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.assettype.FontAsset
 import com.tejpratapsingh.motionlib.assettype.ImageAsset
 import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
@@ -20,12 +22,18 @@ import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
 import com.tejpratapsingh.motionlib.ui.custom.background.TranslucentMotionView
 import com.tejpratapsingh.motionlib.ui.custom.image.CircularMotionImageView
 import com.tejpratapsingh.motionlib.ui.custom.image.MotionImageView
+import com.tejpratapsingh.motionlib.ui.custom.progress.MotionProgressBar
+import com.tejpratapsingh.motionlib.ui.custom.progress.MotionProgressBarStyle
+import com.tejpratapsingh.motionlib.ui.custom.stack.HorizontalStackMotionView
+import com.tejpratapsingh.motionlib.ui.custom.stack.StackSection
+import com.tejpratapsingh.motionlib.ui.custom.stack.VerticalStackMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.AccentMiddlePopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.RainbowPopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.WordVibrateMotionTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordWriterTextView
 import com.tejpratapsingh.motionlib.ui.custom.video.VideoFrameView
 import com.tejpratapsingh.motionlib.ui.effects.BlurEffect
@@ -81,6 +89,30 @@ object MotionSduiInitializer {
         }
         MotionSdui.registerAssetSerializer(FontAsset::class.java) { asset, json ->
             asset.fontName?.let { json.addProperty("fontName", it) }
+        }
+
+        // Register MotionProgressBar
+        MotionSdui.registerView(MotionProgressBar::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps(context)
+            val style =
+                json.get("style")?.asString?.let { MotionProgressBarStyle.valueOf(it) }
+                    ?: MotionProgressBarStyle.HORIZONTAL
+            val color =
+                json.get("color")?.asString?.let { it.toColorInt() }
+                    ?: Color.WHITE
+            MotionProgressBar(
+                context = context,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                effects = props.effects,
+                style = style,
+                color = color,
+            )
+        }
+        MotionSdui.registerViewSerializer(MotionProgressBar::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("style", view.style.name)
+            json.addProperty("color", String.format("#%06X", 0xFFFFFF and view.color))
         }
 
         // Register TransparentTextView
@@ -331,6 +363,50 @@ object MotionSduiInitializer {
             view.highlightColor?.let { json.addProperty("highlightColor", it) }
         }
 
+        // Register WordVibrateMotionTextView
+        MotionSdui.registerView(WordVibrateMotionTextView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps(context)
+            val text = json.get("text")?.asString ?: ""
+            val amplitude = json.get("amplitude")?.asFloat ?: 5f
+            val frequency = json.get("frequency")?.asFloat ?: 0.5f
+            val phaseShiftPerWord = json.get("phaseShiftPerWord")?.asFloat ?: 1.0f
+            val fontAsset = json.get("fontAsset")?.let { it.asJsonObject.toMotionAsset(context) }
+            val textSizeVariant =
+                json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            val textColor = json.get("textColor")?.asString
+            val highlightColor = json.get("highlightColor")?.asString
+
+            WordVibrateMotionTextView(
+                context = context,
+                text = text,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                amplitude = amplitude,
+                frequency = frequency,
+                phaseShiftPerWord = phaseShiftPerWord,
+                fontAsset = fontAsset,
+                textSizeVariant = textSizeVariant,
+                textColor = textColor,
+                highlightColor = highlightColor,
+                effects = props.effects,
+            ).apply {
+                this.layoutInfo = props.layoutInfo
+            }
+        }
+
+        MotionSdui.registerViewSerializer(WordVibrateMotionTextView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("text", view.text)
+            json.addProperty("amplitude", view.amplitude)
+            json.addProperty("frequency", view.frequency)
+            json.addProperty("phaseShiftPerWord", view.phaseShiftPerWord)
+            view.textColor?.let { json.addProperty("textColor", it) }
+            view.highlightColor?.let { json.addProperty("highlightColor", it) }
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
+            view.layoutInfo.let { json.add("layoutInfo", it.toJson()) }
+        }
+
         // Register CircularMotionImageView
         MotionSdui.registerView(CircularMotionImageView::class.java.simpleName) { context, json ->
             val props = json.parseMotionViewProps(context)
@@ -487,6 +563,68 @@ object MotionSduiInitializer {
             val amplitudesArray = JsonArray()
             view.amplitudes.forEach { amplitudesArray.add(it) }
             json.add("amplitudes", amplitudesArray)
+        }
+
+        // Register HorizontalStackMotionView
+        MotionSdui.registerView(HorizontalStackMotionView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps(context)
+            val sectionsJson = json.getAsJsonArray("sections")
+            val sections = mutableListOf<StackSection>()
+            sectionsJson?.forEach { sectionElement ->
+                val sectionObject = sectionElement.asJsonObject
+                val view = sectionObject.get("view").asJsonObject.toMotionView(context)
+                val percentage = sectionObject.get("percentage").asFloat
+                sections.add(StackSection(view, percentage))
+            }
+            HorizontalStackMotionView(
+                context = context,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                sections = sections,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(HorizontalStackMotionView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            val sectionsArray = JsonArray()
+            view.sections.forEach { section ->
+                val sectionObject = JsonObject()
+                sectionObject.add("view", section.view.toJson())
+                sectionObject.addProperty("percentage", section.percentage)
+                sectionsArray.add(sectionObject)
+            }
+            json.add("sections", sectionsArray)
+        }
+
+        // Register VerticalStackMotionView
+        MotionSdui.registerView(VerticalStackMotionView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps(context)
+            val sectionsJson = json.getAsJsonArray("sections")
+            val sections = mutableListOf<StackSection>()
+            sectionsJson?.forEach { sectionElement ->
+                val sectionObject = sectionElement.asJsonObject
+                val view = sectionObject.get("view").asJsonObject.toMotionView(context)
+                val percentage = sectionObject.get("percentage").asFloat
+                sections.add(StackSection(view, percentage))
+            }
+            VerticalStackMotionView(
+                context = context,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                sections = sections,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(VerticalStackMotionView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            val sectionsArray = JsonArray()
+            view.sections.forEach { section ->
+                val sectionObject = JsonObject()
+                sectionObject.add("view", section.view.toJson())
+                sectionObject.addProperty("percentage", section.percentage)
+                sectionsArray.add(sectionObject)
+            }
+            json.add("sections", sectionsArray)
         }
 
         // Register SlideRightToLeftEffect

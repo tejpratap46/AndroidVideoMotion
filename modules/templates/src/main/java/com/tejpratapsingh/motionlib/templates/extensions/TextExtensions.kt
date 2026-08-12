@@ -12,6 +12,7 @@ import com.tejpratapsingh.motionlib.ui.custom.text.RainbowPopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordBlinkTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.WordVibrateMotionTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.WordWriterTextView
 
 fun ContentScope.popUpTextView(
@@ -217,6 +218,39 @@ fun ContentScope.accentMiddlePopUpTextView(
     unwrittenTextAlpha,
     maxTranslationY,
     accentColor,
+    textView,
+    fontAsset,
+    textSizeVariant,
+    textColor,
+    highlightColor,
+    effects = effects,
+).apply { this.layoutInfo = layoutInfo }
+    .apply { block?.invoke(this) }
+    .also { addView(it) }
+
+fun ContentScope.wordVibrateMotionTextView(
+    text: String,
+    startFrame: Int,
+    endFrame: Int,
+    amplitude: Float = 5f,
+    frequency: Float = 0.5f,
+    phaseShiftPerWord: Float = 1.0f,
+    textView: AppCompatTextView = AppCompatTextView(context),
+    fontAsset: MotionAsset? = null,
+    textSizeVariant: MotionTextVariant? = null,
+    textColor: String? = null,
+    highlightColor: String? = null,
+    effects: List<MotionEffect> = emptyList(),
+    layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
+    block: (WordVibrateMotionTextView.() -> Unit)? = null,
+) = WordVibrateMotionTextView(
+    context,
+    text,
+    startFrame,
+    endFrame,
+    amplitude,
+    frequency,
+    phaseShiftPerWord,
     textView,
     fontAsset,
     textSizeVariant,

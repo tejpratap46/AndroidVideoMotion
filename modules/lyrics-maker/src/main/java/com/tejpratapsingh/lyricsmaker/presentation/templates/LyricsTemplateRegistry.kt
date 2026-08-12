@@ -11,10 +11,12 @@ object LyricsTemplateRegistry {
             GlitchLyricsTemplate,
             ZoomLyricsTemplate,
             VibrateLyricsTemplate,
+            WordVibrateLyricsTemplate,
             GradientLyricsTemplate,
             RainbowLyricsTemplate,
             AccentLyricsTemplate,
             VintageLyricsTemplate,
+            StackedLyricsTemplate,
         )
 
     fun getTemplate(name: String?): MotionTemplate = templates.find { it.name == name } ?: PopupLyricsTemplate

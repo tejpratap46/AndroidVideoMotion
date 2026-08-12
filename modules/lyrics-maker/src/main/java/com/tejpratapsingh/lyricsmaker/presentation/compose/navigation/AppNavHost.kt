@@ -260,7 +260,9 @@ fun AppNavHost(
                             launchSingleTop = true
                         }
                     },
-                    onShareClick = { p -> projectsViewModel.shareProject(p) },
+                    onShareClick = { p ->
+                        projectsViewModel.shareProject(p)
+                    },
                     onNavigateToAssetDownload = { id ->
                         navController.navigate(Screen.AssetDownload.createRoute(id))
                     },
