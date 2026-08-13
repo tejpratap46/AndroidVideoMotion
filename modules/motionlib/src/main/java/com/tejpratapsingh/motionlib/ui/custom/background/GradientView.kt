@@ -14,7 +14,6 @@ import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.OrientedMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 enum class Orientation {
     HORIZONTAL,
@@ -58,19 +57,6 @@ class GradientView(
 
     init {
         // If motionConfig is meant to set the *initial* or *target* size
-        // and the view can be resized by its parent, this is fine.
-        // If the view *is* the size of motionConfig, then using width/height
-        // directly in onDraw/onSizeChanged is also good.
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
     }
 
     override fun onSizeChanged(

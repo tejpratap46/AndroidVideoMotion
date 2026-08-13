@@ -8,6 +8,7 @@ import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 
 open class BaseContourMotionView(
@@ -23,6 +24,21 @@ open class BaseContourMotionView(
 
     init {
         effects.forEach { addEffect(it) }
+
+        contourWidthOf {
+            if (layoutInfo.width > 0) {
+                layoutInfo.width.toXInt()
+            } else {
+                provideCurrentConfig().aspectRatio.width.toXInt()
+            }
+        }
+        contourHeightOf {
+            if (layoutInfo.height > 0) {
+                layoutInfo.height.toYInt()
+            } else {
+                provideCurrentConfig().aspectRatio.height.toYInt()
+            }
+        }
     }
 
     private val minStartFrame: Int

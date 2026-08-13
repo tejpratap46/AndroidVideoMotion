@@ -192,6 +192,9 @@ class SearchActivity : ComponentActivity() {
                     SyncWorker.scheduleImmediate(this@SearchActivity)
                 }
             }
+        }
+
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     lyricsViewModel.uiState.collect {
@@ -238,24 +241,39 @@ class SearchActivity : ComponentActivity() {
      * Share Project
      */
     private fun shareProjectFile(motionProject: MotionProject) {
+        Timber.d("shareProjectFile: sharing project %s", motionProject.id)
+        val videoFile = createProjectFile(motionProject)
+        Timber.d("shareProjectFile: video file path %s, exists: %s", videoFile.absolutePath, videoFile.exists())
+        if (!videoFile.exists()) {
+            Toast.makeText(this, "Video file not found. Please generate it first.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         copyProjectNameToClipboard(motionProject)
 
-        val videoFile = createProjectFile(motionProject)
         val videoFileUri: Uri =
             FileProvider.getUriForFile(
                 this,
                 "${this.packageName}.fileprovider",
                 videoFile,
             )
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.setDataAndType(
-            videoFileUri,
-            URLConnection.guessContentTypeFromName(videoFile.name),
-        )
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.putExtra(Intent.EXTRA_STREAM, videoFileUri)
+        Timber.d("shareProjectFile: video file URI %s", videoFileUri)
+        val intent =
+            Intent(Intent.ACTION_SEND).apply {
+                val contentType = URLConnection.guessContentTypeFromName(videoFile.name)
+                Timber.d("shareProjectFile: guessed content type %s", contentType)
+                type = contentType ?: "video/mp4"
+                putExtra(Intent.EXTRA_STREAM, videoFileUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
 
-        startActivity(Intent.createChooser(intent, "Share Video"))
+        try {
+            startActivity(Intent.createChooser(intent, "Share Video"))
+            Timber.d("shareProjectFile: chooser started")
+        } catch (e: Exception) {
+            Timber.e(e, "shareProjectFile: failed to start chooser")
+            Toast.makeText(this, "Failed to share video", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun handleLyricsSearch(lyricsState: LyricsUiState) {

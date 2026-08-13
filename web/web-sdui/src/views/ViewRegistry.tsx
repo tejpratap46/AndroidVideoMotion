@@ -12,6 +12,11 @@ import { MotionImageView } from './MotionImageView';
 import { RainbowPopUpTextView } from './RainbowPopUpTextView';
 import { AccentMiddlePopUpTextView } from './AccentMiddlePopUpTextView';
 import { TranslucentMotionView } from './TranslucentMotionView';
+import { HorizontalStackMotionView } from './HorizontalStackMotionView';
+import { VerticalStackMotionView } from './VerticalStackMotionView';
+import { SyncedLyricsMotionTextView } from './SyncedLyricsMotionTextView';
+import { MotionProgressBar } from './MotionProgressBar';
+import { WordVibrateMotionTextView } from './WordVibrateMotionTextView';
 
 export const ViewRegistry: Record<string, React.FC<{ props: MotionViewProps; currentFrame: number; config: MotionConfig }>> = {
   TransparentTextView: TransparentTextView,
@@ -29,6 +34,11 @@ export const ViewRegistry: Record<string, React.FC<{ props: MotionViewProps; cur
   RainbowPopUpTextView: RainbowPopUpTextView,
   AccentMiddlePopUpTextView: AccentMiddlePopUpTextView,
   TranslucentMotionView: TranslucentMotionView,
+  HorizontalStackMotionView: HorizontalStackMotionView,
+  VerticalStackMotionView: VerticalStackMotionView,
+  SyncedLyricsMotionTextView: SyncedLyricsMotionTextView,
+  MotionProgressBar: MotionProgressBar,
+  WordVibrateMotionTextView: WordVibrateMotionTextView,
   CoilVideoPlayer: VideoFrameView,
 };
 

@@ -181,12 +181,18 @@ class SampleMotionWorker(
                 "${applicationContext.packageName}.fileprovider",
                 videoFile,
             )
-        intent.setDataAndType(
-            apkURI,
-            URLConnection.guessContentTypeFromName(videoFile.name),
-        )
+
+        if (intent.action == Intent.ACTION_SEND) {
+            intent.type = URLConnection.guessContentTypeFromName(videoFile.name)
+            intent.putExtra(Intent.EXTRA_STREAM, apkURI)
+        } else {
+            intent.setDataAndType(
+                apkURI,
+                URLConnection.guessContentTypeFromName(videoFile.name),
+            )
+        }
+
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.putExtra(Intent.EXTRA_STREAM, apkURI)
 
         val pendingShareIntentFlags =
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

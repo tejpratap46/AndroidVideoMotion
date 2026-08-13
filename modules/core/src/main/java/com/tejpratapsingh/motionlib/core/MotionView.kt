@@ -26,8 +26,9 @@ interface MotionView : OnMotionFrameListener {
     /**
      * Layout information for this view, including dimensions, padding, and gravity.
      */
-    val layoutInfo: MotionLayoutInfo
+    var layoutInfo: MotionLayoutInfo
         get() = MotionLayoutInfo()
+        set(value) {}
 
     /**
      * List of assets required by this view.

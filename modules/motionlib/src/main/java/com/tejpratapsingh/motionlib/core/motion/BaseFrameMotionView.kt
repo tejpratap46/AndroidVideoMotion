@@ -19,11 +19,11 @@ abstract class BaseFrameMotionView
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0,
+        override var startFrame: Int = 0,
+        override var endFrame: Int = 0,
+        override var loop: Pair<Int, Int> = Pair(0, 0),
     ) : FrameLayout(context, attrs, defStyleAttr),
         MotionView {
-        override var startFrame: Int = 0
-        override var endFrame: Int = 0
-        override var loop: Pair<Int, Int> = Pair(0, 0)
         override val effects: MutableList<MotionEffect> = mutableListOf()
         override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
 
@@ -87,8 +87,25 @@ abstract class BaseFrameMotionView
             widthMeasureSpec: Int,
             heightMeasureSpec: Int,
         ) {
-            val desiredWidth = provideCurrentConfig().aspectRatio.width
-            val desiredHeight = provideCurrentConfig().aspectRatio.height
+            val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+            val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+            val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+            val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+            val desiredWidth =
+                if (layoutInfo.width == MotionLayoutInfo.MATCH_PARENT && widthMode != MeasureSpec.UNSPECIFIED) {
+                    widthSize
+                } else {
+                    provideCurrentConfig().aspectRatio.width
+                }
+
+            val desiredHeight =
+                if (layoutInfo.height == MotionLayoutInfo.MATCH_PARENT && heightMode != MeasureSpec.UNSPECIFIED) {
+                    heightSize
+                } else {
+                    provideCurrentConfig().aspectRatio.height
+                }
+
             setMeasuredDimension(desiredWidth, desiredHeight)
             getChildAt(0)?.measure(
                 MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),

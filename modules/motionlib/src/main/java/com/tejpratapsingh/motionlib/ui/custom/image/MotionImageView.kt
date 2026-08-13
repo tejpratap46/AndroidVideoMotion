@@ -58,17 +58,6 @@ class MotionImageView(
             y = topTo { parent.top() }.bottomTo { parent.bottom() },
         )
 
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
-
         // Load image into ImageView for preview
         runBlocking {
             val localUri = cacheManager.getCachedUri(asset) ?: imageUri

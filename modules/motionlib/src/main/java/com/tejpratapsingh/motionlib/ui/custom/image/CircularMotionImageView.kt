@@ -13,7 +13,6 @@ import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.utils.ImageUtil
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
@@ -55,17 +54,6 @@ class CircularMotionImageView(
             x = leftTo { parent.left() }.rightTo { parent.right() },
             y = topTo { parent.top() }.bottomTo { parent.bottom() },
         )
-
-        contourHeightOf {
-            provideCurrentConfig()
-                .aspectRatio.height
-                .toYInt()
-        }
-        contourWidthOf {
-            provideCurrentConfig()
-                .aspectRatio.width
-                .toXInt()
-        }
 
         imageView.outlineProvider =
             object : ViewOutlineProvider() {
