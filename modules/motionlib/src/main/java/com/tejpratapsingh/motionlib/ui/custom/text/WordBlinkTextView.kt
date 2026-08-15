@@ -1,7 +1,6 @@
 package com.tejpratapsingh.motionlib.ui.custom.text
 
 import android.content.Context
-import android.os.Build
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.TextView

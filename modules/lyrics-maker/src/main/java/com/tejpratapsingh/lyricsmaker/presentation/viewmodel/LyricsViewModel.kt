@@ -2,7 +2,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.client.LyricsRepository
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.LyricsResponse
 import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.SearchParams
@@ -38,7 +37,6 @@ sealed class LyricsUiState {
 class LyricsViewModel(
     private val repository: LyricsRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<LyricsUiState>(LyricsUiState.Initial)
     val uiState: StateFlow<LyricsUiState> = _uiState.asStateFlow()
     val query: MutableStateFlow<String> = MutableStateFlow("")

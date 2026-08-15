@@ -2,9 +2,6 @@ package com.tejpratapsingh.motion.download
 
 import android.content.Context
 import android.net.Uri
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.ketch.Ketch
 import com.ketch.Status
 import com.tejpratapsingh.motion.download.model.AssetDownloadProgress
@@ -26,9 +23,7 @@ class MotionAssetManagerImpl(
     private val ketch: Ketch,
     private val kv: MMKV,
 ) : MotionAssetManager {
-    override fun getCachedUri(asset: MotionAsset): Uri? {
-        return asset.getCachedUri(context, this)
-    }
+    override fun getCachedUri(asset: MotionAsset): Uri? = asset.getCachedUri(context, this)
 
     override fun getLocalPath(asset: MotionAsset): String? {
         val remoteUri = asset.getUri()

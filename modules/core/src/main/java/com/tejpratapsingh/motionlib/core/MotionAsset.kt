@@ -2,7 +2,6 @@ package com.tejpratapsingh.motionlib.core
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import com.google.gson.JsonObject
 import java.io.File
 

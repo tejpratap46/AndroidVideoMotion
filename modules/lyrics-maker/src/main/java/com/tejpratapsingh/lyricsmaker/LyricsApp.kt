@@ -8,8 +8,8 @@ import com.tejpratapsingh.lyricsmaker.di.appModule
 import com.tejpratapsingh.lyricsmaker.di.lyricsDataModule
 import com.tejpratapsingh.lyricsmaker.domain.sdui.MultiLyricsContainerSdui
 import com.tejpratapsingh.motion.download.di.downloadModule
-import com.tejpratapsingh.motion.tts.TTSAudioAssetSdui
 import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
+import com.tejpratapsingh.motion.tts.TTSAudioAssetSdui
 import com.tejpratapsingh.motionlib.core.di.coreModule
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.di.storeModule

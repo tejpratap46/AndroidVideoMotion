@@ -3,7 +3,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.templates
 import android.graphics.Color
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionTextVariant

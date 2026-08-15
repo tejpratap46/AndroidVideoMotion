@@ -1,6 +1,5 @@
 package com.tejpratapsingh.motionstore.infra
 
-import timber.log.Timber
 import com.tejpratapsingh.motionstore.dao.DownloadedTrackerDao
 import com.tejpratapsingh.motionstore.dao.SyncableDao
 import com.tejpratapsingh.motionstore.domain.BackendAdapter
@@ -18,6 +17,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
 
 /**
  * Orchestrates the full bidirectional sync cycle for one or more tables.
@@ -57,14 +57,15 @@ class SyncManager(
         return try {
             val downloadResult = download(dao)
             val uploadResult = upload(dao)
-            val result = SyncResult(
-                tableName = dao.tableName,
-                downloaded = downloadResult.saved,
-                conflicts = downloadResult.conflicts,
-                skipped = downloadResult.skipped,
-                uploaded = uploadResult.uploaded,
-                uploadFailed = uploadResult.failed,
-            )
+            val result =
+                SyncResult(
+                    tableName = dao.tableName,
+                    downloaded = downloadResult.saved,
+                    conflicts = downloadResult.conflicts,
+                    skipped = downloadResult.skipped,
+                    uploaded = uploadResult.uploaded,
+                    uploadFailed = uploadResult.failed,
+                )
             Timber.d("Sync finished for table: ${dao.tableName}. Result: $result")
             result
         } catch (e: SyncException) {
