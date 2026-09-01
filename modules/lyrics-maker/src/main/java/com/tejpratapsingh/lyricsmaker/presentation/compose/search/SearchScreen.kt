@@ -1,5 +1,6 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose.search
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,8 +11,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -77,11 +79,14 @@ fun SearchScreen(
         ) {
             when (val state = uiState) {
                 is LyricsUiState.Success -> {
-                    LazyColumn(
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 300.dp),
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = headerHeightDp, bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        item {
+                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                             Card(
                                 modifier =
                                     Modifier
@@ -104,10 +109,7 @@ fun SearchScreen(
                                     viewModel.selectedLyric.value = lyric
                                     onLyricsSelected(lyric)
                                 },
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
+                                modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Row(
                                     modifier = Modifier.padding(16.dp),

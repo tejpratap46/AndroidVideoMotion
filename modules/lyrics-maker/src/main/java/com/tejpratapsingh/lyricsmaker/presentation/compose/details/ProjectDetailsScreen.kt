@@ -2,23 +2,17 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
@@ -30,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.tejpratapsingh.lyricsmaker.presentation.compose.details.compact.ProjectDetailsCompact
+import com.tejpratapsingh.lyricsmaker.presentation.compose.details.expanded.ProjectDetailsExpanded
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
@@ -102,47 +99,67 @@ fun ProjectDetailsScreen(
             }
     }
 
-    Box(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            VideoPlayerSection(
-                motionVideoProducer = motionVideoProducer,
-                onCheckPendingDownloads = { onCheckPendingDownloads(project.sdui.toString()) },
-                onNavigateToAssetDownload = { onNavigateToAssetDownload(project.id) },
-                modifier = Modifier.weight(1f),
-            )
+    val adaptiveInfo = currentWindowAdaptiveInfoV2()
+    val isWideScreen =
+        adaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
 
-            ProjectInfoSection(
-                project = project,
-                isRendering = isRendering,
-                isVideoGenerated = isVideoGenerated,
-                onShareClick = {
-                    val hasPending = onCheckPendingDownloads(project.sdui.toString())
-                    if (hasPending) {
-                        onNavigateToAssetDownload(project.id)
-                    } else {
-                        onShareClick(project)
-                    }
-                },
-                onGenerateVideoClick = {
-                    val hasPending = onCheckPendingDownloads(project.sdui.toString())
-                    if (hasPending) {
-                        onNavigateToAssetDownload(project.id)
-                    } else {
-                        LyricsMotionWorker.startWork(context, project.id)
-                    }
-                },
-                onReRenderClick = { showReRenderConfirmation = true },
-            )
-        }
-
-        NavigationOverlays(
+    if (isWideScreen) {
+        ProjectDetailsExpanded(
+            project = project,
+            motionVideoProducer = motionVideoProducer,
+            isRendering = isRendering,
+            isVideoGenerated = isVideoGenerated,
             onBackClick = onBackClick,
-            onEditClick = { onEditClick(project) },
+            onEditClick = onEditClick,
+            onShareClick = {
+                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                if (hasPending) {
+                    onNavigateToAssetDownload(project.id)
+                } else {
+                    onShareClick(project)
+                }
+            },
+            onGenerateVideoClick = {
+                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                if (hasPending) {
+                    onNavigateToAssetDownload(project.id)
+                } else {
+                    LyricsMotionWorker.startWork(context, project.id)
+                }
+            },
+            onReRenderClick = { showReRenderConfirmation = true },
+            onCheckPendingDownloads = onCheckPendingDownloads,
+            onNavigateToAssetDownload = onNavigateToAssetDownload,
+            modifier = modifier
+        )
+    } else {
+        ProjectDetailsCompact(
+            project = project,
+            motionVideoProducer = motionVideoProducer,
+            isRendering = isRendering,
+            isVideoGenerated = isVideoGenerated,
+            onBackClick = onBackClick,
+            onEditClick = onEditClick,
+            onShareClick = {
+                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                if (hasPending) {
+                    onNavigateToAssetDownload(project.id)
+                } else {
+                    onShareClick(project)
+                }
+            },
+            onGenerateVideoClick = {
+                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                if (hasPending) {
+                    onNavigateToAssetDownload(project.id)
+                } else {
+                    LyricsMotionWorker.startWork(context, project.id)
+                }
+            },
+            onReRenderClick = { showReRenderConfirmation = true },
+            onCheckPendingDownloads = onCheckPendingDownloads,
+            onNavigateToAssetDownload = onNavigateToAssetDownload,
+            modifier = modifier
         )
     }
 }
@@ -176,7 +193,7 @@ private fun ReRenderConfirmationDialog(
 }
 
 @Composable
-private fun VideoPlayerSection(
+internal fun VideoPlayerSection(
     motionVideoProducer: MotionVideoProducer?,
     onCheckPendingDownloads: () -> Boolean,
     onNavigateToAssetDownload: () -> Unit,
@@ -184,9 +201,9 @@ private fun VideoPlayerSection(
 ) {
     Box(
         modifier =
-            modifier
-                .fillMaxWidth()
-                .background(Color.Black),
+        modifier
+            .fillMaxWidth()
+            .background(Color.Black),
     ) {
         motionVideoProducer?.let {
             MotionVideoPlayerCompose(
@@ -207,7 +224,7 @@ private fun VideoPlayerSection(
 }
 
 @Composable
-private fun ProjectInfoSection(
+internal fun ProjectInfoSection(
     project: MotionProject,
     isRendering: Boolean,
     isVideoGenerated: Boolean,
@@ -223,10 +240,9 @@ private fun ProjectInfoSection(
     ) {
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-                    .navigationBarsPadding(),
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
         ) {
             Text(
                 text = project.name,
@@ -277,33 +293,33 @@ private fun ActionButtons(
             },
             enabled = !isRendering,
             modifier =
-                Modifier
-                    .weight(1f)
-                    .height(56.dp),
+            Modifier
+                .weight(1f)
+                .height(56.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
             Icon(
                 imageVector =
-                    if (isRendering) {
-                        Icons.Rounded.PlayCircle
-                    } else if (isVideoGenerated) {
-                        Icons.Rounded.Share
-                    } else {
-                        Icons.Rounded.PlayCircle
-                    },
+                if (isRendering) {
+                    Icons.Rounded.PlayCircle
+                } else if (isVideoGenerated) {
+                    Icons.Rounded.Share
+                } else {
+                    Icons.Rounded.PlayCircle
+                },
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text =
-                    if (isRendering) {
-                        "Rendering..."
-                    } else if (isVideoGenerated) {
-                        "Share Project"
-                    } else {
-                        "Generate Video"
-                    },
+                if (isRendering) {
+                    "Rendering..."
+                } else if (isVideoGenerated) {
+                    "Share Project"
+                } else {
+                    "Generate Video"
+                },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -315,75 +331,29 @@ private fun ActionButtons(
                 onClick = onReRenderClick,
                 enabled = !isRendering,
                 modifier =
-                    Modifier
-                        .size(56.dp)
-                        .background(
-                            color =
-                                if (isRendering) {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                } else {
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                },
-                            shape = RoundedCornerShape(16.dp),
-                        ),
+                Modifier
+                    .size(56.dp)
+                    .background(
+                        color =
+                        if (isRendering) {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                    ),
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Refresh,
                     contentDescription = "Re-render",
                     tint =
-                        if (isRendering) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        },
+                    if (isRendering) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    },
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun BoxScope.NavigationOverlays(
-    onBackClick: () -> Unit,
-    onEditClick: () -> Unit,
-) {
-    // Overlay Back Button - Positioned at top-left with status bar padding
-    IconButton(
-        onClick = onBackClick,
-        modifier =
-            Modifier
-                .statusBarsPadding()
-                .padding(16.dp)
-                .align(Alignment.TopStart)
-                .background(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                    shape = CircleShape,
-                ),
-    ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-            contentDescription = "Back",
-            tint = MaterialTheme.colorScheme.onSurface,
-        )
-    }
-
-    // Overlay Edit Button - Positioned at top-right with status bar padding
-    IconButton(
-        onClick = onEditClick,
-        modifier =
-            Modifier
-                .statusBarsPadding()
-                .padding(16.dp)
-                .align(Alignment.TopEnd)
-                .background(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                    shape = CircleShape,
-                ),
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Edit,
-            contentDescription = "Edit",
-            tint = MaterialTheme.colorScheme.onSurface,
-        )
     }
 }

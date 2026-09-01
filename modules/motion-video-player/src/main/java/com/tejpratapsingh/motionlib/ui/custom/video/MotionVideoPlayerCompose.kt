@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -172,25 +176,38 @@ fun MotionVideoPlayerCompose(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Preview Area
-        Box(
+        BoxWithConstraints(
             modifier =
                 Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(if (showControls) 16.dp else 0.dp),
             contentAlignment = Alignment.Center,
         ) {
+            val aspectRatioValue = motionConfig.aspectRatio.width.toFloat() / motionConfig.aspectRatio.height.toFloat()
+
             previewBitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Video Preview",
+                Surface(
                     modifier =
                         Modifier
-                            .fillMaxSize()
-                            .aspectRatio(
-                                motionConfig.aspectRatio.width.toFloat() / motionConfig.aspectRatio.height.toFloat(),
+                            .sizeIn(maxWidth = 1200.dp, maxHeight = 800.dp)
+                            .aspectRatio(aspectRatioValue)
+                            .border(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(8.dp),
                             ),
-                    contentScale = ContentScale.Fit,
-                )
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.Black,
+                    shadowElevation = 8.dp,
+                ) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Video Preview",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
             }
         }
 
