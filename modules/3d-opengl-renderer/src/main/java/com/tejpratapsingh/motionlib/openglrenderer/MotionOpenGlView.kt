@@ -5,9 +5,10 @@ import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 
 class MotionOpenGlView(
     context: Context,
@@ -18,6 +19,8 @@ class MotionOpenGlView(
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
+    override val motionConfig: MotionConfig by lazy { findConfig() }
+
     /**
      * For backward compatibility, the model asset path.
      */
@@ -39,26 +42,28 @@ class MotionOpenGlView(
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         }
 
-//    private val offscreenRenderer: OffscreenRenderer
+    private var offscreenRendererInitialized = false
 
-    val offscreenRenderer =
+    private val offscreenRenderer by lazy {
         Object3DToBitmapRenderer(
             context = context,
             assetFileName = modelAssetPath,
-            width = provideCurrentConfig().aspectRatio.width,
-            height = provideCurrentConfig().aspectRatio.height,
+            width = motionConfig.aspectRatio.width,
+            height = motionConfig.aspectRatio.height,
             objectColor = floatArrayOf(0.7f, 0.3f, 0.3f, 1.0f),
         )
+    }
 
     init {
         // Initialize OpenGL renderer with the model asset path
         addView(imageView)
-//        val model = ObjModel(context, modelAssetPath)
-//        offscreenRenderer = OffscreenRenderer(model)
-        offscreenRenderer.initialize()
     }
 
     override fun forFrame(frame: Int): MotionView {
+        if (!offscreenRendererInitialized) {
+            offscreenRenderer.initialize()
+            offscreenRendererInitialized = true
+        }
         // Update the OpenGL renderer for the specified frame
         offscreenRenderer.setRotation(rotationY = frame.toFloat() * 10F)
 //        imageView.setImageBitmap(

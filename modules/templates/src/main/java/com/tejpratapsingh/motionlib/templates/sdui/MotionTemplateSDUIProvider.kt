@@ -6,8 +6,6 @@ import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionlib.templates.model.TemplateData
@@ -31,12 +29,12 @@ object MotionTemplateSDUIProvider {
         data: TemplateData,
         config: MotionConfig? = null,
     ): JsonObject {
-        val motionConfig = config ?: provideCurrentConfig()
-        setCurrentConfig(motionConfig)
+        val motionConfig = config ?: MotionConfig()
 
         val producer =
             MotionVideoProducer.with(
                 context = context,
+                motionConfig = motionConfig,
             )
 
         val contentScope =

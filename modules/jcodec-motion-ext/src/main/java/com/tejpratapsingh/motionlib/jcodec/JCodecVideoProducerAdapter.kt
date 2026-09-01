@@ -7,7 +7,7 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import org.jcodec.api.android.AndroidSequenceEncoder
 import timber.log.Timber
 import java.io.File
@@ -24,7 +24,7 @@ class JCodecVideoProducerAdapter : VideoProducerAdapter {
         if (outputFile.exists()) {
             outputFile.delete()
         }
-        val motionConfig: MotionConfig = provideCurrentConfig()
+        val motionConfig: MotionConfig = motionComposerView.findConfig()
         val encoder = AndroidSequenceEncoder.createSequenceEncoder(outputFile, motionConfig.fps)
         try {
             for (i in 1..totalFrames) {

@@ -12,7 +12,6 @@ import android.media.MediaMuxer
 import androidx.core.graphics.scale
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -59,6 +58,7 @@ class AndroidVideoGenerator {
     @Throws(IOException::class)
     fun generateVideo(
         context: Context,
+        motionConfig: MotionConfig,
         bitmaps: List<Bitmap> = emptyList(),
         inputDir: File? = null,
         outputFile: File,
@@ -68,8 +68,6 @@ class AndroidVideoGenerator {
             Timber.w("No bitmaps provided. Cannot generate video.")
             return
         }
-
-        val motionConfig: MotionConfig = provideCurrentConfig()
 
         var mediaCodec: MediaCodec? = null
         var mediaMuxer: MediaMuxer? = null

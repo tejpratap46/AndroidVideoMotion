@@ -8,7 +8,7 @@ import com.tejpratapsingh.lyricsmaker.data.api.lrclib.model.SearchParams
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motion.metadataextractor.data.SocialMeta
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -86,7 +86,7 @@ class LyricsViewModel(
             } else {
                 LrcHelper.getSyncedLyrics(
                     lrcContent = selectedLyric.value?.getLyrics() ?: "",
-                    fps = provideCurrentConfig().fps,
+                    fps = MotionConfig().fps,
                 )
             }
         }
@@ -98,20 +98,21 @@ class LyricsViewModel(
             field = value
             selectedStartTimeInSeconds =
                 if (value.isNotEmpty()) {
-                    value.first().frame.toFloat() / provideCurrentConfig().fps
+                    value.first().frame.toFloat() / MotionConfig().fps
                 } else {
                     0f
                 }
         }
         get() {
             if (field.isEmpty()) return emptyList()
-            val firstFrame = field.first().frame
-            return field
+            val sortedField = field.sortedBy { it.frame }
+            val firstFrame = sortedField.first().frame
+            return sortedField
                 .map {
                     SyncedLyricFrame(
                         frame = it.frame - firstFrame,
                         text = it.text,
                     )
-                }.sortedBy { it.frame }
+                }
         }
 }

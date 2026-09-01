@@ -50,7 +50,7 @@ import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemeBlue
 import com.tejpratapsingh.lyricsmaker.presentation.ui.theme.ThemePink
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.math.max
@@ -69,7 +69,7 @@ fun SyncedLyricsSelector(
     val lyrics = remember(selectedLyric) { viewModel.lyrics }
 
     val listState = rememberLazyListState()
-    val fps = provideCurrentConfig().fps
+    val fps = remember { MotionConfig().fps }
     val autoScroll = remember { AutoScrollState() }
     val haptic = LocalHapticFeedback.current
 

@@ -23,6 +23,7 @@ import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
+import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.fontSizeH5
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
@@ -72,9 +73,6 @@ class LyricsContainer(
         fakeChartView = view.findViewById(R.id.fake_chart_view)
 
         tvSongName.text = songName
-        tvSongName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH5)
-        tvLyricsLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH3)
-        tvLyricsLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizeH3)
 
         progress.progress = startFrame
         progress.max = endFrame
@@ -109,7 +107,16 @@ class LyricsContainer(
         }
     }
 
+    private var isTextSizeInitialized = false
+
     override fun forFrame(frame: Int): MotionView {
+        if (!isTextSizeInitialized) {
+            tvSongName.setTextSize(TypedValue.COMPLEX_UNIT_PX, motionConfig.fontSizeH5)
+            tvLyricsLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX, motionConfig.fontSizeH3)
+            tvLyricsLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, motionConfig.fontSizeH3)
+            isTextSizeInitialized = true
+        }
+
         super.forFrame(frame)
 
         val backgroundColor: Int =

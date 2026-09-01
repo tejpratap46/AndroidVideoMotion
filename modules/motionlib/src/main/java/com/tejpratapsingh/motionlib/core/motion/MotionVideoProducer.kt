@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.ViewGroup
 import com.tejpratapsingh.motionlib.core.MotionAudio
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionTransition
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -29,6 +30,7 @@ open class MotionVideoProducer private constructor(
         @JvmStatic
         fun with(
             context: Context,
+            motionConfig: MotionConfig,
             plugins: List<MotionPlugin> = emptyList(),
             motionAudio: List<MotionAudio> = emptyList(),
             videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
@@ -38,6 +40,7 @@ open class MotionVideoProducer private constructor(
             motionComposerView =
                 MotionComposerView(
                     context = context,
+                    motionConfig = motionConfig,
                     plugins = plugins,
                 ),
             motionAudio = motionAudio.toMutableList(),

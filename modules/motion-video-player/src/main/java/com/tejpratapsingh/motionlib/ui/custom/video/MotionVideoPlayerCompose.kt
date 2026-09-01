@@ -45,8 +45,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
@@ -64,7 +64,9 @@ fun MotionVideoPlayerCompose(
     onBeforePlay: () -> Boolean = { true },
 ) {
     val context = LocalContext.current
-    val motionConfig: MotionConfig = remember { provideCurrentConfig() }
+    val motionConfig: MotionConfig = remember(motionVideoProducer) {
+        motionVideoProducer.motionComposerView.findConfig()
+    }
     val totalFrames = motionVideoProducer.totalFrames
 
     var internalCurrentFrame by remember { mutableIntStateOf(0) }

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.MotionConfig
 
 @Composable
 @Suppress("FunctionName")
@@ -25,6 +25,7 @@ internal fun LyricRow(
     line: SyncedLyricFrame,
     isSelected: Boolean,
     backgroundColor: Color,
+    fps: Int = MotionConfig().fps,
     onLongClick: () -> Unit,
 ) {
     Row(
@@ -50,7 +51,7 @@ internal fun LyricRow(
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            "[${line.frame / provideCurrentConfig().fps} sec]",
+            "[${line.frame / fps} sec]",
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.width(64.dp),
         )

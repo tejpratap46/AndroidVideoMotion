@@ -12,7 +12,6 @@ import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
-import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
 import io.ktor.client.HttpClient
@@ -26,8 +25,6 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
             aspectRatio = VideoAspectRatio.Ratio9x16_480,
             fps = 30,
         )
-
-    setCurrentConfig(motionConfig)
 
 //    val assetManager = applicationContext.assets
 //    val files = assetManager.list(RenaultCar.imageAssetSubFolder)
@@ -125,6 +122,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
     return MotionVideoProducer
         .with(
             context = applicationContext,
+            motionConfig = motionConfig,
             motionAudio = motionAudio,
         ).addMotionViewToSequence(motionView = motionView)
         .addTransition(CrossFadeTransition(), duration = 30)

@@ -6,7 +6,6 @@ import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -45,12 +44,12 @@ class Road(
         )
 
         contourHeightOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.height
                 .toYInt()
         }
         contourWidthOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.width
                 .toXInt()
         }

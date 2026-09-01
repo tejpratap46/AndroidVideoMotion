@@ -5,7 +5,6 @@ import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 /**
  * A [MotionView] that stacks its children vertically.
@@ -18,9 +17,12 @@ open class VerticalStackMotionView(
     val sections: List<StackSection>,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
-    init {
+    private var isStackInitialized = false
+
+    private fun initializeStack() {
+        if (isStackInitialized) return
         var currentPercent = 0f
-        val videoAspectRatio = provideCurrentConfig().aspectRatio
+        val videoAspectRatio = motionConfig.aspectRatio
         for (section in sections) {
             val childMotionView = section.view
 
@@ -49,5 +51,11 @@ open class VerticalStackMotionView(
             )
             currentPercent = nextPercent
         }
+        isStackInitialized = true
+    }
+
+    override fun forFrame(frame: Int): MotionView {
+        initializeStack()
+        return super.forFrame(frame)
     }
 }

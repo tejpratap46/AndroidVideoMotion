@@ -8,9 +8,8 @@ import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
-import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
@@ -73,7 +72,7 @@ fun getLyricsVideoProducer(
             views = views,
             audios = producer.motionAudio,
             plugins = producer.motionComposerView.plugins,
-            config = provideCurrentConfig(),
+            config = producer.motionComposerView.findConfig(),
         )
 
     motionProject.metadata.add("sdui", sdui)
@@ -122,12 +121,11 @@ private fun createLyricsVideoProducerInternal(
             fps = 24,
         )
 
-    setCurrentConfig(motionConfig)
-
     val producer =
         MotionVideoProducer
             .with(
                 context = applicationContext,
+                motionConfig = motionConfig,
                 videoProducerAdapter = FfmpegVideoProducerAdapter(),
             )
 

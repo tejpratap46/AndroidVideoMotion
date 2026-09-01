@@ -13,7 +13,6 @@ import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -51,12 +50,12 @@ class CoilVideoPlayer(
         )
 
         contourHeightOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.height
                 .toYInt()
         }
         contourWidthOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.width
                 .toXInt()
         }
@@ -70,7 +69,7 @@ class CoilVideoPlayer(
         val relativeFrame = frame - startFrame
         if (relativeFrame < 0) return this
 
-        val fps = provideCurrentConfig().fps
+        val fps = motionConfig.fps
         val timeMillis = (relativeFrame * 1000L) / fps
 
         // Load frame synchronously for motion processing

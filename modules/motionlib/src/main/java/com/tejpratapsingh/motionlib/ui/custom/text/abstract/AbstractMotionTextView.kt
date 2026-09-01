@@ -7,10 +7,12 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.MotionTextSizeProvider
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
+import com.tejpratapsingh.motionlib.core.findMotionConfig
+import com.tejpratapsingh.motionlib.core.getFontSize
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.utils.getWebFont
 
 /**
@@ -60,11 +62,6 @@ abstract class AbstractMotionTextView(
 
         // Apply text styling and custom fonts.
         textView.apply {
-            textSizeVariant?.let { variant ->
-                val config = provideCurrentConfig()
-                val fontSize = MotionTextSizeProvider.getFontSize(config.aspectRatio, variant)
-                this.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
-            }
             textColor?.let {
                 try {
                     this.setTextColor(it.toColorInt())
@@ -82,14 +79,14 @@ abstract class AbstractMotionTextView(
             if (layoutInfo.width > 0) {
                 layoutInfo.width.toXInt()
             } else {
-                provideCurrentConfig().aspectRatio.width.toXInt()
+                motionConfig.aspectRatio.width.toXInt()
             }
         }
         contourHeightOf {
             if (layoutInfo.height > 0) {
                 layoutInfo.height.toYInt()
             } else {
-                provideCurrentConfig().aspectRatio.height.toYInt()
+                motionConfig.aspectRatio.height.toYInt()
             }
         }
 
@@ -110,5 +107,18 @@ abstract class AbstractMotionTextView(
         )
         // Set the final text content.
         textView.text = text
+    }
+
+    private var isTextSizeInitialized = false
+
+    override fun forFrame(frame: Int): MotionView {
+        if (!isTextSizeInitialized) {
+            textSizeVariant?.let { variant ->
+                val fontSize = motionConfig.getFontSize(variant)
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
+            }
+            isTextSizeInitialized = true
+        }
+        return super.forFrame(frame)
     }
 }

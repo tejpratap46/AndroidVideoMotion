@@ -32,16 +32,14 @@ internal data class MotionTextSizes(
  */
 object MotionTextSizeProvider {
     /**
-     * Base scale for all font sizes. Can be updated to scale all text sizes at once.
-     */
-    var baseTextScale: Float = 1.5f
-
-    /**
-     * Returns the [MotionTextSizes] for the given [aspectRatio].
+     * Returns the [MotionTextSizes] for the given [aspectRatio] and [baseTextScale].
      *
      * Returns null for [VideoAspectRatio.Custom] as requested.
      */
-    internal fun getTextSizes(aspectRatio: VideoAspectRatio): MotionTextSizes? {
+    internal fun getTextSizes(
+        aspectRatio: VideoAspectRatio,
+        baseTextScale: Float,
+    ): MotionTextSizes? {
         if (aspectRatio is VideoAspectRatio.Custom) {
             return null
         }
@@ -58,15 +56,16 @@ object MotionTextSizeProvider {
     }
 
     /**
-     * Returns the font size in pixels for the given [variant] and [aspectRatio].
+     * Returns the font size in pixels for the given [variant], [aspectRatio] and [baseTextScale].
      *
      * For [VideoAspectRatio.Custom], it returns a fallback size of (32.0f * baseTextScale).
      */
     fun getFontSize(
         aspectRatio: VideoAspectRatio,
         variant: MotionTextVariant,
+        baseTextScale: Float,
     ): Float {
-        val sizes = getTextSizes(aspectRatio) ?: return aspectRatio.scale(32f * baseTextScale)
+        val sizes = getTextSizes(aspectRatio, baseTextScale) ?: return aspectRatio.scale(32f * baseTextScale)
 
         return when (variant) {
             MotionTextVariant.H1 -> sizes.h1
@@ -81,36 +80,37 @@ object MotionTextSizeProvider {
 }
 
 /**
- * Extension to easily get [MotionTextSizes] from [VideoAspectRatio].
+ * Extension to easily get [MotionTextSizes] from [MotionConfig].
  */
-internal val VideoAspectRatio.textSizes: MotionTextSizes?
-    get() = MotionTextSizeProvider.getTextSizes(this)
+internal val MotionConfig.textSizes: MotionTextSizes?
+    get() = MotionTextSizeProvider.getTextSizes(this.aspectRatio, this.baseTextScale)
 
 /**
- * Extension to easily get a specific text size from [VideoAspectRatio].
+ * Extension to easily get a specific text size from [MotionConfig].
  */
-internal fun VideoAspectRatio.getFontSize(variant: MotionTextVariant): Float = MotionTextSizeProvider.getFontSize(this, variant)
+fun MotionConfig.getFontSize(variant: MotionTextVariant): Float =
+    MotionTextSizeProvider.getFontSize(this.aspectRatio, variant, this.baseTextScale)
 
 /**
- * Convenience properties that automatically use the current [MotionConfig]'s aspect ratio.
+ * Convenience properties that automatically use the current [MotionConfig].
  */
-val fontSizeH1: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H1)
+val MotionConfig.fontSizeH1: Float
+    get() = this.getFontSize(MotionTextVariant.H1)
 
-val fontSizeH2: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H2)
+val MotionConfig.fontSizeH2: Float
+    get() = this.getFontSize(MotionTextVariant.H2)
 
-val fontSizeH3: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H3)
+val MotionConfig.fontSizeH3: Float
+    get() = this.getFontSize(MotionTextVariant.H3)
 
-val fontSizeH4: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H4)
+val MotionConfig.fontSizeH4: Float
+    get() = this.getFontSize(MotionTextVariant.H4)
 
-val fontSizeH5: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H5)
+val MotionConfig.fontSizeH5: Float
+    get() = this.getFontSize(MotionTextVariant.H5)
 
-val fontSizeH6: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.H6)
+val MotionConfig.fontSizeH6: Float
+    get() = this.getFontSize(MotionTextVariant.H6)
 
-val fontSizeP: Float
-    get() = provideCurrentConfig().aspectRatio.getFontSize(MotionTextVariant.P)
+val MotionConfig.fontSizeP: Float
+    get() = this.getFontSize(MotionTextVariant.P)

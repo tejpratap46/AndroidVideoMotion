@@ -1,8 +1,8 @@
 package com.tejpratapsingh.motionlib.core.motion.transitions
 
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.BaseMotionTransition
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.effects.SlideEffect
 
 enum class SlideDirection {
@@ -22,7 +22,7 @@ class SlideTransition(
         transitionEndFrame: Int,
         duration: Int,
     ) {
-        val config = provideCurrentConfig()
+        val config = from.findConfig()
         val width = config.aspectRatio.width.toFloat()
         val height = config.aspectRatio.height.toFloat()
 
