@@ -71,6 +71,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.compose.material.icons.extended)
 
+    implementation(libs.androidx.adaptive)
+    implementation(libs.androidx.adaptive.layout)
+    implementation(libs.androidx.adaptive.navigation)
+    implementation(libs.androidx.adaptive.navigation.suite)
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
 

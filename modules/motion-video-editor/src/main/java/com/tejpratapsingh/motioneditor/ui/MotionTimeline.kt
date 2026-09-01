@@ -112,7 +112,7 @@ fun MotionTimeline(
                     Modifier
                         .fillMaxWidth()
                         .height(40.dp)
-                        .pointerInput(onResize) {
+                        .pointerInput(density) {
                             detectVerticalDragGestures { change, dragAmount ->
                                 change.consume()
                                 onResize(dragAmount)
@@ -142,7 +142,7 @@ fun MotionTimeline(
                             .fillMaxSize()
                             .horizontalScroll(horizontalScrollState)
                             .verticalScroll(verticalScrollState)
-                            .padding(vertical = 16.dp),
+                            .padding(top = 16.dp),
                 ) {
                     tracks.forEach { track ->
                         Row {

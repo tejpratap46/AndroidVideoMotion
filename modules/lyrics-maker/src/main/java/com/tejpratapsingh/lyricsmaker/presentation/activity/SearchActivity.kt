@@ -12,17 +12,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -115,61 +113,68 @@ class SearchActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
 
-                val showBottomBar =
+                val showNavigation =
                     currentDestination?.route in
                         listOf(
                             Screen.Projects.route,
                             Screen.Settings.route,
                         )
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                    bottomBar = {
-                        if (showBottomBar) {
-                            NavigationBar {
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            Icons.Rounded.Folder,
-                                            contentDescription = null,
-                                        )
-                                    },
-                                    label = { Text("Projects") },
-                                    selected = currentDestination?.hierarchy?.any { it.route == Screen.Projects.route } == true,
-                                    onClick = {
-                                        navController.navigate(Screen.Projects.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
+                val adaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
+                val customNavSuiteType = with(adaptiveInfo) {
+                    if (showNavigation) {
+                        androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+                    } else {
+                        androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType.None
+                    }
+                }
+
+                NavigationSuiteScaffold(
+                    layoutType = customNavSuiteType,
+                    navigationSuiteItems = {
+                        if (showNavigation) {
+                            item(
+                                icon = {
+                                    Icon(
+                                        Icons.Rounded.Folder,
+                                        contentDescription = null,
+                                    )
+                                },
+                                label = { Text("Projects") },
+                                selected = currentDestination?.hierarchy?.any { it.route == Screen.Projects.route } == true,
+                                onClick = {
+                                    navController.navigate(Screen.Projects.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
                                         }
-                                    },
-                                )
-                                NavigationBarItem(
-                                    icon = {
-                                        Icon(
-                                            Icons.Rounded.Settings,
-                                            contentDescription = null,
-                                        )
-                                    },
-                                    label = { Text("Settings") },
-                                    selected = currentDestination?.hierarchy?.any { it.route == Screen.Settings.route } == true,
-                                    onClick = {
-                                        navController.navigate(Screen.Settings.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                            )
+                            item(
+                                icon = {
+                                    Icon(
+                                        Icons.Rounded.Settings,
+                                        contentDescription = null,
+                                    )
+                                },
+                                label = { Text("Settings") },
+                                selected = currentDestination?.hierarchy?.any { it.route == Screen.Settings.route } == true,
+                                onClick = {
+                                    navController.navigate(Screen.Settings.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
                                         }
-                                    },
-                                )
-                            }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                            )
                         }
                     },
-                ) { innerPadding ->
+                    modifier = Modifier.fillMaxSize(),
+                ) {
                     AppNavHost(
                         navController = navController,
                         projectsViewModel = projectsViewModel,
@@ -179,7 +184,7 @@ class SearchActivity : ComponentActivity() {
                         lyricsViewModel = lyricsViewModel,
                         downloadViewModel = downloadViewModel,
                         settingsViewModel = settingsViewModel,
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
