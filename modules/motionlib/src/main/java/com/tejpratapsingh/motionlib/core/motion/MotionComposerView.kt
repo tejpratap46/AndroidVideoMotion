@@ -4,22 +4,24 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.MotionConfigProvider
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 
 open class MotionComposerView(
     context: Context,
+    override val motionConfig: MotionConfig,
     override val startFrame: Int = 0,
     override val endFrame: Int = 0,
-    override val plugins: List<MotionPlugin>,
+    override val plugins: List<MotionPlugin> = emptyList(),
     override val loop: Pair<Int, Int> = Pair(0, 0),
 ) : ContourLayout(context),
     MotionView,
-    IComposerView {
+    IComposerView,
+    MotionConfigProvider {
     override val effects: MutableList<MotionEffect> = mutableListOf()
 
     override fun addEffect(effect: MotionEffect) {
@@ -28,8 +30,7 @@ open class MotionComposerView(
     }
 
     init {
-        val config: MotionConfig = provideCurrentConfig()
-        this.layout(0, 0, config.aspectRatio.width, config.aspectRatio.height)
+        this.layout(0, 0, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
     }
 
     override fun forFrame(frame: Int): MotionView {

@@ -10,7 +10,6 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -74,12 +73,12 @@ class RenaultCar(
         )
 
         contourHeightOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.height
                 .toYInt()
         }
         contourWidthOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.width
                 .toXInt()
         }

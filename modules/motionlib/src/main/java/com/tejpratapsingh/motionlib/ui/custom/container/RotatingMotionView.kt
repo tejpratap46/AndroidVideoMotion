@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 
 class RotatingMotionView(
     context: Context,
@@ -34,7 +33,7 @@ class RotatingMotionView(
     override fun forFrame(frame: Int): BaseContourMotionView {
         super.forFrame(frame)
         val totalFrames = endFrame - startFrame + 1
-        val durationSeconds = totalFrames / provideCurrentConfig().fps.toFloat()
+        val durationSeconds = totalFrames / motionConfig.fps.toFloat()
         val totalRotation = degreePerSecond * durationSeconds
         val rotationPerFrame = totalRotation / totalFrames
         val currentRotation = (frame - startFrame) * rotationPerFrame

@@ -6,11 +6,12 @@ import androidx.annotation.CallSuper
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import timber.log.Timber
 
 abstract class BaseLinearMotionView
@@ -21,6 +22,7 @@ abstract class BaseLinearMotionView
         defStyleAttr: Int = 0,
     ) : LinearLayoutCompat(context, attrs, defStyleAttr),
         MotionView {
+        override val motionConfig: MotionConfig by lazy { findConfig() }
         override var startFrame: Int = 0
         override var endFrame: Int = 0
         override var loop: Pair<Int, Int> = Pair(0, 0)
@@ -95,13 +97,13 @@ abstract class BaseLinearMotionView
             val desiredWidth = if (layoutInfo.width == MotionLayoutInfo.MATCH_PARENT && widthMode != MeasureSpec.UNSPECIFIED) {
                 widthSize
             } else {
-                provideCurrentConfig().aspectRatio.width
+                motionConfig.aspectRatio.width
             }
 
             val desiredHeight = if (layoutInfo.height == MotionLayoutInfo.MATCH_PARENT && heightMode != MeasureSpec.UNSPECIFIED) {
                 heightSize
             } else {
-                provideCurrentConfig().aspectRatio.height
+                motionConfig.aspectRatio.height
             }
 
             val widthSpec = MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY)

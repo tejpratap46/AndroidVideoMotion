@@ -40,9 +40,9 @@ fun VideoAspectRatio.scale(
 ): Float = MotionDimensionProvider.getScaledValue(this, dpValue, reference)
 
 /**
- * Convenience function to get a scaled value using the current [MotionConfig]'s aspect ratio.
+ * Convenience function to get a scaled value using the [MotionConfig].
  */
-fun scaledDp(
+fun MotionConfig.scaledDp(
     value: Float,
     reference: Float = 1080f,
-): Float = provideCurrentConfig().aspectRatio.scale(value, reference)
+): Float = this.aspectRatio.scale(value, reference)

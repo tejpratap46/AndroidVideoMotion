@@ -7,7 +7,7 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 
 class SlideTopToBottomEffect(
     override val startFrame: Int,
@@ -21,7 +21,7 @@ class SlideTopToBottomEffect(
 
         val view = motionView as View
 
-        val motionConfig: MotionConfig = provideCurrentConfig()
+        val motionConfig: MotionConfig = findConfig()
 
         val progress =
             MotionInterpolator.interpolateForRange(

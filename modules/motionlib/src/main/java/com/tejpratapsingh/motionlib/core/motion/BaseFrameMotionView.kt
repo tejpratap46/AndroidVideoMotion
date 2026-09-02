@@ -6,11 +6,12 @@ import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.tejpratapsingh.motionlib.R
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import timber.log.Timber
 
 abstract class BaseFrameMotionView
@@ -24,6 +25,7 @@ abstract class BaseFrameMotionView
         override var loop: Pair<Int, Int> = Pair(0, 0),
     ) : FrameLayout(context, attrs, defStyleAttr),
         MotionView {
+        override val motionConfig: MotionConfig by lazy { findConfig() }
         override val effects: MutableList<MotionEffect> = mutableListOf()
         override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
 
@@ -96,14 +98,14 @@ abstract class BaseFrameMotionView
                 if (layoutInfo.width == MotionLayoutInfo.MATCH_PARENT && widthMode != MeasureSpec.UNSPECIFIED) {
                     widthSize
                 } else {
-                    provideCurrentConfig().aspectRatio.width
+                    motionConfig.aspectRatio.width
                 }
 
             val desiredHeight =
                 if (layoutInfo.height == MotionLayoutInfo.MATCH_PARENT && heightMode != MeasureSpec.UNSPECIFIED) {
                     heightSize
                 } else {
-                    provideCurrentConfig().aspectRatio.height
+                    motionConfig.aspectRatio.height
                 }
 
             setMeasuredDimension(desiredWidth, desiredHeight)

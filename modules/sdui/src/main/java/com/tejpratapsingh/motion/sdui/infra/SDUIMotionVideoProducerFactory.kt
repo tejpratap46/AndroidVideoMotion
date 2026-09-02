@@ -7,7 +7,6 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.setCurrentConfig
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import timber.log.Timber
 
@@ -33,10 +32,7 @@ class SDUIMotionVideoProducerFactory(
         sdui: JsonObject,
         onViewsCreated: ((List<MotionView>) -> Unit)? = null,
     ): MotionVideoProducer {
-        val config = sdui.getMotionConfig()
-        if (config != null) {
-            setCurrentConfig(config)
-        }
+        val config = sdui.getMotionConfig() ?: com.tejpratapsingh.motionlib.core.MotionConfig()
 
         val plugins = sdui.getMotionPlugins(context)
         val audios = sdui.getMotionAudios(context)
@@ -47,6 +43,7 @@ class SDUIMotionVideoProducerFactory(
         val producer =
             MotionVideoProducer.with(
                 context = context,
+                motionConfig = config,
                 plugins = plugins,
                 motionAudio = audios,
                 videoProducerAdapter = videoProducerAdapter,

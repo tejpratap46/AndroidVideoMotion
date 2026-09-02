@@ -12,7 +12,6 @@ import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 
 class ContourDevice(
@@ -51,12 +50,12 @@ class ContourDevice(
         )
 
         contourHeightOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.height
                 .toYInt()
         }
         contourWidthOf {
-            provideCurrentConfig()
+            motionConfig
                 .aspectRatio.width
                 .toXInt()
         }

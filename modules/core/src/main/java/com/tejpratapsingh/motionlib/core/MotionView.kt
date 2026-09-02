@@ -38,6 +38,11 @@ interface MotionView : OnMotionFrameListener {
         get() = emptyList()
 
     /**
+     * Current [MotionConfig] for this view.
+     */
+    val motionConfig: MotionConfig
+
+    /**
      * Adds an effect to this view.
      */
     fun addEffect(effect: MotionEffect)

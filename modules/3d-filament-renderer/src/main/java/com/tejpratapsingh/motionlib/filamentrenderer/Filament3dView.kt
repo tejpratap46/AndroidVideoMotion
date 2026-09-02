@@ -21,9 +21,10 @@ import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.gltfio.UbershaderProvider
 import com.google.android.filament.utils.Utils
 import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import timber.log.Timber
 import java.nio.ByteBuffer
 
@@ -36,6 +37,8 @@ class Filament3dView(
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
+    override val motionConfig: MotionConfig by lazy { findConfig() }
+
     /**
      * For backward compatibility, the model asset path.
      */
@@ -68,19 +71,19 @@ class Filament3dView(
         }
 
     init {
-        initializeFilament()
-        loadModel()
-        setupCamera()
         imageView.setImageResource(android.R.drawable.btn_star) // Set a transparent background
         addView(imageView)
     }
 
+    private var filamentInitialized = false
+
     private fun initializeFilament() {
+        if (filamentInitialized) return
         Utils.init()
         surfaceTexture = SurfaceTexture(0)
         surfaceTexture.setDefaultBufferSize(
-            provideCurrentConfig().aspectRatio.width,
-            provideCurrentConfig().aspectRatio.height,
+            motionConfig.aspectRatio.width,
+            motionConfig.aspectRatio.height,
         )
         surface = Surface(surfaceTexture)
         engine = Engine.create()
@@ -93,9 +96,10 @@ class Filament3dView(
             Viewport(
                 0,
                 0,
-                provideCurrentConfig().aspectRatio.width,
-                provideCurrentConfig().aspectRatio.height,
+                motionConfig.aspectRatio.width,
+                motionConfig.aspectRatio.height,
             )
+        filamentInitialized = true
     }
 
     private fun loadModel() {
@@ -124,7 +128,7 @@ class Filament3dView(
         camera = engine.createCamera(cameraEntity)
         camera.setProjection(
             45.0,
-            provideCurrentConfig().aspectRatio.width.toDouble() / provideCurrentConfig().aspectRatio.height.toDouble(),
+            motionConfig.aspectRatio.width.toDouble() / motionConfig.aspectRatio.height.toDouble(),
             0.1,
             1000.0,
             Camera.Fov.VERTICAL,
@@ -202,6 +206,13 @@ class Filament3dView(
     }
 
     override fun forFrame(frame: Int): MotionView {
+        initializeFilament()
+        if (modelEntity == 0) {
+            loadModel()
+        }
+        if (!::camera.isInitialized) {
+            setupCamera()
+        }
         Timber.i("forFrame: $frame")
         // Update the model or camera based on the frame if needed
         // For example, you could animate the model or camera position

@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tejpratapsingh.motioneditor.TimelineTrack
 import com.tejpratapsingh.motioneditor.ui.MotionTimeline
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
 import com.tejpratapsingh.motionstore.tables.MotionProject
 
@@ -148,7 +148,7 @@ fun MotionEditorExpanded(
                     )
                 )
             },
-            fps = provideCurrentConfig().fps,
+            fps = motionVideoProducer.motionComposerView.findConfig().fps,
             modifier =
             Modifier
                 .fillMaxWidth()

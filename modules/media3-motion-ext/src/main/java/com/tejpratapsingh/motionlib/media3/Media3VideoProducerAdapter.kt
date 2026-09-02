@@ -7,7 +7,7 @@ import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import java.io.File
 import java.util.UUID
 
@@ -41,7 +41,7 @@ class Media3VideoProducerAdapter(
         }
         subDir.mkdirs()
 
-        val motionConfig: MotionConfig = provideCurrentConfig()
+        val motionConfig: MotionConfig = motionComposerView.findConfig()
         val frameProcessor = frameProcessorFactory(subDirName)
 
         try {

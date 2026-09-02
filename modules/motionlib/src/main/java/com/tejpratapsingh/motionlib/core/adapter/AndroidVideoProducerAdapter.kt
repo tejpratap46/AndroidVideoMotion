@@ -8,8 +8,8 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.compressToBitmap
 import com.tejpratapsingh.motionlib.core.extensions.saveBitmapToCacheFolder
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.infra.AndroidVideoGenerator
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
@@ -46,7 +46,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
         }
         subDir.mkdirs() // Create the directory if it doesn't exist
 
-        val motionConfig: MotionConfig = provideCurrentConfig()
+        val motionConfig: MotionConfig = motionComposerView.findConfig()
 
         val framesProcessed = AtomicInteger(0)
 
@@ -87,6 +87,7 @@ class AndroidVideoProducerAdapter : VideoProducerAdapter {
 
         androidVideoGenerator.generateVideo(
             context = context,
+            motionConfig = motionConfig,
             inputDir = subDir,
             motionAudio = motionAudio,
             outputFile = outputFile,

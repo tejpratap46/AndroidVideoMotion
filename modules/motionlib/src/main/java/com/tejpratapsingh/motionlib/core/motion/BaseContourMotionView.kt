@@ -5,10 +5,11 @@ import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import com.squareup.contour.ContourLayout
 import com.tejpratapsingh.motionlib.core.MotionEffect
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
+import com.tejpratapsingh.motionlib.core.findConfig
 import timber.log.Timber
 
 open class BaseContourMotionView(
@@ -19,6 +20,8 @@ open class BaseContourMotionView(
     effects: List<MotionEffect> = emptyList(),
 ) : ContourLayout(context),
     MotionView {
+    override val motionConfig: MotionConfig by lazy { findConfig() }
+
     override val effects: MutableList<MotionEffect> = mutableListOf()
     override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
 
@@ -29,14 +32,14 @@ open class BaseContourMotionView(
             if (layoutInfo.width > 0) {
                 layoutInfo.width.toXInt()
             } else {
-                provideCurrentConfig().aspectRatio.width.toXInt()
+                motionConfig.aspectRatio.width.toXInt()
             }
         }
         contourHeightOf {
             if (layoutInfo.height > 0) {
                 layoutInfo.height.toYInt()
             } else {
-                provideCurrentConfig().aspectRatio.height.toYInt()
+                motionConfig.aspectRatio.height.toYInt()
             }
         }
     }

@@ -5,10 +5,12 @@ import android.graphics.Bitmap
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.tejpratapsingh.motionlib.core.MotionAsset
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.loadBitmapsFromDirectory
 import com.tejpratapsingh.motionlib.core.extensions.md5
+import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.ffmpeg.utils.extractFramesFromVideo
 import java.io.File
 
@@ -21,6 +23,8 @@ class FFMpegVideoFrameView(
     effects: List<MotionEffect> = emptyList(),
 ) : FrameLayout(context),
     MotionView {
+    override val motionConfig: MotionConfig by lazy { findConfig() }
+
     /**
      * For backward compatibility, the video file.
      */

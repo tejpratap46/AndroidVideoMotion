@@ -8,7 +8,6 @@ import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
-import com.tejpratapsingh.motionlib.core.provideCurrentConfig
 import timber.log.Timber
 import kotlin.math.min
 
@@ -96,14 +95,14 @@ class MotionProgressBar(
             if (layoutInfo.width > 0) {
                 layoutInfo.width.toXInt()
             } else {
-                provideCurrentConfig().aspectRatio.width.toXInt()
+                motionConfig.aspectRatio.width.toXInt()
             }
         }
         contourHeightOf {
             if (layoutInfo.height > 0) {
                 layoutInfo.height.toYInt()
             } else {
-                provideCurrentConfig().aspectRatio.height.toYInt()
+                motionConfig.aspectRatio.height.toYInt()
             }
         }
 
