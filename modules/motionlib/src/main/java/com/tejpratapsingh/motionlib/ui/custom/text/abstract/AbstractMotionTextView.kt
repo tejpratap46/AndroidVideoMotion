@@ -7,10 +7,8 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
-import com.tejpratapsingh.motionlib.core.MotionView
-import com.tejpratapsingh.motionlib.core.MotionTextSizeProvider
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
-import com.tejpratapsingh.motionlib.core.findMotionConfig
+import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.getFontSize
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.getWebFont

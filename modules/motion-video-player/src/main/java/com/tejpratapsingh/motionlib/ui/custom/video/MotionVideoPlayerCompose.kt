@@ -59,6 +59,7 @@ fun MotionVideoPlayerCompose(
     currentFrame: Int? = null,
     isPlaying: Boolean? = null,
     showControls: Boolean = true,
+    refreshKey: Int = 0,
     onFrameChange: (Int) -> Unit = {},
     onPlayingChange: (Boolean) -> Unit = {},
     onBeforePlay: () -> Boolean = { true },
@@ -80,7 +81,7 @@ fun MotionVideoPlayerCompose(
     val activePlayers = remember { mutableStateMapOf<MotionAudio, MediaPlayer>() }
 
     // Update preview when effectiveCurrentFrame changes
-    LaunchedEffect(motionVideoProducer, effectiveCurrentFrame) {
+    LaunchedEffect(motionVideoProducer, effectiveCurrentFrame, refreshKey) {
         motionVideoProducer.motionComposerView.forFrame(effectiveCurrentFrame)
         previewBitmap = motionVideoProducer.motionComposerView.getViewBitmap()
     }

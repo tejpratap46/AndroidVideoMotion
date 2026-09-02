@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.tejpratapsingh.motioneditor.TimelineItem
 import com.tejpratapsingh.motioneditor.TimelineTrack
 import com.tejpratapsingh.motioneditor.ui.MotionTimeline
 import com.tejpratapsingh.motionlib.core.findConfig
@@ -33,10 +34,13 @@ fun MotionEditorCompact(
     timelineTracks: List<TimelineTrack>,
     currentFrame: Int,
     onFrameChange: (Int) -> Unit,
+    onItemClick: (TimelineItem) -> Unit,
     timelineHeight: Dp,
     onTimelineHeightChange: (Dp) -> Unit,
     minTimelineHeight: Dp,
     maxTimelineHeight: Dp,
+    refreshKey: Int = 0,
+    onRefresh: () -> Unit = {},
     onNavigateToAssetDownload: (String) -> Unit,
     onCheckPendingDownloads: (String) -> Boolean,
     modifier: Modifier = Modifier
@@ -52,6 +56,7 @@ fun MotionEditorCompact(
         MotionVideoPlayerCompose(
             motionVideoProducer = motionVideoProducer,
             currentFrame = currentFrame,
+            refreshKey = refreshKey,
             onFrameChange = onFrameChange,
             onBeforePlay = {
                 val hasPending = onCheckPendingDownloads(project.sdui.toString())
@@ -104,6 +109,7 @@ fun MotionEditorCompact(
             currentFrame = currentFrame,
             totalFrames = motionVideoProducer.totalFrames,
             onFrameChange = onFrameChange,
+            onItemClick = onItemClick,
             onResize = { dragAmount ->
                 val dragAmountDp = with(density) { dragAmount.toDp() }
                 onTimelineHeightChange(

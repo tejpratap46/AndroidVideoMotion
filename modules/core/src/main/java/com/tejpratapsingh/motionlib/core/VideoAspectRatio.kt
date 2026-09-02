@@ -53,4 +53,26 @@ sealed class VideoAspectRatio(
     fun ratioString(): String = "$width:$height"
 
     fun aspect(): Float = width.toFloat() / height.toFloat()
+
+    companion object {
+        fun all(): List<VideoAspectRatio> =
+            listOf(
+                Ratio1x1_480,
+                Ratio1x1_720,
+                Ratio1x1_1080,
+                Ratio4x3_480,
+                Ratio4x3_576,
+                Ratio4x3_720,
+                Ratio16x9_480,
+                Ratio16x9_720,
+                Ratio16x9_1080,
+                Ratio16x9_1440,
+                Ratio16x9_2160,
+                Ratio9x16_480,
+                Ratio9x16_720,
+                Ratio9x16_1080,
+                Ratio21x9_1080,
+                Ratio21x9_2160,
+            )
+    }
 }

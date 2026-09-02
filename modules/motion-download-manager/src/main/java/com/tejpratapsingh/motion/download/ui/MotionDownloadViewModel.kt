@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tejpratapsingh.motion.download.MotionAssetManagerImpl
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,8 +16,12 @@ class MotionDownloadViewModel(
     private val _uiState = MutableStateFlow<MotionDownloadUiState>(MotionDownloadUiState.Idle)
     val uiState: StateFlow<MotionDownloadUiState> = _uiState.asStateFlow()
 
+    private var downloadJob: Job? = null
+
     fun startDownload(project: MotionProject) {
-        viewModelScope.launch {
+        downloadJob?.cancel()
+        _uiState.value = MotionDownloadUiState.Idle
+        downloadJob = viewModelScope.launch {
             downloadManager.downloadAssets(project).collect { progress ->
                 if (progress.isComplete) {
                     if (progress.error != null) {
@@ -51,6 +56,8 @@ class MotionDownloadViewModel(
     fun hasPendingDownloads(project: MotionProject): Boolean = downloadManager.hasPendingDownloads(project)
 
     fun reset() {
+        downloadJob?.cancel()
+        downloadJob = null
         _uiState.value = MotionDownloadUiState.Idle
     }
 }

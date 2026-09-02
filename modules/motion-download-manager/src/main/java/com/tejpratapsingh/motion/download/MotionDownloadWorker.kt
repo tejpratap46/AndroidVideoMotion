@@ -39,7 +39,7 @@ class MotionDownloadWorker(
                     ).build()
             WorkManager.getInstance(context).enqueueUniqueWork(
                 "motion_download_${project.id}",
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 workRequest,
             )
         }
