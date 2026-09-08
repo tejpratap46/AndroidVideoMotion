@@ -49,6 +49,24 @@ class ProjectsViewModel(
         }
     }
 
+    fun upsertProject(project: MotionProject) {
+        val currentList = _projects.value
+        val existingIndex = currentList.indexOfFirst { it.id == project.id }
+        if (existingIndex >= 0) {
+            val newList = currentList.toMutableList()
+            newList[existingIndex] = project
+            _projects.value = newList
+        } else {
+            _projects.value = listOf(project) + currentList
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            motionProject.upsert(project)
+            _projects.value = motionProject.findAll("${sortOrder.value} DESC")
+            _isRefreshing.value = false
+        }
+    }
+
     fun updateSortOrder(newSortOrder: String) {
         preferenceManager.projectSortOrder = newSortOrder
         _sortOrder.value = newSortOrder

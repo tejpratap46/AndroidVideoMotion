@@ -11,4 +11,5 @@ data class TimelineItem(
     val startFrame: Int,
     val endFrame: Int,
     val label: String,
+    val viewIndex: Int = -1,
 )

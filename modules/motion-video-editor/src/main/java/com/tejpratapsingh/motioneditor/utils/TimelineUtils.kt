@@ -25,11 +25,12 @@ object TimelineUtils {
                 items =
                     listOf(
                         TimelineItem(
-                            id = view.hashCode().toString(),
+                            id = "view_$index",
                             type = view.javaClass.simpleName,
                             startFrame = view.startFrame,
                             endFrame = view.endFrame,
                             label = view.javaClass.simpleName,
+                            viewIndex = index,
                         ),
                     ),
             )

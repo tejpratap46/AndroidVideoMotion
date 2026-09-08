@@ -19,6 +19,7 @@ class MotionTransitionTest {
         override var loop: Pair<Int, Int> = Pair(0, 0)
         override val effects: MutableList<MotionEffect> = mutableListOf()
         override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
+        override val motionConfig: com.tejpratapsingh.motionlib.core.MotionConfig = com.tejpratapsingh.motionlib.core.MotionConfig()
 
         override fun addEffect(effect: MotionEffect) {
             effects.add(effect)

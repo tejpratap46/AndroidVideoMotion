@@ -14,8 +14,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -54,9 +61,11 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onLyricsSelected: (LyricsResponse) -> Unit = {},
+    onNavigateToLrcEditor: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.query.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
@@ -201,11 +210,20 @@ fun SearchScreen(
                             scrollBehavior.state.heightOffsetLimit = -it.size.height.toFloat()
                         },
             ) {
-                Text(
-                    text = "Search Lyrics",
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Search Lyrics",
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    OutlinedButton(onClick = onNavigateToLrcEditor) {
+                        Icon(Icons.Default.EditNote, contentDescription = null)
+                        Text("Custom LRC", modifier = Modifier.padding(start = 4.dp))
+                    }
+                }
 
                 OutlinedTextField(
                     value = query,
@@ -218,12 +236,34 @@ fun SearchScreen(
                         }
                     },
                     trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.query.value = "" }) {
-                                Icon(Icons.Default.Search, contentDescription = "Clear")
+                        Row {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.query.value = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear")
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (query.isNotBlank()) {
+                                        keyboardController?.hide()
+                                        viewModel.searchLyrics(query = query)
+                                    }
+                                },
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = "Search")
                             }
                         }
                     },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions =
+                        KeyboardActions(
+                            onSearch = {
+                                if (query.isNotBlank()) {
+                                    keyboardController?.hide()
+                                    viewModel.searchLyrics(query = query)
+                                }
+                            },
+                        ),
                     singleLine = true,
                 )
             }

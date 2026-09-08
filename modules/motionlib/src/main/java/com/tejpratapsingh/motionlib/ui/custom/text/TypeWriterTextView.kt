@@ -57,7 +57,7 @@ class TypeWriterTextView(
                 .interpolateForRange(
                     Interpolators(Easings.LINEAR),
                     frame,
-                    Pair(startFrame, endFrame),
+                    Pair(startFrame, inferredEndFrame),
                     Pair(0f, text.length.toFloat()),
                 ).toInt()
 

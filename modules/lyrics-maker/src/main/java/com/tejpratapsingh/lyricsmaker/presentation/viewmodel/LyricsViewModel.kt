@@ -76,6 +76,29 @@ class LyricsViewModel(
         }
     }
 
+    /**
+     * Sets a custom lyric response created via the LRC Editor.
+     */
+    fun setCustomLyrics(
+        trackName: String = "Custom Track",
+        artistName: String = "Custom Artist",
+        lrcContent: String,
+    ) {
+        val customResponse =
+            LyricsResponse(
+                id = -1,
+                name = trackName,
+                trackName = trackName,
+                artistName = artistName,
+                albumName = "Custom Album",
+                duration = 0.0,
+                instrumental = false,
+                plainLyrics = null,
+                syncedLyrics = lrcContent,
+            )
+        selectedLyric.value = customResponse
+    }
+
     val selectedSongName: String
         get() = "${selectedLyric.value?.trackName} - ${selectedLyric.value?.artistName}"
 

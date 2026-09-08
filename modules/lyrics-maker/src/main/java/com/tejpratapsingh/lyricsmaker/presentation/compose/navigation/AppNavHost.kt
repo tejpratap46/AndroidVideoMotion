@@ -2,7 +2,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -10,9 +9,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.domain.ensureArrayList
 import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectDetailsScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.lrc.LrcEditorScreen
 import com.tejpratapsingh.lyricsmaker.presentation.compose.lyrics.SyncedLyricsSelector
 import com.tejpratapsingh.lyricsmaker.presentation.compose.projects.ProjectsRoute
 import com.tejpratapsingh.lyricsmaker.presentation.compose.search.SearchScreen
@@ -79,6 +78,20 @@ fun AppNavHost(
                     lyricsViewModel.selectedLyric.tryEmit(it)
                     navController.navigate(Screen.Lyrics.route)
                 },
+                onNavigateToLrcEditor = {
+                    navController.navigate(Screen.LrcEditor.route)
+                },
+            )
+        }
+
+        composable(route = Screen.LrcEditor.route) {
+            LrcEditorScreen(
+                modifier = modifier,
+                onBack = { navController.popBackStack() },
+                onFinalize = { lrcContent ->
+                    lyricsViewModel.setCustomLyrics(lrcContent = lrcContent)
+                    navController.navigate(Screen.Lyrics.route)
+                },
             )
         }
 
@@ -121,12 +134,7 @@ fun AppNavHost(
                                 },
                         )
 
-                    navController.context
-                        .asLyricsApp()
-                        .motionStoreDao
-                        .upsert(project)
-
-                    projectsViewModel.loadProjects()
+                    projectsViewModel.upsertProject(project)
 
                     navController.navigate(Screen.TemplateSelector.createRoute(projectId))
                 },
@@ -166,12 +174,7 @@ fun AppNavHost(
 
                         val updatedProject = it.copy(sdui = sdui)
 
-                        navController.context
-                            .asLyricsApp()
-                            .motionStoreDao
-                            .upsert(updatedProject)
-
-                        projectsViewModel.loadProjects()
+                        projectsViewModel.upsertProject(updatedProject)
 
                         navController.navigate(Screen.VideoEditor.createRoute(it.id)) {
                             // Pop the template selector so back from details goes to lyrics
@@ -190,13 +193,8 @@ fun AppNavHost(
             val project = projects.value.find { it.id == projectId }
 
             project?.let {
-                val uiState by downloadViewModel.uiState.collectAsStateWithLifecycle()
-
-                LaunchedEffect(project) {
-                    if (uiState is MotionDownloadUiState.Idle) {
-                        downloadViewModel.reset()
-                        downloadViewModel.startDownload(it)
-                    }
+                LaunchedEffect(it.id) {
+                    downloadViewModel.startDownload(it)
                 }
 
                 MotionDownloadProgressScreen(
@@ -224,22 +222,26 @@ fun AppNavHost(
                     project = it,
                     onBackClick = { navController.popBackStack() },
                     onSaveClick = { updatedProject ->
-                        navController.context
-                            .asLyricsApp()
-                            .motionStoreDao
-                            .upsert(updatedProject)
+                        projectsViewModel.upsertProject(updatedProject)
 
-                        projectsViewModel.loadProjects()
-                        navController.navigate(Screen.ProjectDetails.createRoute(updatedProject.id)) {
-                            popUpTo(Screen.Projects.route) { inclusive = false }
-                            launchSingleTop = true
+                        val hasPending = downloadViewModel.hasPendingDownloads(updatedProject)
+                        if (hasPending) {
+                            navController.navigate(Screen.AssetDownload.createRoute(updatedProject.id))
+                        } else {
+                            navController.navigate(Screen.ProjectDetails.createRoute(updatedProject.id)) {
+                                popUpTo(Screen.Projects.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
                         }
+                    },
+                    onSaveDraft = { updatedProject ->
+                        projectsViewModel.upsertProject(updatedProject)
                     },
                     onNavigateToAssetDownload = { id ->
                         navController.navigate(Screen.AssetDownload.createRoute(id))
                     },
-                    onCheckPendingDownloads = { _ ->
-                        downloadViewModel.hasPendingDownloads(it)
+                    onCheckPendingDownloads = { sduiString ->
+                        downloadViewModel.hasPendingDownloads(it, sduiString)
                     },
                     modifier = modifier,
                 )
@@ -266,8 +268,8 @@ fun AppNavHost(
                     onNavigateToAssetDownload = { id ->
                         navController.navigate(Screen.AssetDownload.createRoute(id))
                     },
-                    onCheckPendingDownloads = { _ ->
-                        downloadViewModel.hasPendingDownloads(it)
+                    onCheckPendingDownloads = { sduiString ->
+                        downloadViewModel.hasPendingDownloads(it, sduiString)
                     },
                     modifier = modifier,
                 )

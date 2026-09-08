@@ -9,21 +9,34 @@ export const WordBlinkTextView: React.FC<{ props: MotionViewProps; currentFrame:
   const text = props.text || "";
   const startFrame = props.startFrame;
   const endFrame = props.endFrame;
+  const writingSpeed = props.writingSpeed || 1;
 
   const words = text.split(" ");
   const wordCount = words.length;
 
-  const progress = interpolateForRange(
-    Easing.LINEAR,
-    currentFrame,
-    startFrame,
-    endFrame,
-    0,
-    wordCount
-  );
+  const inferredEndFrame =
+    endFrame !== -1 && writingSpeed > 0
+      ? startFrame + (endFrame - startFrame) / writingSpeed
+      : endFrame;
 
-  const visibleWordIndex = Math.max(0, Math.floor(progress - 0.00001));
-  const currentWord = words[visibleWordIndex] || "";
+  let currentWord = "";
+  if (inferredEndFrame !== -1 && currentFrame >= inferredEndFrame) {
+    currentWord = text;
+  } else {
+    const progress = interpolateForRange(
+      Easing.LINEAR,
+      currentFrame,
+      startFrame,
+      inferredEndFrame,
+      0,
+      wordCount
+    );
+    const visibleWordIndex = Math.min(
+      wordCount - 1,
+      Math.max(0, Math.floor(progress))
+    );
+    currentWord = words[visibleWordIndex] || "";
+  }
 
   return (
     <div

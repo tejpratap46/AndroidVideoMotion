@@ -2,6 +2,8 @@ package com.tejpratapsingh.motioneditor.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -20,6 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -56,6 +62,8 @@ fun MotionTimeline(
     totalFrames: Int,
     onFrameChange: (Int) -> Unit,
     onResize: (Float) -> Unit = {},
+    selectedItemId: String? = null,
+    onItemClick: ((TimelineItem) -> Unit)? = null,
     fps: Int = 30,
     pixelsPerFrame: Float = 5f,
     modifier: Modifier = Modifier,
@@ -147,7 +155,13 @@ fun MotionTimeline(
                     tracks.forEach { track ->
                         Row {
                             Spacer(modifier = Modifier.width(halfWidth))
-                            TimelineTrackView(track, pixelsPerFrame, fps)
+                            TimelineTrackView(
+                                track = track,
+                                pixelsPerFrame = pixelsPerFrame,
+                                fps = fps,
+                                selectedItemId = selectedItemId,
+                                onItemClick = onItemClick,
+                            )
                             Spacer(modifier = Modifier.width(halfWidth))
                         }
                     }
@@ -235,6 +249,8 @@ fun TimelineTrackView(
     track: TimelineTrack,
     pixelsPerFrame: Float,
     fps: Int,
+    selectedItemId: String? = null,
+    onItemClick: ((TimelineItem) -> Unit)? = null,
 ) {
     Box(
         modifier =
@@ -245,7 +261,13 @@ fun TimelineTrackView(
                 .background(Color.DarkGray.copy(alpha = 0.1f)),
     ) {
         track.items.forEach { item ->
-            TimelineItemView(item, pixelsPerFrame, fps)
+            TimelineItemView(
+                item = item,
+                pixelsPerFrame = pixelsPerFrame,
+                fps = fps,
+                isSelected = (selectedItemId == item.id),
+                onClick = { onItemClick?.invoke(item) },
+            )
         }
     }
 }
@@ -256,9 +278,25 @@ fun TimelineItemView(
     item: TimelineItem,
     pixelsPerFrame: Float,
     fps: Int,
+    isSelected: Boolean = false,
+    onClick: (() -> Unit)? = null,
 ) {
     val startPx = (item.startFrame * pixelsPerFrame).dp
     val widthPx = ((item.endFrame - item.startFrame) * pixelsPerFrame).dp
+
+    val shape = MaterialTheme.shapes.small
+    val backgroundColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.tertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+    val contentColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.onPrimary
+        }
 
     Box(
         modifier =
@@ -266,27 +304,49 @@ fun TimelineItemView(
                 .offset(x = startPx)
                 .width(widthPx)
                 .height(52.dp)
-                .background(MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
-                .padding(horizontal = 8.dp),
+                .clip(shape)
+                .background(backgroundColor, shape = shape)
+                .then(
+                    if (isSelected) {
+                        Modifier.border(2.dp, MaterialTheme.colorScheme.tertiary, shape)
+                    } else {
+                        Modifier
+                    },
+                ).then(
+                    if (onClick != null) {
+                        Modifier.clickable { onClick() }
+                    } else {
+                        Modifier
+                    },
+                ).padding(horizontal = 8.dp),
         contentAlignment = androidx.compose.ui.Alignment.CenterStart,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // "Icon" - First character
+            // "Icon" - First character or Checkmark if selected
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                color = contentColor.copy(alpha = 0.2f),
                 modifier = Modifier.size(28.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text =
-                            item.label
-                                .firstOrNull()
-                                ?.toString()
-                                ?.uppercase() ?: "?",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Selected",
+                            tint = contentColor,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    } else {
+                        Text(
+                            text =
+                                item.label
+                                    .firstOrNull()
+                                    ?.toString()
+                                    ?.uppercase() ?: "?",
+                            color = contentColor,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
                 }
             }
 
@@ -295,14 +355,14 @@ fun TimelineItemView(
             Column {
                 Text(
                     text = item.label,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = contentColor,
                     style = MaterialTheme.typography.labelMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "${formatFrameToTime(item.startFrame, fps)} - ${formatFrameToTime(item.endFrame, fps)}",
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                    color = contentColor.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1,
                 )

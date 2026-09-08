@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,6 +50,12 @@ fun MotionDownloadProgressScreen(
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    DisposableEffect(viewModel) {
+        onDispose {
+            viewModel.reset()
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsState()
 
     MotionDownloadProgressContent(

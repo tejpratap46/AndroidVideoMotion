@@ -115,6 +115,7 @@ class SDUIMotionVideoProducerFactoryTest {
         override val startFrame: Int,
         override val endFrame: Int,
         override val loop: Pair<Int, Int> = Pair(0, 0),
+        override val motionConfig: com.tejpratapsingh.motionlib.core.MotionConfig = com.tejpratapsingh.motionlib.core.MotionConfig(),
     ) : ViewGroup(context),
         MotionView {
         override val effects: List<com.tejpratapsingh.motionlib.core.MotionEffect> = emptyList()

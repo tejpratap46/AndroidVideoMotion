@@ -7,6 +7,8 @@ sealed class Screen(
 
     object Search : Screen("search")
 
+    object LrcEditor : Screen("lrc_editor")
+
     object Lyrics : Screen("lyrics")
 
     object TemplateSelector : Screen("template_selector/{projectId}") {

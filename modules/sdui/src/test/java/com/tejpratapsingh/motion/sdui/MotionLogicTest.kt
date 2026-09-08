@@ -109,6 +109,7 @@ class MotionLogicTest {
         override val startFrame: Int,
         override val endFrame: Int,
         override val loop: Pair<Int, Int> = Pair(0, 0),
+        override val motionConfig: com.tejpratapsingh.motionlib.core.MotionConfig = com.tejpratapsingh.motionlib.core.MotionConfig(),
     ) : MotionView {
         val mockEffects = mutableListOf<MotionEffect>()
         override val effects: List<MotionEffect> get() = mockEffects

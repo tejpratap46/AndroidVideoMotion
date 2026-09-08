@@ -19,8 +19,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.gson.JsonObject
+import com.tejpratapsingh.motioneditor.TimelineItem
 import com.tejpratapsingh.motioneditor.TimelineTrack
 import com.tejpratapsingh.motioneditor.ui.MotionTimeline
+import com.tejpratapsingh.motioneditor.ui.editor.MotionViewBottomSheet
 import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
@@ -29,6 +32,7 @@ import com.tejpratapsingh.motionstore.tables.MotionProject
 @Composable
 fun MotionEditorCompact(
     project: MotionProject,
+    draftSdui: JsonObject,
     motionVideoProducer: MotionVideoProducer,
     timelineTracks: List<TimelineTrack>,
     currentFrame: Int,
@@ -37,9 +41,16 @@ fun MotionEditorCompact(
     onTimelineHeightChange: (Dp) -> Unit,
     minTimelineHeight: Dp,
     maxTimelineHeight: Dp,
+    selectedItem: TimelineItem?,
+    selectedViewJson: JsonObject?,
+    onItemSelect: (TimelineItem) -> Unit,
+    onViewJsonChange: (JsonObject) -> Unit,
+    onDismissEditor: () -> Unit,
+    onSaveDraft: (MotionProject) -> Unit,
     onNavigateToAssetDownload: (String) -> Unit,
     onCheckPendingDownloads: (String) -> Boolean,
-    modifier: Modifier = Modifier
+    undoRedoContent: @Composable () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
 
@@ -54,8 +65,9 @@ fun MotionEditorCompact(
             currentFrame = currentFrame,
             onFrameChange = onFrameChange,
             onBeforePlay = {
-                val hasPending = onCheckPendingDownloads(project.sdui.toString())
+                val hasPending = onCheckPendingDownloads(draftSdui.toString())
                 if (hasPending) {
+                    onSaveDraft(project.copy(sdui = draftSdui))
                     onNavigateToAssetDownload(project.id)
                     false
                 } else {
@@ -65,36 +77,39 @@ fun MotionEditorCompact(
             modifier = Modifier.weight(1f).fillMaxWidth(),
         )
 
+        // Undo/Redo Toolbar above timeline
+        undoRedoContent()
+
         // Draggable Handle
         Box(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(24.dp) // Increased hit area
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                .pointerInput(density) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        val dragAmountDp = with(density) { dragAmount.y.toDp() }
-                        onTimelineHeightChange(
-                            (currentTimelineHeight - dragAmountDp).coerceIn(
-                                currentMinHeight,
-                                currentMaxHeight,
+                Modifier
+                    .fillMaxWidth()
+                    .height(24.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .pointerInput(density) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            val dragAmountDp = with(density) { dragAmount.y.toDp() }
+                            onTimelineHeightChange(
+                                (currentTimelineHeight - dragAmountDp).coerceIn(
+                                    currentMinHeight,
+                                    currentMaxHeight,
+                                ),
                             )
-                        )
-                    }
-                },
+                        }
+                    },
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier =
-                Modifier
-                    .width(40.dp)
-                    .height(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        shape = CircleShape,
-                    ),
+                    Modifier
+                        .width(40.dp)
+                        .height(4.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            shape = CircleShape,
+                        ),
             )
         }
 
@@ -110,14 +125,24 @@ fun MotionEditorCompact(
                     (timelineHeight - dragAmountDp).coerceIn(
                         minTimelineHeight,
                         maxTimelineHeight,
-                    )
+                    ),
                 )
             },
+            selectedItemId = selectedItem?.id,
+            onItemClick = onItemSelect,
             fps = motionVideoProducer.motionComposerView.findConfig().fps,
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(timelineHeight),
+                Modifier
+                    .fillMaxWidth()
+                    .height(timelineHeight),
+        )
+    }
+
+    if (selectedViewJson != null) {
+        MotionViewBottomSheet(
+            viewJson = selectedViewJson,
+            onViewJsonChange = onViewJsonChange,
+            onDismissRequest = onDismissEditor,
         )
     }
 }

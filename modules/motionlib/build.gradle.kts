@@ -72,4 +72,7 @@ dependencies {
     implementation(libs.picasso)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.ext.junit)
 }

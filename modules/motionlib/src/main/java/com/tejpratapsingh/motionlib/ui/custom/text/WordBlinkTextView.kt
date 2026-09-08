@@ -3,8 +3,8 @@ package com.tejpratapsingh.motionlib.ui.custom.text
 import android.content.Context
 import android.util.TypedValue
 import android.view.Gravity
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.widget.TextViewCompat
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
@@ -13,7 +13,6 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
-import timber.log.Timber
 
 class WordBlinkTextView(
     context: Context,
@@ -50,25 +49,34 @@ class WordBlinkTextView(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val visibleWordCount: Int =
-            MotionInterpolator
-                .interpolateForRange(
-                    Interpolators(Easings.LINEAR),
-                    frame,
-                    Pair(startFrame, endFrame),
-                    Pair(0f, wordCount.toFloat()),
-                ).toInt()
-
-        (textView as TextView).setAutoSizeTextTypeUniformWithConfiguration(
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+            textView,
             12,
             100,
             1,
             TypedValue.COMPLEX_UNIT_SP,
         )
 
-        Timber.d("visibleWordCount: $visibleWordCount")
+        if ((inferredEndFrame != -1) && (frame >= inferredEndFrame)) {
+            textView.text = text
+        } else {
+            val progress: Float =
+                MotionInterpolator
+                    .interpolateForRange(
+                        Interpolators(Easings.LINEAR),
+                        frame,
+                        Pair(startFrame, inferredEndFrame),
+                        Pair(0f, wordCount.toFloat()),
+                    )
 
-        textView.text = wordArray[maxOf(visibleWordCount - 1, 0)]
+            if (wordCount > 0) {
+                val wordIndex = progress.toInt().coerceIn(0, wordCount - 1)
+                textView.text = wordArray[wordIndex]
+            } else {
+                textView.text = text
+            }
+        }
+
         textView.invalidate()
 
         return this
