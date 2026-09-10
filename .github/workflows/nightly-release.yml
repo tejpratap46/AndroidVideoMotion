@@ -59,7 +59,7 @@ jobs:
             --notes "$(cat <<EOF
           ## Nightly Release
 
-          Automated nightly build from \`main\`.
+          Automated nightly build from \`${{ github.ref_name }}\`.
 
           **Commit:** \`${GITHUB_SHA}\`
           **Build:** ${{ steps.metadata.outputs.date }}
