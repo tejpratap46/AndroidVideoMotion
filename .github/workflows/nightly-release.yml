@@ -1,70 +1,74 @@
-# .github/workflows/nightly-release.yml
-
 name: Nightly Release
 
 on:
   schedule:
-    # Every night at 00:00 UTC
     - cron: "0 0 * * *"
 
-  # Allow manual execution from GitHub Actions
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  nightly-release:
-    name: Build Nightly Release
+  create-nightly-release:
+    name: Create Nightly Release
     runs-on: ubuntu-latest
 
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Add your project build/setup steps here
-      # - name: Setup Java
-      #   uses: actions/setup-java@v5
-      #   with:
-      #     distribution: temurin
-      #     java-version: "21"
-
-      # - name: Build
-      #   run: ./gradlew assembleRelease
-
-      - name: Generate release metadata
-        id: metadata
-        run: |
-          echo "date=$(date -u +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Delete previous nightly release
+      - name: Create Nightly Release
+        id: release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete nightly \
+          TAG="nightly"
+          DATE="$(date -u '+%Y-%m-%d')"
+          SHA="$(git rev-parse HEAD)"
+
+          echo "Creating nightly release"
+          echo "Tag: $TAG"
+          echo "Date: $DATE"
+          echo "Commit: $SHA"
+
+          # Delete the previous nightly release and tag.
+          gh release delete "$TAG" \
             --yes \
             --cleanup-tag \
             2>/dev/null || true
 
-      - name: Create nightly release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create nightly \
-            --target "${{ github.sha }}" \
-            --title "Nightly ${{ steps.metadata.outputs.date }}" \
+          # Create the new nightly pre-release.
+          gh release create "$TAG" \
+            --target "$SHA" \
+            --title "Nightly $DATE" \
+            --prerelease \
             --notes "$(cat <<EOF
           ## Nightly Release
 
-          Automated nightly build from \`${{ github.ref_name }}\`.
+          Automated nightly build.
 
-          **Commit:** \`${GITHUB_SHA}\`
-          **Build:** ${{ steps.metadata.outputs.date }}
+          **Date:** $DATE
+          **Commit:** $SHA
 
           > This is an automated pre-release and may be unstable.
           EOF
-          )" \
-            --prerelease
+          )"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  build-and-attach:
+    name: Build and Attach Artifacts
+    needs: create-nightly-release
+
+    uses: ./.github/workflows/build-release-artifacts.yml
+
+    with:
+      release_tag: ${{ needs.create-nightly-release.outputs.tag }}
+
+    secrets: inherit
