@@ -40,7 +40,7 @@ class SyncedLyricsMotionTextView(
         super.forFrame(frame)
         val currentLyric = LrcHelper.getCurrentLyric(lyrics = lyrics, currentFrame = frame)
             ?: lyrics.firstOrNull() // Fallback to first lyric for preview
-        
+
         textView.text = currentLyric?.text ?: ""
         return this
     }

@@ -72,7 +72,7 @@ class WordWriterTextView(
 
         if (highlightColor != null && visibleCharacters > 0) {
             spannableString.setSpan(
-                BackgroundColorSpan(highlightColor.toColorInt()),
+                BackgroundColorSpan(highlightColor!!.toColorInt()),
                 0,
                 visibleCharacters,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,

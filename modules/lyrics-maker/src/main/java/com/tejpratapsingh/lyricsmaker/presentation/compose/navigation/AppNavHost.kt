@@ -2,7 +2,6 @@ package com.tejpratapsingh.lyricsmaker.presentation.compose.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -24,7 +23,6 @@ import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.LyricsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.ProjectsViewModel
 import com.tejpratapsingh.lyricsmaker.presentation.viewmodel.SettingsViewModel
 import com.tejpratapsingh.motion.download.ui.MotionDownloadProgressScreen
-import com.tejpratapsingh.motion.download.ui.MotionDownloadUiState
 import com.tejpratapsingh.motion.download.ui.MotionDownloadViewModel
 import com.tejpratapsingh.motioneditor.ui.MotionEditorScreen
 import com.tejpratapsingh.motionlib.core.MotionConfig
@@ -190,17 +188,16 @@ fun AppNavHost(
             val project = projects.value.find { it.id == projectId }
 
             project?.let {
-                val uiState by downloadViewModel.uiState.collectAsStateWithLifecycle()
-
-                LaunchedEffect(project) {
-                    if (uiState is MotionDownloadUiState.Idle) {
-                        downloadViewModel.reset()
-                        downloadViewModel.startDownload(it)
-                    }
+                LaunchedEffect(it.id) {
+                    downloadViewModel.reset()
+                    downloadViewModel.startDownload(it)
                 }
 
                 MotionDownloadProgressScreen(
                     viewModel = downloadViewModel,
+                    onRetryAll = {
+                        downloadViewModel.startDownload(it)
+                    },
                     onNext = {
                         projectsViewModel.loadProjects()
 
@@ -224,10 +221,11 @@ fun AppNavHost(
                     project = it,
                     onBackClick = { navController.popBackStack() },
                     onSaveClick = { updatedProject ->
+                        val projectWithTimestamp = updatedProject.copy(updated = System.currentTimeMillis())
                         navController.context
                             .asLyricsApp()
                             .motionStoreDao
-                            .upsert(updatedProject)
+                            .upsert(projectWithTimestamp)
 
                         projectsViewModel.loadProjects()
                         navController.navigate(Screen.ProjectDetails.createRoute(updatedProject.id)) {

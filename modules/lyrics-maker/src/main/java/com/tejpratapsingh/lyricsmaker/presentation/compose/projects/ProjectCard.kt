@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
@@ -198,18 +199,38 @@ internal fun ProjectCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text(
-                        text = project.updatedLabel(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color =
-                            if (thumbnail != null) {
-                                Color.White.copy(
-                                    alpha = 0.75f,
-                                )
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = project.updatedLabel(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color =
+                                if (thumbnail != null) {
+                                    Color.White.copy(
+                                        alpha = 0.75f,
+                                    )
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                        )
+                        project.sdui.getMotionConfig()?.let { config ->
+                            Text(
+                                text = config.aspectRatio.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color =
+                                    if (thumbnail != null) {
+                                        Color.White.copy(
+                                            alpha = 0.65f,
+                                        )
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                    },
+                            )
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),

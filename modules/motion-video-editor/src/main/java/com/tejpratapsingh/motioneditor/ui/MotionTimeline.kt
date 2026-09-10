@@ -2,6 +2,7 @@ package com.tejpratapsingh.motioneditor.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -55,6 +56,7 @@ fun MotionTimeline(
     currentFrame: Int,
     totalFrames: Int,
     onFrameChange: (Int) -> Unit,
+    onItemClick: (TimelineItem) -> Unit = {},
     onResize: (Float) -> Unit = {},
     fps: Int = 30,
     pixelsPerFrame: Float = 5f,
@@ -147,7 +149,7 @@ fun MotionTimeline(
                     tracks.forEach { track ->
                         Row {
                             Spacer(modifier = Modifier.width(halfWidth))
-                            TimelineTrackView(track, pixelsPerFrame, fps)
+                            TimelineTrackView(track, pixelsPerFrame, fps, onItemClick)
                             Spacer(modifier = Modifier.width(halfWidth))
                         }
                     }
@@ -235,6 +237,7 @@ fun TimelineTrackView(
     track: TimelineTrack,
     pixelsPerFrame: Float,
     fps: Int,
+    onItemClick: (TimelineItem) -> Unit = {},
 ) {
     Box(
         modifier =
@@ -245,7 +248,7 @@ fun TimelineTrackView(
                 .background(Color.DarkGray.copy(alpha = 0.1f)),
     ) {
         track.items.forEach { item ->
-            TimelineItemView(item, pixelsPerFrame, fps)
+            TimelineItemView(item, pixelsPerFrame, fps, onItemClick)
         }
     }
 }
@@ -256,6 +259,7 @@ fun TimelineItemView(
     item: TimelineItem,
     pixelsPerFrame: Float,
     fps: Int,
+    onItemClick: (TimelineItem) -> Unit = {},
 ) {
     val startPx = (item.startFrame * pixelsPerFrame).dp
     val widthPx = ((item.endFrame - item.startFrame) * pixelsPerFrame).dp
@@ -267,6 +271,7 @@ fun TimelineItemView(
                 .width(widthPx)
                 .height(52.dp)
                 .background(MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
+                .clickable { onItemClick(item) }
                 .padding(horizontal = 8.dp),
         contentAlignment = androidx.compose.ui.Alignment.CenterStart,
     ) {

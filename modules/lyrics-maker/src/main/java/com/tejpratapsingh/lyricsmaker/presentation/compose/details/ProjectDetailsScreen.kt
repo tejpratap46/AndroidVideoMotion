@@ -44,6 +44,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.compose.details.compact.Proje
 import com.tejpratapsingh.lyricsmaker.presentation.compose.details.expanded.ProjectDetailsExpanded
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
+import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
@@ -257,6 +258,14 @@ internal fun ProjectInfoSection(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            project.sdui.getMotionConfig()?.let { config ->
+                Text(
+                    text = "Aspect Ratio: ${config.aspectRatio.label}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
