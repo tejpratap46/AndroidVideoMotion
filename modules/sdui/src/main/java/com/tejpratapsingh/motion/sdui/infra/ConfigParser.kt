@@ -30,3 +30,7 @@ fun JsonObject.toMotionConfig(): MotionConfig {
         outputQuality = if (has("outputQuality")) get("outputQuality").asInt else 100,
     )
 }
+
+fun JsonObject.updateMotionConfig(newConfig: MotionConfig) {
+    add("config", newConfig.toJson())
+}

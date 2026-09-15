@@ -130,7 +130,15 @@ class MotionAssetManagerImpl(
                     val assetProgressList =
                         urls.map { url ->
                             val model = relevantDownloads.find { it.url == url }
-                            if (model != null) {
+                            if (url in cachedUrls) {
+                                AssetDownloadProgress(
+                                    id = model?.id ?: url.hashCode(),
+                                    url = url,
+                                    fileName = model?.fileName ?: url.substringBefore("?").substringBefore("#").substringAfterLast("/"),
+                                    progress = 100,
+                                    status = Status.SUCCESS.name,
+                                )
+                            } else if (model != null) {
                                 AssetDownloadProgress(
                                     id = model.id,
                                     url = url,
@@ -138,14 +146,6 @@ class MotionAssetManagerImpl(
                                     progress = model.progress,
                                     status = model.status.name,
                                     error = if (model.status == Status.FAILED) model.failureReason else null,
-                                )
-                            } else if (url in cachedUrls) {
-                                AssetDownloadProgress(
-                                    id = url.hashCode(),
-                                    url = url,
-                                    fileName = url.substringBefore("?").substringBefore("#").substringAfterLast("/"),
-                                    progress = 100,
-                                    status = Status.SUCCESS.name,
                                 )
                             } else {
                                 AssetDownloadProgress(

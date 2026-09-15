@@ -47,10 +47,10 @@ class LyricsViewModel(
      * Search for lyrics
      */
     fun searchLyrics(
+        query: String? = null,
         trackName: String? = null,
         artistName: String? = null,
         albumName: String? = null,
-        query: String? = null,
     ) {
         viewModelScope.launch {
             _uiState.value = LyricsUiState.Loading

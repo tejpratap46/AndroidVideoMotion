@@ -15,6 +15,7 @@ import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionlib.templates.model.TemplateData
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import timber.log.Timber
 
 fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
@@ -116,7 +117,7 @@ private fun createLyricsVideoProducerInternal(
     Timber.i("createLyricsVideoProducerInternal: $motionProject, isPreview: $isPreview")
 
     val motionConfig =
-        MotionConfig(
+        motionProject.sdui.getMotionConfig() ?: MotionConfig(
             aspectRatio = VideoAspectRatio.Ratio9x16_480,
             fps = 24,
         )
