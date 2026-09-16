@@ -37,6 +37,7 @@ fun ProjectDetailsExpanded(
     project: MotionProject,
     motionVideoProducer: MotionVideoProducer?,
     isRendering: Boolean,
+    renderProgress: Int? = null,
     isVideoGenerated: Boolean,
     onBackClick: () -> Unit,
     onEditClick: (MotionProject) -> Unit,
@@ -109,6 +110,7 @@ fun ProjectDetailsExpanded(
                 ProjectInfoSection(
                     project = project,
                     isRendering = isRendering,
+                    renderProgress = renderProgress,
                     isVideoGenerated = isVideoGenerated,
                     onShareClick = onShareClick,
                     onGenerateVideoClick = onGenerateVideoClick,

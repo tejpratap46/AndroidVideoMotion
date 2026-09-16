@@ -31,8 +31,10 @@ abstract class MotionWorker(
             applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         powerManager.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
-            "${this.javaClass.simpleName}::WakeLock",
-        )
+            "${applicationContext.packageName}:${this.javaClass.simpleName}::WakeLock",
+        ).apply {
+            setReferenceCounted(false)
+        }
     }
 
     private val mMotionVideoProducer: MotionVideoProducer by lazy {
@@ -45,12 +47,27 @@ abstract class MotionWorker(
 
     override suspend fun doWork(): Result {
         Timber.d("Worker ${this.id}: Starting video generation.")
-        wakeLock.acquire(1 * 60 * 60 * 1000L) // 1 hour
+
+        // Promote worker to Foreground Service immediately to keep background execution alive on OEM devices & Android 12+
+        try {
+            val foregroundInfo = getForegroundInfo()
+            setForeground(foregroundInfo)
+            Timber.d("Worker ${this.id}: Successfully set foreground service.")
+        } catch (e: Exception) {
+            Timber.w(e, "Worker ${this.id}: Could not set foreground service (getForegroundInfo may not be implemented).")
+        }
+
+        // Acquire wake lock safely with non-reference-counted OEM tag
+        acquireWakeLockSafely()
+
         return try {
             val videoFile: File =
                 generateVideo(
                     motionVideoProducer = mMotionVideoProducer,
                     progressListener = { progress, currentBitmap ->
+                        // Re-verify wake lock during progress updates in case OEM released it
+                        acquireWakeLockSafely()
+
                         // Report progress to WorkManager
                         val progressData =
                             workDataOf(
@@ -81,9 +98,27 @@ abstract class MotionWorker(
             onFailed(e) // Optional: abstract method for specific failure handling
             Result.failure()
         } finally {
+            releaseWakeLockSafely()
+        }
+    }
+
+    private fun acquireWakeLockSafely() {
+        try {
+            if (!wakeLock.isHeld) {
+                wakeLock.acquire(1 * 60 * 60 * 1000L) // 1 hour timeout
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Worker ${this.id}: Failed to acquire wake lock.")
+        }
+    }
+
+    private fun releaseWakeLockSafely() {
+        try {
             if (wakeLock.isHeld) {
                 wakeLock.release()
             }
+        } catch (e: Exception) {
+            Timber.w(e, "Worker ${this.id}: Error releasing wake lock.")
         }
     }
 

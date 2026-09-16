@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectDetailsScreen
+import com.tejpratapsingh.lyricsmaker.presentation.compose.details.ProjectInfoSection
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -239,4 +240,43 @@ class ProjectDetailsScreenTest {
 
         assertEquals(project.id, editedProject?.id)
     }
+
+    // ------------------------------------------------------------------
+    // Rendering progress
+    // ------------------------------------------------------------------
+
+    @Test
+    fun projectInfoSection_showsRenderingProgressText_whenRenderingWithProgress() {
+        composeTestRule.setContent {
+            ProjectInfoSection(
+                project = buildProject(),
+                isRendering = true,
+                renderProgress = 45,
+                isVideoGenerated = false,
+                onShareClick = {},
+                onGenerateVideoClick = {},
+                onReRenderClick = {},
+            )
+        }
+
+        composeTestRule.onNodeWithText("Rendering... 45%").assertIsDisplayed()
+    }
+
+    @Test
+    fun projectInfoSection_showsRenderingText_whenRenderingWithoutProgress() {
+        composeTestRule.setContent {
+            ProjectInfoSection(
+                project = buildProject(),
+                isRendering = true,
+                renderProgress = null,
+                isVideoGenerated = false,
+                onShareClick = {},
+                onGenerateVideoClick = {},
+                onReRenderClick = {},
+            )
+        }
+
+        composeTestRule.onNodeWithText("Rendering...").assertIsDisplayed()
+    }
 }
+

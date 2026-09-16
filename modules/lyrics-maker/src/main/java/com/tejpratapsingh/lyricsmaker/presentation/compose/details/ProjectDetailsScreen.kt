@@ -1,10 +1,13 @@
 package com.tejpratapsingh.lyricsmaker.presentation.compose.details
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +21,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +52,7 @@ import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
+import com.tejpratapsingh.motionlib.worker.MotionWorker
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
@@ -59,8 +65,8 @@ fun ProjectDetailsScreen(
     onBackClick: () -> Unit,
     onEditClick: (MotionProject) -> Unit,
     onShareClick: (MotionProject) -> Unit,
-    onNavigateToAssetDownload: (String) -> Unit,
-    onCheckPendingDownloads: (String) -> Boolean,
+    onNavigateToAssetDownload: (String) -> Unit = {},
+    onCheckPendingDownloads: (String) -> Boolean = { false },
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -76,9 +82,23 @@ fun ProjectDetailsScreen(
         .getWorkInfosByTagFlow(LyricsMotionWorker.getWorkTag(project.id))
         .collectAsState(initial = emptyList())
 
-    val isRendering =
+    val runningWorkInfo =
         remember(workInfos) {
-            workInfos.any { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
+            workInfos.firstOrNull { it.state == WorkInfo.State.RUNNING }
+                ?: workInfos.firstOrNull { it.state == WorkInfo.State.ENQUEUED }
+        }
+
+    val isRendering = remember(runningWorkInfo) { runningWorkInfo != null }
+
+    val renderProgress =
+        remember(runningWorkInfo) {
+            val progress = runningWorkInfo?.progress?.getInt(MotionWorker.PROGRESS_KEY, -1) ?: -1
+            val total = runningWorkInfo?.progress?.getInt(MotionWorker.TOTAL_FRAMES_KEY, -1) ?: -1
+            if (progress >= 0 && total > 0) {
+                ((progress.toDouble() / total) * 100).toInt().coerceIn(0, 100)
+            } else {
+                null
+            }
         }
 
     var showReRenderConfirmation by remember { mutableStateOf(false) }
@@ -109,6 +129,7 @@ fun ProjectDetailsScreen(
             project = project,
             motionVideoProducer = motionVideoProducer,
             isRendering = isRendering,
+            renderProgress = renderProgress,
             isVideoGenerated = isVideoGenerated,
             onBackClick = onBackClick,
             onEditClick = onEditClick,
@@ -131,13 +152,14 @@ fun ProjectDetailsScreen(
             onReRenderClick = { showReRenderConfirmation = true },
             onCheckPendingDownloads = onCheckPendingDownloads,
             onNavigateToAssetDownload = onNavigateToAssetDownload,
-            modifier = modifier
+            modifier = modifier,
         )
     } else {
         ProjectDetailsCompact(
             project = project,
             motionVideoProducer = motionVideoProducer,
             isRendering = isRendering,
+            renderProgress = renderProgress,
             isVideoGenerated = isVideoGenerated,
             onBackClick = onBackClick,
             onEditClick = onEditClick,
@@ -160,7 +182,7 @@ fun ProjectDetailsScreen(
             onReRenderClick = { showReRenderConfirmation = true },
             onCheckPendingDownloads = onCheckPendingDownloads,
             onNavigateToAssetDownload = onNavigateToAssetDownload,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -202,9 +224,9 @@ internal fun VideoPlayerSection(
 ) {
     Box(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .background(Color.Black),
+            modifier
+                .fillMaxWidth()
+                .background(Color.Black),
     ) {
         motionVideoProducer?.let {
             MotionVideoPlayerCompose(
@@ -228,6 +250,7 @@ internal fun VideoPlayerSection(
 internal fun ProjectInfoSection(
     project: MotionProject,
     isRendering: Boolean,
+    renderProgress: Int? = null,
     isVideoGenerated: Boolean,
     onShareClick: () -> Unit,
     onGenerateVideoClick: () -> Unit,
@@ -241,9 +264,9 @@ internal fun ProjectInfoSection(
     ) {
         Column(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
         ) {
             Text(
                 text = project.name,
@@ -271,6 +294,7 @@ internal fun ProjectInfoSection(
 
             ActionButtons(
                 isRendering = isRendering,
+                renderProgress = renderProgress,
                 isVideoGenerated = isVideoGenerated,
                 onShareClick = onShareClick,
                 onGenerateVideoClick = onGenerateVideoClick,
@@ -283,6 +307,7 @@ internal fun ProjectInfoSection(
 @Composable
 private fun ActionButtons(
     isRendering: Boolean,
+    renderProgress: Int? = null,
     isVideoGenerated: Boolean,
     onShareClick: () -> Unit,
     onGenerateVideoClick: () -> Unit,
@@ -292,46 +317,69 @@ private fun ActionButtons(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Button(
-            onClick = {
-                if (isVideoGenerated) {
-                    onShareClick()
-                } else {
-                    onGenerateVideoClick()
+        if (isRendering) {
+            Box(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+            ) {
+                if (renderProgress != null) {
+                    val animatedProgress by animateFloatAsState(
+                        targetValue = (renderProgress / 100f).coerceIn(0f, 1f),
+                        label = "renderProgress",
+                    )
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(animatedProgress)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+                    )
                 }
-            },
-            enabled = !isRendering,
-            modifier =
-            Modifier
-                .weight(1f)
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Icon(
-                imageVector =
-                if (isRendering) {
-                    Icons.Rounded.PlayCircle
-                } else if (isVideoGenerated) {
-                    Icons.Rounded.Share
-                } else {
-                    Icons.Rounded.PlayCircle
+
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (renderProgress != null) "Rendering... $renderProgress%" else "Rendering...",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        } else {
+            Button(
+                onClick = {
+                    if (isVideoGenerated) {
+                        onShareClick()
+                    } else {
+                        onGenerateVideoClick()
+                    }
                 },
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text =
-                if (isRendering) {
-                    "Rendering..."
-                } else if (isVideoGenerated) {
-                    "Share Project"
-                } else {
-                    "Generate Video"
-                },
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Icon(
+                    imageVector = if (isVideoGenerated) Icons.Rounded.Share else Icons.Rounded.PlayCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = if (isVideoGenerated) "Share Project" else "Generate Video",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
         }
 
         if (isVideoGenerated) {
@@ -340,27 +388,27 @@ private fun ActionButtons(
                 onClick = onReRenderClick,
                 enabled = !isRendering,
                 modifier =
-                Modifier
-                    .size(56.dp)
-                    .background(
-                        color =
-                        if (isRendering) {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.secondaryContainer
-                        },
-                        shape = RoundedCornerShape(16.dp),
-                    ),
+                    Modifier
+                        .size(56.dp)
+                        .background(
+                            color =
+                                if (isRendering) {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                } else {
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                },
+                            shape = RoundedCornerShape(16.dp),
+                        ),
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Refresh,
                     contentDescription = "Re-render",
                     tint =
-                    if (isRendering) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    },
+                        if (isRendering) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        },
                 )
             }
         }
