@@ -4,6 +4,7 @@ import android.content.Context
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.templates.LyricsTemplateRegistry
+import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -54,6 +55,13 @@ fun getLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
 ): MotionVideoProducer {
+    if (motionProject.sdui.has("views") &&
+        motionProject.sdui.get("views").isJsonArray &&
+        motionProject.sdui.getAsJsonArray("views").size() > 0
+    ) {
+        return SDUIMotionVideoProducerFactory(applicationContext).createFromProject(motionProject)
+    }
+
     val producer =
         createLyricsVideoProducer(
             applicationContext = applicationContext,

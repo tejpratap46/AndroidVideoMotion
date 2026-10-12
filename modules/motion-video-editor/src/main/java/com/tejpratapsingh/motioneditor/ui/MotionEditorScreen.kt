@@ -185,11 +185,25 @@ fun MotionEditorScreen(
 
                     IconButton(
                         onClick = {
-                            val hasPending = onCheckPendingDownloads(draftProject.sdui.toString())
+                            var projectToSave = draftProject
+                            pendingViewUpdate?.let { (selectedItemId, updatedViewSdui) ->
+                                val newRootSdui = projectToSave.sdui.deepCopy()
+                                if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
+                                    val viewsArray = newRootSdui.get("views").asJsonArray
+                                    val index = timelineTracks.indexOfFirst { track ->
+                                        track.items.any { it.id == selectedItemId }
+                                    }
+                                    if (index != -1 && index < viewsArray.size()) {
+                                        viewsArray.set(index, updatedViewSdui)
+                                        projectToSave = projectToSave.copy(sdui = newRootSdui)
+                                    }
+                                }
+                            }
+                            val hasPending = onCheckPendingDownloads(projectToSave.sdui.toString())
                             if (hasPending) {
-                                onNavigateToAssetDownload(draftProject.id)
+                                onNavigateToAssetDownload(projectToSave.id)
                             } else {
-                                onSaveClick(draftProject)
+                                onSaveClick(projectToSave)
                             }
                         },
                         modifier =
