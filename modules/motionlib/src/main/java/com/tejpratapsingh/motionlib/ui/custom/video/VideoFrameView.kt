@@ -8,6 +8,7 @@ import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.extractAllVideoFrames
 import com.tejpratapsingh.motionlib.utils.getVideoFpsWithRetriever
@@ -70,4 +71,9 @@ class VideoFrameView(
 
     override val assets: List<MotionAsset>
         get() = listOf(asset)
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.text("videoUri", label = "Video URI / Path")
+        )
 }

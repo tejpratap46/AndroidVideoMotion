@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.gson.JsonObject
+import kotlinx.coroutines.delay
 import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.getMotionAudios
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
@@ -100,19 +101,30 @@ fun MotionEditorScreen(
         adaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED ||
             adaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM
 
-    val handleViewSduiUpdate: (JsonObject) -> Unit = { updatedViewSdui ->
-        val newRootSdui = draftProject.sdui.deepCopy()
-        if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
-            val viewsArray = newRootSdui.get("views").asJsonArray
-            val index =
-                timelineTracks.indexOfFirst { track ->
-                    track.items.any { it.id == selectedItem?.id }
+    var pendingViewUpdate by remember { mutableStateOf<Pair<String, JsonObject>?>(null) }
+
+    LaunchedEffect(pendingViewUpdate) {
+        pendingViewUpdate?.let { (selectedItemId, updatedViewSdui) ->
+            delay(150)
+            val newRootSdui = draftProject.sdui.deepCopy()
+            if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
+                val viewsArray = newRootSdui.get("views").asJsonArray
+                val index = timelineTracks.indexOfFirst { track ->
+                    track.items.any { it.id == selectedItemId }
                 }
-            if (index != -1 && index < viewsArray.size()) {
-                viewsArray.set(index, updatedViewSdui)
-                draftProject = draftProject.copy(sdui = newRootSdui)
-                refreshKey++
+                if (index != -1 && index < viewsArray.size()) {
+                    viewsArray.set(index, updatedViewSdui)
+                    draftProject = draftProject.copy(sdui = newRootSdui)
+                    refreshKey++
+                }
             }
+        }
+    }
+
+    val handleViewSduiUpdate: (JsonObject) -> Unit = { updatedViewSdui ->
+        selectedItem?.let { current ->
+            selectedItem = current.copy(sdui = updatedViewSdui)
+            pendingViewUpdate = Pair(current.id, updatedViewSdui)
         }
     }
 

@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAssetManager
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.ImageUtil
 import kotlinx.coroutines.runBlocking
@@ -73,4 +74,9 @@ class MotionImageView(
 
     override val assets: List<MotionAsset>
         get() = listOf(asset)
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.text("imageUri", label = "Image URI / URL")
+        )
 }

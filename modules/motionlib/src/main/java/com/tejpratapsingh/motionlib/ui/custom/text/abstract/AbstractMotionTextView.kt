@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.getFontSize
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import com.tejpratapsingh.motionlib.utils.getWebFont
@@ -119,4 +120,13 @@ abstract class AbstractMotionTextView(
         }
         return super.forFrame(frame)
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.text("text", label = "Text Content"),
+            PropertySpec.slider("writingSpeed", label = "Writing Speed", min = 0.1f, max = 5.0f, step = 0.1f),
+            PropertySpec.dropdown("textSizeVariant", label = "Text Size", options = MotionTextVariant.entries.map { it.name }),
+            PropertySpec.color("textColor", label = "Text Color"),
+            PropertySpec.color("highlightColor", label = "Highlight Color")
+        )
 }

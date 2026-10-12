@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -88,4 +89,12 @@ class BrightnessContrastEffect(
 
         return motionView
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.slider("fromBrightness", label = "From Brightness", min = -1f, max = 1f, step = 0.05f),
+            PropertySpec.slider("toBrightness", label = "To Brightness", min = -1f, max = 1f, step = 0.05f),
+            PropertySpec.slider("fromContrast", label = "From Contrast", min = 0f, max = 3f, step = 0.05f),
+            PropertySpec.slider("toContrast", label = "To Contrast", min = 0f, max = 3f, step = 0.05f)
+        )
 }

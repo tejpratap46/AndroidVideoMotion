@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
 import timber.log.Timber
 import kotlin.math.min
@@ -135,4 +136,10 @@ class MotionProgressBar(
         progressView.invalidate()
         return this
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.dropdown("style", label = "Style", options = MotionProgressBarStyle.entries.map { it.name }),
+            PropertySpec.color("color", label = "Color")
+        )
 }

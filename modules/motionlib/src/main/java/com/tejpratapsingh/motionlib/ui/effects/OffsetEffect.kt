@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -56,4 +57,12 @@ class OffsetEffect(
 
         return motionView
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.number("fromOffsetX", label = "From Offset X"),
+            PropertySpec.number("toOffsetX", label = "To Offset X"),
+            PropertySpec.number("fromOffsetY", label = "From Offset Y"),
+            PropertySpec.number("toOffsetY", label = "To Offset Y")
+        )
 }
