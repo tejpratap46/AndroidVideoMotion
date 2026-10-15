@@ -8,6 +8,7 @@ import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.findConfig
 import timber.log.Timber
@@ -88,4 +89,6 @@ open class BaseContourMotionView(
         }
 
     override fun getViewBitmap() = this.toBitmap()
+
+    override fun getEditableProperties(): List<PropertySpec> = super.getEditableProperties()
 }

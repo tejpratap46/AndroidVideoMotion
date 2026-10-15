@@ -15,7 +15,7 @@
       </SelectionState>
       <SelectionState runConfigName="modules.lyrics-maker">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-09-01T08:00:11.887448200Z">
+        <DropdownSelection timestamp="2026-10-15T16:57:53.161962Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=a5568c30" />

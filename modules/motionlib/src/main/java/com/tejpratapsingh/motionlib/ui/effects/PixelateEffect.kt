@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -66,4 +67,10 @@ class PixelateEffect(
 
         return motionView
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.slider("fromPixelSize", label = "From Pixel Size", min = 1f, max = 100f, step = 1f, isInteger = true),
+            PropertySpec.slider("toPixelSize", label = "To Pixel Size", min = 1f, max = 100f, step = 1f, isInteger = true)
+        )
 }

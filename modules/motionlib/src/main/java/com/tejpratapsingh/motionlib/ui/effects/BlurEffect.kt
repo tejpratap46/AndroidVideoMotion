@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.View
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -50,4 +51,10 @@ class BlurEffect(
 
         return motionView
     }
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.slider("fromBlurRadius", label = "From Blur Radius", min = 0f, max = 100f, step = 0.5f),
+            PropertySpec.slider("toBlurRadius", label = "To Blur Radius", min = 0f, max = 100f, step = 0.5f)
+        )
 }

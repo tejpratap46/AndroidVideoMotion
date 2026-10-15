@@ -96,6 +96,7 @@ class MotionProjectLogicTest {
         override val startFrame: Int,
         override val endFrame: Int,
         override val loop: Pair<Int, Int> = Pair(0, 0),
+        override val motionConfig: MotionConfig = MotionConfig(),
     ) : MotionView {
         override val effects: List<com.tejpratapsingh.motionlib.core.MotionEffect> = emptyList()
 

@@ -50,6 +50,8 @@ dependencies {
     implementation(project(":modules:jcodec-motion-ext"))
     implementation(project(":modules:ffmpeg-motion-ext"))
     implementation(project(":modules:tensorflow-motion-ext"))
+    implementation(project(":modules:motion-download-manager"))
+    implementation(project(":modules:motion-asset-store"))
 //    implementation(project(":modules:pytorch-motion-ext"))
 
     testImplementation(libs.junit)

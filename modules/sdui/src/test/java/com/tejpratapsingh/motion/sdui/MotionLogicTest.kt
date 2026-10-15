@@ -9,6 +9,7 @@ import com.tejpratapsingh.motion.sdui.infra.toMotionAudio
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
 import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import org.junit.Assert.assertEquals
@@ -109,6 +110,7 @@ class MotionLogicTest {
         override val startFrame: Int,
         override val endFrame: Int,
         override val loop: Pair<Int, Int> = Pair(0, 0),
+        override val motionConfig: MotionConfig = MotionConfig(),
     ) : MotionView {
         val mockEffects = mutableListOf<MotionEffect>()
         override val effects: List<MotionEffect> get() = mockEffects

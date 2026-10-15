@@ -9,6 +9,7 @@ import android.graphics.RadialGradient
 import android.graphics.Shader
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
@@ -140,4 +141,9 @@ class GradientView(
     }
 
     override fun getViewBitmap(): Bitmap = this.toBitmap()
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.dropdown("orientation", label = "Orientation", options = Orientation.entries.map { it.name })
+        )
 }

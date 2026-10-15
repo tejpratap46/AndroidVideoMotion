@@ -36,6 +36,7 @@ include(":modules:ml-kit-ext")
 include(":modules:coil-motion-ext")
 include(":modules:motion-download-manager")
 include(":modules:motion-tts-asset")
+include(":modules:motion-asset-store")
 
 if (System.getenv("JITPACK") == null) {
     include(":modules:app")

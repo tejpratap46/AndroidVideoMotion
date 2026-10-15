@@ -1,7 +1,5 @@
 package com.tejpratapsingh.motioneditor.ui
 
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier as JavaModifier
 import java.util.Locale
 import android.graphics.Color as AndroidColor
 import androidx.compose.animation.AnimatedVisibility
@@ -17,9 +15,11 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -82,11 +82,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,12 +104,25 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.core.net.toUri
 import com.google.gson.JsonObject
+import com.tejpratapsingh.motion.assetstore.model.AssetFileType
+import com.tejpratapsingh.motion.assetstore.ui.AssetPickerBottomSheet
+import com.tejpratapsingh.motion.sdui.infra.toJson
+import com.tejpratapsingh.motionlib.assettype.ImageAsset
+import com.tejpratapsingh.motionlib.assettype.VideoAsset
+import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
+import com.tejpratapsingh.motionlib.core.PropertyViewType
 
 private enum class PropertyCategory(val title: String) {
     ALL("All"),
@@ -272,7 +287,9 @@ private fun PropertyEditorHeader(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -387,6 +404,7 @@ fun SectionCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
@@ -400,7 +418,9 @@ fun SectionCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Icon(
@@ -621,6 +641,7 @@ private fun DimensionSelector(
     onValueChange: (String) -> Unit
 ) {
     val presets = listOf("wrap_content", "match_parent", "Custom")
+    val presetLabels = listOf("Wrap", "Match", "Custom")
     val selectedPresetIndex = when (value) {
         "wrap_content" -> 0
         "match_parent" -> 1
@@ -639,7 +660,7 @@ private fun DimensionSelector(
         )
 
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            presets.forEachIndexed { index, presetLabel ->
+            presetLabels.forEachIndexed { index, presetLabel ->
                 SegmentedButton(
                     selected = selectedPresetIndex == index,
                     onClick = {
@@ -651,7 +672,12 @@ private fun DimensionSelector(
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = presets.size)
                 ) {
-                    Text(presetLabel, style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = presetLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
@@ -690,198 +716,394 @@ private fun BoxModelEditor(
     var isPaddingLocked by remember { mutableStateOf(false) }
     var isMarginLocked by remember { mutableStateOf(false) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // MARGIN OUTER BOX
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val isNarrow = maxWidth < 340.dp
+
+        if (isNarrow) {
+            // Stacked directional 3x3 cards for small screen widths
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // MARGIN CARD
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
-                    Text(
-                        text = "Margin (Outer)",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    IconButton(
-                        onClick = { isMarginLocked = !isMarginLocked },
-                        modifier = Modifier.size(28.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Icon(
-                            imageVector = if (isMarginLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
-                            contentDescription = "Lock margin sides",
-                            modifier = Modifier.size(16.dp),
-                            tint = if (isMarginLocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Margin (Outer)",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            IconButton(
+                                onClick = { isMarginLocked = !isMarginLocked },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isMarginLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                    contentDescription = "Lock margin sides",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = if (isMarginLocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        // Top
+                        CompactNumberInput(
+                            value = marginTop,
+                            onValueChange = { v ->
+                                if (isMarginLocked) onMarginChange(v, v, v, v)
+                                else onMarginChange(marginLeft, v, marginRight, marginBottom)
+                            },
+                            modifier = Modifier.width(72.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Left
+                            CompactNumberInput(
+                                value = marginLeft,
+                                onValueChange = { v ->
+                                    if (isMarginLocked) onMarginChange(v, v, v, v)
+                                    else onMarginChange(v, marginTop, marginRight, marginBottom)
+                                },
+                                modifier = Modifier.width(60.dp)
+                            )
+
+                            Text(
+                                text = "MARGIN",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                fontSize = 10.sp
+                            )
+
+                            // Right
+                            CompactNumberInput(
+                                value = marginRight,
+                                onValueChange = { v ->
+                                    if (isMarginLocked) onMarginChange(v, v, v, v)
+                                    else onMarginChange(marginLeft, marginTop, v, marginBottom)
+                                },
+                                modifier = Modifier.width(60.dp)
+                            )
+                        }
+
+                        // Bottom
+                        CompactNumberInput(
+                            value = marginBottom,
+                            onValueChange = { v ->
+                                if (isMarginLocked) onMarginChange(v, v, v, v)
+                                else onMarginChange(marginLeft, marginTop, marginRight, v)
+                            },
+                            modifier = Modifier.width(72.dp)
                         )
                     }
                 }
 
-                // Top Margin
-                CompactNumberInput(
-                    value = marginTop,
-                    onValueChange = { v ->
-                        if (isMarginLocked) onMarginChange(v, v, v, v)
-                        else onMarginChange(marginLeft, v, marginRight, marginBottom)
-                    },
-                    modifier = Modifier.width(90.dp)
-                )
-
-                Row(
+                // PADDING CARD
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                 ) {
-                    // Left Margin
-                    CompactNumberInput(
-                        value = marginLeft,
-                        onValueChange = { v ->
-                            if (isMarginLocked) onMarginChange(v, v, v, v)
-                            else onMarginChange(v, marginTop, marginRight, marginBottom)
-                        },
-                        modifier = Modifier.width(70.dp)
-                    )
-
-                    // PADDING INNER BOX
-                    Surface(
+                    Column(
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                text = "Padding (Inner)",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            IconButton(
+                                onClick = { isPaddingLocked = !isPaddingLocked },
+                                modifier = Modifier.size(24.dp)
                             ) {
-                                Text(
-                                    text = "Padding (Inner)",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
+                                Icon(
+                                    imageVector = if (isPaddingLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                    contentDescription = "Lock padding sides",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = if (isPaddingLocked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                IconButton(
-                                    onClick = { isPaddingLocked = !isPaddingLocked },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (isPaddingLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
-                                        contentDescription = "Lock padding sides",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = if (isPaddingLocked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
                             }
+                        }
 
-                            // Top Padding
+                        // Top
+                        CompactNumberInput(
+                            value = paddingTop,
+                            onValueChange = { v ->
+                                if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                else onPaddingChange(paddingLeft, v, paddingRight, paddingBottom)
+                            },
+                            modifier = Modifier.width(72.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Left
                             CompactNumberInput(
-                                value = paddingTop,
+                                value = paddingLeft,
                                 onValueChange = { v ->
                                     if (isPaddingLocked) onPaddingChange(v, v, v, v)
-                                    else onPaddingChange(paddingLeft, v, paddingRight, paddingBottom)
+                                    else onPaddingChange(v, paddingTop, paddingRight, paddingBottom)
                                 },
-                                modifier = Modifier.width(80.dp)
+                                modifier = Modifier.width(60.dp)
                             )
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Left Padding
-                                CompactNumberInput(
-                                    value = paddingLeft,
-                                    onValueChange = { v ->
-                                        if (isPaddingLocked) onPaddingChange(v, v, v, v)
-                                        else onPaddingChange(v, paddingTop, paddingRight, paddingBottom)
-                                    },
-                                    modifier = Modifier.width(64.dp)
-                                )
+                            Text(
+                                text = "PADDING",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
+                                fontSize = 10.sp
+                            )
 
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = "CONTENT",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 10.sp,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-
-                                // Right Padding
-                                CompactNumberInput(
-                                    value = paddingRight,
-                                    onValueChange = { v ->
-                                        if (isPaddingLocked) onPaddingChange(v, v, v, v)
-                                        else onPaddingChange(paddingLeft, paddingTop, v, paddingBottom)
-                                    },
-                                    modifier = Modifier.width(64.dp)
-                                )
-                            }
-
-                            // Bottom Padding
+                            // Right
                             CompactNumberInput(
-                                value = paddingBottom,
+                                value = paddingRight,
                                 onValueChange = { v ->
                                     if (isPaddingLocked) onPaddingChange(v, v, v, v)
-                                    else onPaddingChange(paddingLeft, paddingTop, paddingRight, v)
+                                    else onPaddingChange(paddingLeft, paddingTop, v, paddingBottom)
                                 },
-                                modifier = Modifier.width(80.dp)
+                                modifier = Modifier.width(60.dp)
+                            )
+                        }
+
+                        // Bottom
+                        CompactNumberInput(
+                            value = paddingBottom,
+                            onValueChange = { v ->
+                                if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                else onPaddingChange(paddingLeft, paddingTop, paddingRight, v)
+                            },
+                            modifier = Modifier.width(72.dp)
+                        )
+                    }
+                }
+            }
+        } else {
+            // Concentric nested Box view for wider screens
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Margin (Outer)",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        IconButton(
+                            onClick = { isMarginLocked = !isMarginLocked },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isMarginLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                contentDescription = "Lock margin sides",
+                                modifier = Modifier.size(16.dp),
+                                tint = if (isMarginLocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
 
-                    // Right Margin
+                    // Top Margin
                     CompactNumberInput(
-                        value = marginRight,
+                        value = marginTop,
                         onValueChange = { v ->
                             if (isMarginLocked) onMarginChange(v, v, v, v)
-                            else onMarginChange(marginLeft, marginTop, v, marginBottom)
+                            else onMarginChange(marginLeft, v, marginRight, marginBottom)
                         },
-                        modifier = Modifier.width(70.dp)
+                        modifier = Modifier.width(72.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Left Margin
+                        CompactNumberInput(
+                            value = marginLeft,
+                            onValueChange = { v ->
+                                if (isMarginLocked) onMarginChange(v, v, v, v)
+                                else onMarginChange(v, marginTop, marginRight, marginBottom)
+                            },
+                            modifier = Modifier.width(52.dp)
+                        )
+
+                        // PADDING INNER BOX
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 4.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Padding",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                    IconButton(
+                                        onClick = { isPaddingLocked = !isPaddingLocked },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isPaddingLocked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                            contentDescription = "Lock padding sides",
+                                            modifier = Modifier.size(14.dp),
+                                            tint = if (isPaddingLocked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                // Top Padding
+                                CompactNumberInput(
+                                    value = paddingTop,
+                                    onValueChange = { v ->
+                                        if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                        else onPaddingChange(paddingLeft, v, paddingRight, paddingBottom)
+                                    },
+                                    modifier = Modifier.width(64.dp)
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Left Padding
+                                    CompactNumberInput(
+                                        value = paddingLeft,
+                                        onValueChange = { v ->
+                                            if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                            else onPaddingChange(v, paddingTop, paddingRight, paddingBottom)
+                                        },
+                                        modifier = Modifier.width(48.dp)
+                                    )
+
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        modifier = Modifier.padding(horizontal = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "CONTENT",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        )
+                                    }
+
+                                    // Right Padding
+                                    CompactNumberInput(
+                                        value = paddingRight,
+                                        onValueChange = { v ->
+                                            if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                            else onPaddingChange(paddingLeft, paddingTop, v, paddingBottom)
+                                        },
+                                        modifier = Modifier.width(48.dp)
+                                    )
+                                }
+
+                                // Bottom Padding
+                                CompactNumberInput(
+                                    value = paddingBottom,
+                                    onValueChange = { v ->
+                                        if (isPaddingLocked) onPaddingChange(v, v, v, v)
+                                        else onPaddingChange(paddingLeft, paddingTop, paddingRight, v)
+                                    },
+                                    modifier = Modifier.width(64.dp)
+                                )
+                            }
+                        }
+
+                        // Right Margin
+                        CompactNumberInput(
+                            value = marginRight,
+                            onValueChange = { v ->
+                                if (isMarginLocked) onMarginChange(v, v, v, v)
+                                else onMarginChange(marginLeft, marginTop, v, marginBottom)
+                            },
+                            modifier = Modifier.width(52.dp)
+                        )
+                    }
+
+                    // Bottom Margin
+                    CompactNumberInput(
+                        value = marginBottom,
+                        onValueChange = { v ->
+                            if (isMarginLocked) onMarginChange(v, v, v, v)
+                            else onMarginChange(marginLeft, marginTop, marginRight, v)
+                        },
+                        modifier = Modifier.width(72.dp)
                     )
                 }
-
-                // Bottom Margin
-                CompactNumberInput(
-                    value = marginBottom,
-                    onValueChange = { v ->
-                        if (isMarginLocked) onMarginChange(v, v, v, v)
-                        else onMarginChange(marginLeft, marginTop, marginRight, v)
-                    },
-                    modifier = Modifier.width(90.dp)
-                )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CompactNumberInput(
     value: Int,
@@ -889,25 +1111,49 @@ private fun CompactNumberInput(
     modifier: Modifier = Modifier
 ) {
     var textState by remember(value) { mutableStateOf(value.toString()) }
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
 
-    OutlinedTextField(
+    androidx.compose.foundation.text.BasicTextField(
         value = textState,
         onValueChange = { input ->
             textState = input
             input.toIntOrNull()?.let { onValueChange(it) }
         },
-        modifier = modifier.height(40.dp),
+        modifier = modifier.height(38.dp),
         textStyle = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface
         ),
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        shape = RoundedCornerShape(6.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedContainerColor = MaterialTheme.colorScheme.surface
-        )
+        interactionSource = interactionSource,
+        decorationBox = { innerTextField ->
+            OutlinedTextFieldDefaults.DecorationBox(
+                value = textState,
+                innerTextField = innerTextField,
+                enabled = true,
+                singleLine = true,
+                visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+                interactionSource = interactionSource,
+                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp),
+                container = {
+                    OutlinedTextFieldDefaults.Container(
+                        enabled = true,
+                        isError = false,
+                        interactionSource = interactionSource,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                }
+            )
+        }
     )
 }
 
@@ -918,20 +1164,43 @@ fun ObjectProperties(
     searchQuery: String = "",
     onRefresh: (JsonObject) -> Unit
 ) {
-    val sduiKeys = remember(sdui) { sdui.keySet() }
-    val fields = remember(obj) { getAllFields(obj.javaClass) }
-
-    val excludedNames = setOf("motionView", "effects", "assets", "motionConfig", "layoutInfo", "loop", "type")
-
-    val visibleFields = fields.filter { field ->
-        !JavaModifier.isStatic(field.modifiers) &&
-            !field.name.contains("$") &&
-            field.name !in excludedNames &&
-            field.name in sduiKeys &&
-            matchesSearch(field.name, searchQuery)
+    val declaredSpecs = remember(obj) {
+        when (obj) {
+            is MotionView -> obj.getEditableProperties()
+            is MotionEffect -> obj.getEditableProperties()
+            else -> emptyList()
+        }
     }
 
-    if (visibleFields.isEmpty() && searchQuery.isNotEmpty()) {
+    val declaredKeys = remember(declaredSpecs) { declaredSpecs.map { it.key }.toSet() }
+    val excludedKeys = setOf("motionView", "effects", "assets", "motionConfig", "layoutInfo", "loop", "type", "layout")
+
+    val extraSpecs = remember(sdui, declaredKeys) {
+        sdui.keySet()
+            .filter { it !in declaredKeys && it !in excludedKeys }
+            .mapNotNull { key ->
+                val elem = sdui.get(key)
+                if (elem != null && elem.isJsonPrimitive) {
+                    val prim = elem.asJsonPrimitive
+                    when {
+                        prim.isBoolean -> PropertySpec.boolean(key, key.toHumanReadableName())
+                        prim.isNumber -> PropertySpec.number(key, key.toHumanReadableName(), isInteger = prim.asNumber is Int)
+                        prim.isString -> {
+                            val str = prim.asString
+                            if (isColorHex(str)) PropertySpec.color(key, key.toHumanReadableName())
+                            else PropertySpec.text(key, key.toHumanReadableName())
+                        }
+                        else -> null
+                    }
+                } else null
+            }
+    }
+
+    val visibleSpecs = (declaredSpecs + extraSpecs).filter { spec ->
+        matchesSearch(spec.label, searchQuery) || matchesSearch(spec.key, searchQuery)
+    }
+
+    if (visibleSpecs.isEmpty() && searchQuery.isNotEmpty()) {
         Text(
             text = "No properties match '$searchQuery'",
             style = MaterialTheme.typography.bodySmall,
@@ -942,85 +1211,110 @@ fun ObjectProperties(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        visibleFields.forEach { field ->
-            field.isAccessible = true
-            val jsonElement = sdui.get(field.name)
+        visibleSpecs.forEach { spec ->
+            val jsonVal = sdui.get(spec.key)
 
-            if (jsonElement != null && jsonElement.isJsonPrimitive) {
-                val primitive = jsonElement.asJsonPrimitive
-                val fieldLabel = field.name.toHumanReadableName()
-
-                when {
-                    primitive.isBoolean -> {
-                        BooleanProperty(
-                            label = fieldLabel,
-                            value = primitive.asBoolean
-                        ) { newValue ->
-                            val updatedSdui = sdui.deepCopy()
-                            updatedSdui.addProperty(field.name, newValue)
-                            onRefresh(updatedSdui)
-                        }
+            when (spec.viewType) {
+                PropertyViewType.BOOLEAN -> {
+                    val boolValue = jsonVal?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.asBoolean
+                        ?: (spec.defaultValue as? Boolean ?: false)
+                    BooleanProperty(
+                        label = spec.label,
+                        value = boolValue
+                    ) { newValue ->
+                        val updatedSdui = sdui.deepCopy()
+                        updatedSdui.addProperty(spec.key, newValue)
+                        onRefresh(updatedSdui)
                     }
+                }
 
-                    primitive.isNumber -> {
-                        val numValue = primitive.asNumber
-                        val isInteger = numValue is Int || numValue is Long || numValue is Short || numValue is Byte
-
-                        NumericProperty(
-                            fieldName = field.name,
-                            label = fieldLabel,
-                            value = numValue.toString(),
-                            isInteger = isInteger
-                        ) { newValue ->
-                            val updatedSdui = sdui.deepCopy()
-                            if (isInteger) {
-                                updatedSdui.addProperty(field.name, newValue.toIntOrNull() ?: 0)
-                            } else {
-                                updatedSdui.addProperty(field.name, newValue.toFloatOrNull() ?: 0f)
-                            }
-                            onRefresh(updatedSdui)
-                        }
-                    }
-
-                    primitive.isString -> {
-                        val strValue = primitive.asString
-                        val isEnumField = field.type.isEnum || field.name == "textSizeVariant"
-
-                        if (isEnumField) {
-                            val options: List<String> = if (field.type.isEnum) {
-                                field.type.enumConstants?.map { (it as Enum<*>).name }
-                                    ?: MotionTextVariant.entries.map { it.name }
-                            } else {
-                                MotionTextVariant.entries.map { it.name }
-                            }
-                            DropdownProperty(
-                                label = fieldLabel,
-                                selectedValue = strValue,
-                                options = options
-                            ) { newValue ->
-                                val updatedSdui = sdui.deepCopy()
-                                updatedSdui.addProperty(field.name, newValue)
-                                onRefresh(updatedSdui)
-                            }
-                        } else if (isColorHex(strValue)) {
-                            ColorProperty(
-                                label = fieldLabel,
-                                value = strValue
-                            ) { newValue ->
-                                val updatedSdui = sdui.deepCopy()
-                                updatedSdui.addProperty(field.name, newValue)
-                                onRefresh(updatedSdui)
-                            }
+                PropertyViewType.NUMBER, PropertyViewType.SLIDER -> {
+                    val numValueStr = jsonVal?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.asNumber?.toString()
+                        ?: spec.defaultValue?.toString()
+                        ?: "0"
+                    NumericProperty(
+                        label = spec.label,
+                        value = numValueStr,
+                        isInteger = spec.isInteger,
+                        min = spec.min,
+                        max = spec.max,
+                        step = spec.step,
+                        showSlider = spec.viewType == PropertyViewType.SLIDER || (spec.min != null && spec.max != null)
+                    ) { newValue ->
+                        val updatedSdui = sdui.deepCopy()
+                        if (spec.isInteger) {
+                            updatedSdui.addProperty(spec.key, newValue.toIntOrNull() ?: 0)
                         } else {
-                            StringProperty(
-                                label = fieldLabel,
-                                value = strValue
-                            ) { newValue ->
-                                val updatedSdui = sdui.deepCopy()
-                                updatedSdui.addProperty(field.name, newValue)
-                                onRefresh(updatedSdui)
-                            }
+                            updatedSdui.addProperty(spec.key, newValue.toFloatOrNull() ?: 0f)
                         }
+                        onRefresh(updatedSdui)
+                    }
+                }
+
+                PropertyViewType.TEXT -> {
+                    val strValue = jsonVal?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.asString
+                        ?: spec.defaultValue?.toString()
+                        ?: ""
+                    StringProperty(
+                        label = spec.label,
+                        value = strValue
+                    ) { newValue ->
+                        val updatedSdui = sdui.deepCopy()
+                        updatedSdui.addProperty(spec.key, newValue)
+                        onRefresh(updatedSdui)
+                    }
+                }
+
+                PropertyViewType.DROPDOWN -> {
+                    val strValue = jsonVal?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.asString
+                        ?: spec.defaultValue?.toString()
+                        ?: ""
+                    DropdownProperty(
+                        label = spec.label,
+                        selectedValue = strValue,
+                        options = spec.options
+                    ) { newValue ->
+                        val updatedSdui = sdui.deepCopy()
+                        updatedSdui.addProperty(spec.key, newValue)
+                        onRefresh(updatedSdui)
+                    }
+                }
+
+                PropertyViewType.COLOR -> {
+                    val strValue = jsonVal?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive?.asString
+                        ?: spec.defaultValue?.toString()
+                        ?: "#FFFFFF"
+                    ColorProperty(
+                        label = spec.label,
+                        value = strValue
+                    ) { newValue ->
+                        val updatedSdui = sdui.deepCopy()
+                        updatedSdui.addProperty(spec.key, newValue)
+                        onRefresh(updatedSdui)
+                    }
+                }
+
+                PropertyViewType.IMAGE_FILE, PropertyViewType.VIDEO_FILE -> {
+                    val isImage = spec.viewType == PropertyViewType.IMAGE_FILE
+                    val uriVal = when {
+                        jsonVal?.isJsonPrimitive == true -> jsonVal.asJsonPrimitive.asString
+                        jsonVal?.isJsonObject == true -> jsonVal.asJsonObject.get("uri")?.asString ?: ""
+                        sdui.has("asset") && sdui.get("asset").isJsonObject -> sdui.get("asset").asJsonObject.get("uri")?.asString ?: ""
+                        else -> spec.defaultValue?.toString() ?: ""
+                    }
+
+                    FileAssetProperty(
+                        label = spec.label,
+                        value = uriVal,
+                        fileType = if (isImage) AssetFileType.IMAGE else AssetFileType.VIDEO,
+                    ) { newUri ->
+                        val updatedSdui = sdui.deepCopy()
+                        val newAsset = if (isImage) ImageAsset(newUri.toUri()) else VideoAsset(newUri.toUri())
+                        updatedSdui.add("asset", newAsset.toJson())
+                        if (spec.key != "asset") {
+                            updatedSdui.addProperty(spec.key, newUri)
+                        }
+                        onRefresh(updatedSdui)
                     }
                 }
             }
@@ -1070,16 +1364,6 @@ private fun isColorHex(value: String): Boolean {
     return value.startsWith("#") && (value.length == 7 || value.length == 9)
 }
 
-private fun getAllFields(clazz: Class<*>): List<Field> {
-    val fields = mutableListOf<Field>()
-    var current: Class<*>? = clazz
-    while (current != null && current != Any::class.java) {
-        fields.addAll(current.declaredFields)
-        current = current.superclass
-    }
-    return fields
-}
-
 @Composable
 fun BooleanProperty(
     label: String,
@@ -1123,17 +1407,25 @@ fun BooleanProperty(
 
 @Composable
 fun NumericProperty(
-    fieldName: String,
     label: String,
     value: String,
     isInteger: Boolean,
+    min: Number? = null,
+    max: Number? = null,
+    step: Number? = null,
+    showSlider: Boolean = false,
     onValueChange: (String) -> Unit
 ) {
     var textState by remember(value) { mutableStateOf(value) }
+    var isDraggingSlider by remember { mutableStateOf(false) }
+    val stepFloat = step?.toFloat() ?: if (isInteger) 1f else 0.1f
 
-    val isAlpha = fieldName.equals("alpha", ignoreCase = true) || fieldName.equals("opacity", ignoreCase = true)
-    val isRotation = fieldName.contains("rotation", ignoreCase = true) || fieldName.contains("angle", ignoreCase = true)
-    val isScale = fieldName.contains("scale", ignoreCase = true)
+    LaunchedEffect(textState) {
+        if (textState != value && !isDraggingSlider) {
+            delay(200)
+            onValueChange(textState)
+        }
+    }
 
     Surface(
         shape = RoundedCornerShape(10.dp),
@@ -1165,14 +1457,18 @@ fun NumericProperty(
                         onClick = {
                             if (isInteger) {
                                 val current = textState.toIntOrNull() ?: 0
-                                val next = (current - 1).toString()
-                                textState = next
-                                onValueChange(next)
+                                var next = current - stepFloat.toInt().coerceAtLeast(1)
+                                min?.let { next = next.coerceAtLeast(it.toInt()) }
+                                val nextStr = next.toString()
+                                textState = nextStr
+                                onValueChange(nextStr)
                             } else {
                                 val current = textState.toFloatOrNull() ?: 0f
-                                val next = String.format(Locale.ROOT, "%.2f", (current - 0.1f).coerceAtLeast(0f))
-                                textState = next
-                                onValueChange(next)
+                                var next = current - stepFloat
+                                min?.let { next = next.coerceAtLeast(it.toFloat()) }
+                                val nextStr = String.format(Locale.ROOT, "%.2f", next)
+                                textState = nextStr
+                                onValueChange(nextStr)
                             }
                         },
                         modifier = Modifier.size(28.dp)
@@ -1188,7 +1484,6 @@ fun NumericProperty(
                         value = textState,
                         onValueChange = {
                             textState = it
-                            onValueChange(it)
                         },
                         modifier = Modifier.width(76.dp),
                         textStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
@@ -1203,14 +1498,18 @@ fun NumericProperty(
                         onClick = {
                             if (isInteger) {
                                 val current = textState.toIntOrNull() ?: 0
-                                val next = (current + 1).toString()
-                                textState = next
-                                onValueChange(next)
+                                var next = current + stepFloat.toInt().coerceAtLeast(1)
+                                max?.let { next = next.coerceAtMost(it.toInt()) }
+                                val nextStr = next.toString()
+                                textState = nextStr
+                                onValueChange(nextStr)
                             } else {
                                 val current = textState.toFloatOrNull() ?: 0f
-                                val next = String.format(Locale.ROOT, "%.2f", current + 0.1f)
-                                textState = next
-                                onValueChange(next)
+                                var next = current + stepFloat
+                                max?.let { next = next.coerceAtMost(it.toFloat()) }
+                                val nextStr = String.format(Locale.ROOT, "%.2f", next)
+                                textState = nextStr
+                                onValueChange(nextStr)
                             }
                         },
                         modifier = Modifier.size(28.dp)
@@ -1224,41 +1523,26 @@ fun NumericProperty(
                 }
             }
 
-            // Slider for Range Properties
-            if (isAlpha) {
-                val floatVal = textState.toFloatOrNull() ?: 1f
+            if (showSlider && min != null && max != null) {
+                val floatVal = textState.toFloatOrNull() ?: min.toFloat()
+                val minF = min.toFloat()
+                val maxF = max.toFloat()
                 Slider(
-                    value = floatVal.coerceIn(0f, 1f),
+                    value = floatVal.coerceIn(minF, maxF),
                     onValueChange = { newF ->
-                        val formatted = String.format(Locale.ROOT, "%.2f", newF)
+                        isDraggingSlider = true
+                        val formatted = if (isInteger) {
+                            newF.toInt().toString()
+                        } else {
+                            String.format(Locale.ROOT, "%.2f", newF)
+                        }
                         textState = formatted
-                        onValueChange(formatted)
                     },
-                    valueRange = 0f..1f,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else if (isRotation) {
-                val floatVal = textState.toFloatOrNull() ?: 0f
-                Slider(
-                    value = floatVal.coerceIn(-360f, 360f),
-                    onValueChange = { newF ->
-                        val formatted = if (isInteger) newF.toInt().toString() else String.format(Locale.ROOT, "%.1f", newF)
-                        textState = formatted
-                        onValueChange(formatted)
+                    onValueChangeFinished = {
+                        isDraggingSlider = false
+                        onValueChange(textState)
                     },
-                    valueRange = -360f..360f,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else if (isScale) {
-                val floatVal = textState.toFloatOrNull() ?: 1f
-                Slider(
-                    value = floatVal.coerceIn(0.1f, 5f),
-                    onValueChange = { newF ->
-                        val formatted = String.format(Locale.ROOT, "%.2f", newF)
-                        textState = formatted
-                        onValueChange(formatted)
-                    },
-                    valueRange = 0.1f..5f,
+                    valueRange = minF..maxF,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -1351,6 +1635,13 @@ fun StringProperty(
 ) {
     var textState by remember(value) { mutableStateOf(value) }
 
+    LaunchedEffect(textState) {
+        if (textState != value) {
+            delay(250)
+            onValueChange(textState)
+        }
+    }
+
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = MaterialTheme.colorScheme.surfaceContainer
@@ -1370,7 +1661,6 @@ fun StringProperty(
                 value = textState,
                 onValueChange = {
                     textState = it
-                    onValueChange(it)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.bodyMedium,
@@ -1442,6 +1732,73 @@ fun ColorProperty(
             onColorSelected = {
                 showPicker = false
                 onValueChange(it)
+            },
+            onDismiss = { showPicker = false }
+        )
+    }
+}
+
+@Composable
+fun FileAssetProperty(
+    label: String,
+    value: String,
+    fileType: AssetFileType,
+    onValueChange: (String) -> Unit
+) {
+    var showPicker by remember { mutableStateOf(false) }
+
+    Surface(
+        onClick = { showPicker = true },
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = if (fileType == AssetFileType.IMAGE) Icons.Default.Image else Icons.Default.VideoLibrary,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Column {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = value.ifBlank { "No file selected" },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Button(
+                onClick = { showPicker = true },
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text("Browse", fontSize = 12.sp)
+            }
+        }
+    }
+
+    if (showPicker) {
+        AssetPickerBottomSheet(
+            fileType = fileType,
+            onAssetSelected = { selectedUri ->
+                onValueChange(selectedUri)
             },
             onDismiss = { showPicker = false }
         )
