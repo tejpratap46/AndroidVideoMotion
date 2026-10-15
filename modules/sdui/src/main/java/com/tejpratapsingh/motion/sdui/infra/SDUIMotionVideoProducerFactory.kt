@@ -3,6 +3,7 @@ package com.tejpratapsingh.motion.sdui.infra
 import android.content.Context
 import android.view.ViewGroup
 import com.google.gson.JsonObject
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
@@ -32,7 +33,7 @@ class SDUIMotionVideoProducerFactory(
         sdui: JsonObject,
         onViewsCreated: ((List<MotionView>) -> Unit)? = null,
     ): MotionVideoProducer {
-        val config = sdui.getMotionConfig() ?: com.tejpratapsingh.motionlib.core.MotionConfig()
+        val config = sdui.getMotionConfig() ?: MotionConfig()
 
         val plugins = sdui.getMotionPlugins(context)
         val audios = sdui.getMotionAudios(context)

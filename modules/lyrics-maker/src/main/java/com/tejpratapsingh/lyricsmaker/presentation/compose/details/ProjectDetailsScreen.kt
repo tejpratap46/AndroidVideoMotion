@@ -73,7 +73,7 @@ fun ProjectDetailsScreen(
     val motionVideoProducer by produceState<MotionVideoProducer?>(initialValue = null, project) {
         value =
             withContext(Dispatchers.IO) {
-                getLyricsVideoProducer(context, project)
+                getLyricsVideoProducer(context, project, fromSduiJson = true)
             }
     }
 

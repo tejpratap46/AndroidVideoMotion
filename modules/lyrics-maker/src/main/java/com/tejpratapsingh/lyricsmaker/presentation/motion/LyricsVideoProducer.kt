@@ -54,11 +54,9 @@ fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
 fun getLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
+    fromSduiJson: Boolean = true,
 ): MotionVideoProducer {
-    if (motionProject.sdui.has("views") &&
-        motionProject.sdui.get("views").isJsonArray &&
-        motionProject.sdui.getAsJsonArray("views").size() > 0
-    ) {
+    if (fromSduiJson) {
         return SDUIMotionVideoProducerFactory(applicationContext).createFromProject(motionProject)
     }
 

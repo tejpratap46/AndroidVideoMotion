@@ -1,17 +1,20 @@
 package com.tejpratapsingh.motioneditor.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.AspectRatio
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,9 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +41,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.gson.JsonObject
-import kotlinx.coroutines.delay
 import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.getMotionAudios
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
@@ -51,6 +54,8 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.tables.SyncTracker
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,16 +107,59 @@ fun MotionEditorScreen(
             adaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM
 
     var pendingViewUpdate by remember { mutableStateOf<Pair<String, JsonObject>?>(null) }
+    var showUnsavedChangesDialog by remember { mutableStateOf(false) }
+
+    val hasUnsavedChanges =
+        remember(draftProject.sdui, project.sdui, pendingViewUpdate) {
+            pendingViewUpdate != null || draftProject.sdui != project.sdui
+        }
+
+    val handleSave: () -> Unit = {
+        var projectToSave = draftProject
+        pendingViewUpdate?.let { (selectedItemId, updatedViewSdui) ->
+            val newRootSdui = projectToSave.sdui.deepCopy()
+            if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
+                val viewsArray = newRootSdui.get("views").asJsonArray
+                val index =
+                    timelineTracks.indexOfFirst { track ->
+                        track.items.any { it.id == selectedItemId }
+                    }
+                if (index != -1 && index < viewsArray.size()) {
+                    viewsArray.set(index, updatedViewSdui)
+                    projectToSave = projectToSave.copy(sdui = newRootSdui)
+                }
+            }
+        }
+        val hasPending = onCheckPendingDownloads(projectToSave.sdui.toString())
+        if (hasPending) {
+            onNavigateToAssetDownload(projectToSave.id)
+        } else {
+            onSaveClick(projectToSave)
+        }
+    }
+
+    val handleBack: () -> Unit = {
+        if (hasUnsavedChanges) {
+            showUnsavedChangesDialog = true
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = hasUnsavedChanges) {
+        handleBack()
+    }
 
     LaunchedEffect(pendingViewUpdate) {
         pendingViewUpdate?.let { (selectedItemId, updatedViewSdui) ->
-            delay(150)
+            delay(150.milliseconds)
             val newRootSdui = draftProject.sdui.deepCopy()
             if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
                 val viewsArray = newRootSdui.get("views").asJsonArray
-                val index = timelineTracks.indexOfFirst { track ->
-                    track.items.any { it.id == selectedItemId }
-                }
+                val index =
+                    timelineTracks.indexOfFirst { track ->
+                        track.items.any { it.id == selectedItemId }
+                    }
                 if (index != -1 && index < viewsArray.size()) {
                     viewsArray.set(index, updatedViewSdui)
                     draftProject = draftProject.copy(sdui = newRootSdui)
@@ -147,7 +195,7 @@ fun MotionEditorScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = handleBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -156,63 +204,44 @@ fun MotionEditorScreen(
                         IconButton(onClick = { showAspectRatioMenu = true }) {
                             Icon(
                                 Icons.Rounded.AspectRatio,
-                                contentDescription = "Change Aspect Ratio"
+                                contentDescription = "Change Aspect Ratio",
                             )
                         }
 
                         DropdownMenu(
                             expanded = showAspectRatioMenu,
-                            onDismissRequest = { showAspectRatioMenu = false }
+                            onDismissRequest = { showAspectRatioMenu = false },
                         ) {
                             VideoAspectRatio.all().forEach { ratio ->
                                 DropdownMenuItem(
                                     text = { Text(ratio.label) },
                                     onClick = {
                                         showAspectRatioMenu = false
-                                        val currentConfig = draftProject.sdui.getMotionConfig()
-                                            ?: com.tejpratapsingh.motionlib.core.MotionConfig()
+                                        val currentConfig =
+                                            draftProject.sdui.getMotionConfig()
+                                                ?: com.tejpratapsingh.motionlib.core
+                                                    .MotionConfig()
                                         val newConfig = currentConfig.copy(aspectRatio = ratio)
 
                                         val newSdui = draftProject.sdui.deepCopy()
                                         newSdui.updateMotionConfig(newConfig)
 
                                         draftProject = draftProject.copy(sdui = newSdui)
-                                    }
+                                    },
                                 )
                             }
                         }
                     }
 
                     IconButton(
-                        onClick = {
-                            var projectToSave = draftProject
-                            pendingViewUpdate?.let { (selectedItemId, updatedViewSdui) ->
-                                val newRootSdui = projectToSave.sdui.deepCopy()
-                                if (newRootSdui.has("views") && newRootSdui.get("views").isJsonArray) {
-                                    val viewsArray = newRootSdui.get("views").asJsonArray
-                                    val index = timelineTracks.indexOfFirst { track ->
-                                        track.items.any { it.id == selectedItemId }
-                                    }
-                                    if (index != -1 && index < viewsArray.size()) {
-                                        viewsArray.set(index, updatedViewSdui)
-                                        projectToSave = projectToSave.copy(sdui = newRootSdui)
-                                    }
-                                }
-                            }
-                            val hasPending = onCheckPendingDownloads(projectToSave.sdui.toString())
-                            if (hasPending) {
-                                onNavigateToAssetDownload(projectToSave.id)
-                            } else {
-                                onSaveClick(projectToSave)
-                            }
-                        },
+                        onClick = handleSave,
                         modifier =
-                        Modifier
-                            .padding(end = 8.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = CircleShape,
-                            ),
+                            Modifier
+                                .padding(end = 8.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = CircleShape,
+                                ),
                     ) {
                         Icon(
                             Icons.Rounded.Check,
@@ -226,9 +255,9 @@ fun MotionEditorScreen(
     ) { paddingValues ->
         BoxWithConstraints(
             modifier =
-            modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             val maxHeight = maxHeight
             val minTimelineHeight = 150.dp
@@ -251,7 +280,7 @@ fun MotionEditorScreen(
                     onRefresh = handleViewSduiUpdate,
                     onNavigateToAssetDownload = onNavigateToAssetDownload,
                     onCheckPendingDownloads = onCheckPendingDownloads,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             } else {
                 MotionEditorCompact(
@@ -272,7 +301,7 @@ fun MotionEditorScreen(
                     onRefresh = { refreshKey++ },
                     onNavigateToAssetDownload = onNavigateToAssetDownload,
                     onCheckPendingDownloads = onCheckPendingDownloads,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -280,7 +309,7 @@ fun MotionEditorScreen(
         if (showBottomSheet && selectedItem != null) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState
+                sheetState = sheetState,
             ) {
                 val original = selectedItem?.original
                 val sdui = selectedItem?.sdui
@@ -292,6 +321,43 @@ fun MotionEditorScreen(
                     )
                 }
             }
+        }
+
+        if (showUnsavedChangesDialog) {
+            AlertDialog(
+                onDismissRequest = { showUnsavedChangesDialog = false },
+                title = { Text("Unsaved Changes") },
+                text = { Text("You have unsaved draft changes. Do you want to save them before exiting?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showUnsavedChangesDialog = false
+                            handleSave()
+                        },
+                    ) {
+                        Text("Save & Exit")
+                    }
+                },
+                dismissButton = {
+                    Row {
+                        TextButton(
+                            onClick = {
+                                showUnsavedChangesDialog = false
+                            },
+                        ) {
+                            Text("Cancel")
+                        }
+                        TextButton(
+                            onClick = {
+                                showUnsavedChangesDialog = false
+                                onBackClick()
+                            },
+                        ) {
+                            Text("Discard")
+                        }
+                    }
+                },
+            )
         }
     }
 }
