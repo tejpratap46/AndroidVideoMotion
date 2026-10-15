@@ -410,7 +410,7 @@ object MotionSduiInitializer {
         // Register CircularMotionImageView
         MotionSdui.registerView(CircularMotionImageView::class.java.simpleName) { context, json ->
             val props = json.parseMotionViewProps(context)
-            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
+            val asset = json.getMotionAssetOrFallback(context, "imageUri", isVideo = false)
             CircularMotionImageView(
                 context = context,
                 asset = asset,
@@ -422,12 +422,13 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(CircularMotionImageView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.add("asset", view.asset.toJson())
+            json.addProperty("imageUri", view.asset.getUri().toString())
         }
 
         // Register MotionImageView
         MotionSdui.registerView(MotionImageView::class.java.simpleName) { context, json ->
             val props = json.parseMotionViewProps(context)
-            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
+            val asset = json.getMotionAssetOrFallback(context, "imageUri", isVideo = false)
             MotionImageView(
                 context = context,
                 asset = asset,
@@ -439,12 +440,13 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(MotionImageView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.add("asset", view.asset.toJson())
+            json.addProperty("imageUri", view.asset.getUri().toString())
         }
 
         // Register VideoFrameView
         MotionSdui.registerView(VideoFrameView::class.java.simpleName) { context, json ->
             val props = json.parseMotionViewProps(context)
-            val asset = json.get("asset").asJsonObject.toMotionAsset(context)
+            val asset = json.getMotionAssetOrFallback(context, "videoUri", isVideo = true)
             VideoFrameView(
                 context = context,
                 asset = asset,
@@ -456,6 +458,7 @@ object MotionSduiInitializer {
         MotionSdui.registerViewSerializer(VideoFrameView::class.java) { view, json ->
             json.addProperty("type", view.javaClass.simpleName)
             json.add("asset", view.asset.toJson())
+            json.addProperty("videoUri", view.asset.getUri().toString())
         }
 
         // Register GradientView
@@ -854,5 +857,40 @@ object MotionSduiInitializer {
             json.addProperty("type", SlideTransition::class.java.simpleName)
             json.addProperty("direction", transition.direction.name)
         }
+    }
+}
+
+private fun JsonObject.getMotionAssetOrFallback(
+    context: android.content.Context,
+    fallbackKey: String,
+    isVideo: Boolean = false,
+): com.tejpratapsingh.motionlib.core.MotionAsset {
+    val fallbackUriString = if (has(fallbackKey) && get(fallbackKey).isJsonPrimitive) {
+        get(fallbackKey).asJsonPrimitive.asString
+    } else null
+
+    val assetFromObject = if (has("asset") && get("asset").isJsonObject) {
+        get("asset").asJsonObject.toMotionAsset(context)
+    } else null
+
+    return when {
+        fallbackUriString != null && assetFromObject != null -> {
+            if (fallbackUriString.isNotBlank() && fallbackUriString != assetFromObject.getUri().toString()) {
+                val uri = fallbackUriString.toUri()
+                if (isVideo) VideoAsset(uri) else ImageAsset(uri)
+            } else {
+                assetFromObject
+            }
+        }
+        assetFromObject != null -> assetFromObject
+        fallbackUriString != null && fallbackUriString.isNotBlank() -> {
+            val uri = fallbackUriString.toUri()
+            if (isVideo) VideoAsset(uri) else ImageAsset(uri)
+        }
+        has("asset") && get("asset").isJsonPrimitive -> {
+            val uri = get("asset").asString.toUri()
+            if (isVideo) VideoAsset(uri) else ImageAsset(uri)
+        }
+        else -> SimpleMotionAsset(android.net.Uri.EMPTY)
     }
 }

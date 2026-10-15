@@ -77,6 +77,6 @@ class MotionImageView(
 
     override fun getEditableProperties(): List<PropertySpec> =
         super.getEditableProperties() + listOf(
-            PropertySpec.text("imageUri", label = "Image URI / URL")
+            PropertySpec.imageFile("imageUri", label = "Image File / URI")
         )
 }

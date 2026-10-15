@@ -2,6 +2,8 @@ package com.tejpratapsingh.animator.app
 
 import android.app.Application
 import com.tejpratapsingh.animator.notification.NotificationFactory
+import com.tejpratapsingh.motion.assetstore.di.assetStoreModule
+import com.tejpratapsingh.motion.download.di.downloadModule
 import com.tejpratapsingh.motionlib.core.di.coreModule
 import com.tejpratapsingh.motionlib.tensorflow.di.tensorflowModule
 import org.koin.android.ext.koin.androidContext
@@ -18,7 +20,7 @@ class MyApplication : Application() {
 
         startKoin {
             androidContext(this@MyApplication)
-            modules(coreModule, tensorflowModule)
+            modules(coreModule, downloadModule, assetStoreModule, tensorflowModule)
         }
     }
 }

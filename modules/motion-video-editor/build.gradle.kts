@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":modules:motionlib"))
     implementation(project(":modules:motion-store"))
     implementation(project(":modules:motion-video-player"))
+    implementation(project(":modules:motion-asset-store"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

@@ -108,7 +108,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.core.net.toUri
 import com.google.gson.JsonObject
+import com.tejpratapsingh.motion.assetstore.model.AssetFileType
+import com.tejpratapsingh.motion.assetstore.ui.AssetPickerBottomSheet
+import com.tejpratapsingh.motion.sdui.infra.toJson
+import com.tejpratapsingh.motionlib.assettype.ImageAsset
+import com.tejpratapsingh.motionlib.assettype.VideoAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -1284,6 +1293,30 @@ fun ObjectProperties(
                         onRefresh(updatedSdui)
                     }
                 }
+
+                PropertyViewType.IMAGE_FILE, PropertyViewType.VIDEO_FILE -> {
+                    val isImage = spec.viewType == PropertyViewType.IMAGE_FILE
+                    val uriVal = when {
+                        jsonVal?.isJsonPrimitive == true -> jsonVal.asJsonPrimitive.asString
+                        jsonVal?.isJsonObject == true -> jsonVal.asJsonObject.get("uri")?.asString ?: ""
+                        sdui.has("asset") && sdui.get("asset").isJsonObject -> sdui.get("asset").asJsonObject.get("uri")?.asString ?: ""
+                        else -> spec.defaultValue?.toString() ?: ""
+                    }
+
+                    FileAssetProperty(
+                        label = spec.label,
+                        value = uriVal,
+                        fileType = if (isImage) AssetFileType.IMAGE else AssetFileType.VIDEO,
+                    ) { newUri ->
+                        val updatedSdui = sdui.deepCopy()
+                        val newAsset = if (isImage) ImageAsset(newUri.toUri()) else VideoAsset(newUri.toUri())
+                        updatedSdui.add("asset", newAsset.toJson())
+                        if (spec.key != "asset") {
+                            updatedSdui.addProperty(spec.key, newUri)
+                        }
+                        onRefresh(updatedSdui)
+                    }
+                }
             }
         }
     }
@@ -1699,6 +1732,73 @@ fun ColorProperty(
             onColorSelected = {
                 showPicker = false
                 onValueChange(it)
+            },
+            onDismiss = { showPicker = false }
+        )
+    }
+}
+
+@Composable
+fun FileAssetProperty(
+    label: String,
+    value: String,
+    fileType: AssetFileType,
+    onValueChange: (String) -> Unit
+) {
+    var showPicker by remember { mutableStateOf(false) }
+
+    Surface(
+        onClick = { showPicker = true },
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = if (fileType == AssetFileType.IMAGE) Icons.Default.Image else Icons.Default.VideoLibrary,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Column {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = value.ifBlank { "No file selected" },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Button(
+                onClick = { showPicker = true },
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text("Browse", fontSize = 12.sp)
+            }
+        }
+    }
+
+    if (showPicker) {
+        AssetPickerBottomSheet(
+            fileType = fileType,
+            onAssetSelected = { selectedUri ->
+                onValueChange(selectedUri)
             },
             onDismiss = { showPicker = false }
         )

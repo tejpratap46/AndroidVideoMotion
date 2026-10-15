@@ -9,12 +9,21 @@ plugins {
 
 android {
     namespace = "com.tejpratapsingh.lyricsmaker"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.tejpratapsingh.lyricsmaker"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -46,6 +55,7 @@ dependencies {
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-video-editor"))
     implementation(project(":modules:motion-download-manager"))
+    implementation(project(":modules:motion-asset-store"))
     implementation(project(":modules:motion-tts-asset"))
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
@@ -82,7 +92,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

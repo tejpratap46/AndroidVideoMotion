@@ -74,6 +74,6 @@ class VideoFrameView(
 
     override fun getEditableProperties(): List<PropertySpec> =
         super.getEditableProperties() + listOf(
-            PropertySpec.text("videoUri", label = "Video URI / Path")
+            PropertySpec.videoFile("videoUri", label = "Video File / Path")
         )
 }

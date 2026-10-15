@@ -6,7 +6,9 @@ enum class PropertyViewType {
     TEXT,      // Text string input
     BOOLEAN,   // Switch / toggle
     DROPDOWN,  // Single-select dropdown menu
-    COLOR      // Hex color field + Color Picker Dialog
+    COLOR,     // Hex color field + Color Picker Dialog
+    IMAGE_FILE,// Image asset file selector
+    VIDEO_FILE // Video asset file selector
 }
 
 data class PropertySpec(
@@ -115,6 +117,32 @@ data class PropertySpec(
             key = key,
             label = label,
             viewType = PropertyViewType.COLOR,
+            defaultValue = defaultValue,
+            category = category
+        )
+
+        fun imageFile(
+            key: String = "asset",
+            label: String = "Image Asset",
+            defaultValue: Any? = null,
+            category: String = "ASSET"
+        ) = PropertySpec(
+            key = key,
+            label = label,
+            viewType = PropertyViewType.IMAGE_FILE,
+            defaultValue = defaultValue,
+            category = category
+        )
+
+        fun videoFile(
+            key: String = "asset",
+            label: String = "Video Asset",
+            defaultValue: Any? = null,
+            category: String = "ASSET"
+        ) = PropertySpec(
+            key = key,
+            label = label,
+            viewType = PropertyViewType.VIDEO_FILE,
             defaultValue = defaultValue,
             category = category
         )

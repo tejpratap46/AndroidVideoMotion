@@ -30,5 +30,15 @@ class PropertySpecTest {
 
         val colorSpec = PropertySpec.color("colorKey", label = "Color Label")
         assertEquals(PropertyViewType.COLOR, colorSpec.viewType)
+
+        val imageSpec = PropertySpec.imageFile("imageKey", label = "Image Label")
+        assertEquals(PropertyViewType.IMAGE_FILE, imageSpec.viewType)
+        assertEquals("imageKey", imageSpec.key)
+        assertEquals("Image Label", imageSpec.label)
+
+        val videoSpec = PropertySpec.videoFile("videoKey", label = "Video Label")
+        assertEquals(PropertyViewType.VIDEO_FILE, videoSpec.viewType)
+        assertEquals("videoKey", videoSpec.key)
+        assertEquals("Video Label", videoSpec.label)
     }
 }
