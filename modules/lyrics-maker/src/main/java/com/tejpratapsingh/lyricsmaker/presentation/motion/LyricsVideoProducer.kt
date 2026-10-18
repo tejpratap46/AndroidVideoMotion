@@ -4,6 +4,7 @@ import android.content.Context
 import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.templates.LyricsTemplateRegistry
+import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -53,7 +54,12 @@ fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
 fun getLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
+    fromSduiJson: Boolean = true,
 ): MotionVideoProducer {
+    if (fromSduiJson) {
+        return SDUIMotionVideoProducerFactory(applicationContext).createFromProject(motionProject)
+    }
+
     val producer =
         createLyricsVideoProducer(
             applicationContext = applicationContext,

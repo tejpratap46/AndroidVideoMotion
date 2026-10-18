@@ -25,22 +25,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          components: |
-            build-tools;33.0.2
-            platform-tools
-            platforms;android-33
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle/wrapper/**') }}
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Ensure gradlew is executable
         run: chmod +x ./gradlew

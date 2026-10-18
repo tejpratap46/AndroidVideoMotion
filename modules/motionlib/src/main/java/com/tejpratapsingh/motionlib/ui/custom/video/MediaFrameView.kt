@@ -8,6 +8,7 @@ import androidx.core.graphics.createBitmap
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.PropertySpec
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.infra.VideoFrameHandler
 import com.tejpratapsingh.motionlib.core.motion.BaseContourMotionView
@@ -62,4 +63,9 @@ class MediaFrameView(
 
     override val assets: List<MotionAsset>
         get() = listOf(asset)
+
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.videoFile("videoUri", label = "Video File / Path")
+        )
 }

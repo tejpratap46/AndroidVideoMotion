@@ -25,6 +25,15 @@ class RainbowPopUpTextView(
     // ... other properties
 ) : AbstractMotionTextView(...) {
 
+    /**
+     * Declare properties to be editable in PropertyEditor UI.
+     * Inherits base properties (startFrame, endFrame, text, etc.) from parent class automatically.
+     */
+    override fun getEditableProperties(): List<PropertySpec> =
+        super.getEditableProperties() + listOf(
+            PropertySpec.slider("rainbowSpeed", label = "Rainbow Speed", min = 0.1f, max = 5f)
+        )
+
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
         // 1. Calculate progress based on frame
@@ -89,7 +98,7 @@ MotionSdui.registerViewSerializer(RainbowPopUpTextView::class.java) { view, json
 ---
 
 ## Summary Checklist
-1.  [ ] Define view in `motionlib`.
+1.  [ ] Define view in `motionlib` and declare editable properties via `getEditableProperties()`.
 2.  [ ] Add DSL extension in `templates`.
 3.  [ ] Register deserializer in `MotionSduiInitializer`.
 4.  [ ] Register serializer in `MotionSduiInitializer`.

@@ -27,7 +27,7 @@ androidx_test_core_version = "1.6.1"
 androidx_test_ext_junit_version = "1.3.0"
 espresso_core_version = "3.7.0"
 agpVersion = "9.3.0"
-kotlinVersion = "2.4.0"
+kotlinVersion = "2.2.0"
 pytorchAndroidTorchCisionLite = "2.1.0"
 activityVersion = "1.13.0"
 gson = "2.14.0"
@@ -131,6 +131,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinVers
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinVersion" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinVersion" }
 koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koinVersion" }
+parcelize-runtime = { module = "org.jetbrains.kotlin:kotlin-parcelize-runtime", version.ref = "kotlinVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }

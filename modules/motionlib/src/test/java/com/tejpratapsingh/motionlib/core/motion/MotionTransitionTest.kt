@@ -1,6 +1,7 @@
 package com.tejpratapsingh.motionlib.core.motion
 
 import android.graphics.Bitmap
+import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -19,6 +20,7 @@ class MotionTransitionTest {
         override var loop: Pair<Int, Int> = Pair(0, 0)
         override val effects: MutableList<MotionEffect> = mutableListOf()
         override var layoutInfo: MotionLayoutInfo = MotionLayoutInfo()
+        override val motionConfig: MotionConfig = MotionConfig()
 
         override fun addEffect(effect: MotionEffect) {
             effects.add(effect)

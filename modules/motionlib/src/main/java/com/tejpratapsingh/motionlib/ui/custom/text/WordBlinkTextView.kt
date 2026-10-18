@@ -13,7 +13,6 @@ import com.tejpratapsingh.motionlib.core.animation.Easings
 import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.ui.custom.text.abstract.AbstractMotionTextView
-import timber.log.Timber
 
 class WordBlinkTextView(
     context: Context,
@@ -50,15 +49,6 @@ class WordBlinkTextView(
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
 
-        val visibleWordCount: Int =
-            MotionInterpolator
-                .interpolateForRange(
-                    Interpolators(Easings.LINEAR),
-                    frame,
-                    Pair(startFrame, endFrame),
-                    Pair(0f, wordCount.toFloat()),
-                ).toInt()
-
         (textView as TextView).setAutoSizeTextTypeUniformWithConfiguration(
             12,
             100,
@@ -66,9 +56,23 @@ class WordBlinkTextView(
             TypedValue.COMPLEX_UNIT_SP,
         )
 
-        Timber.d("visibleWordCount: $visibleWordCount")
+        if (inferredEndFrame < endFrame && frame >= inferredEndFrame) {
+            textView.text = text
+        } else if (wordCount > 0) {
+            val progress =
+                MotionInterpolator
+                    .interpolateForRange(
+                        Interpolators(Easings.LINEAR),
+                        frame,
+                        Pair(startFrame, inferredEndFrame),
+                        Pair(0f, wordCount.toFloat()),
+                    )
+            val wordIndex = progress.toInt().coerceIn(0, wordCount - 1)
+            textView.text = wordArray[wordIndex]
+        } else {
+            textView.text = text
+        }
 
-        textView.text = wordArray[maxOf(visibleWordCount - 1, 0)]
         textView.invalidate()
 
         return this

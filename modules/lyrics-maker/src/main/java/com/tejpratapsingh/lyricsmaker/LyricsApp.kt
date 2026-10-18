@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseApp
 import com.tejpratapsingh.lyricsmaker.di.appModule
 import com.tejpratapsingh.lyricsmaker.di.lyricsDataModule
 import com.tejpratapsingh.lyricsmaker.domain.sdui.MultiLyricsContainerSdui
+import com.tejpratapsingh.motion.assetstore.di.assetStoreModule
 import com.tejpratapsingh.motion.download.di.downloadModule
 import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motion.tts.TTSAudioAssetSdui
@@ -39,7 +40,7 @@ class LyricsApp :
 
         startKoin {
             androidContext(this@LyricsApp)
-            modules(coreModule, downloadModule, lyricsDataModule, appModule, storeModule)
+            modules(coreModule, downloadModule, assetStoreModule, lyricsDataModule, appModule, storeModule)
         }
 
         FirebaseApp.initializeApp(this)
