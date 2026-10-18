@@ -16,10 +16,10 @@ class MotionDownloadWorker(
     params: WorkerParameters,
     private val controller: MotionDownloadController,
 ) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result =
-        controller.downloadProjectAssets(
-            projectId = inputData.getString(KEY_PROJECT_ID) ?: return Result.failure(),
-        )
+    override suspend fun doWork(): Result {
+        val projectId = inputData.getString(KEY_PROJECT_ID) ?: return Result.failure()
+        return controller.downloadProjectAssets(projectId = projectId)
+    }
 
     companion object {
         const val KEY_PROJECT_ID = "key_project_id"

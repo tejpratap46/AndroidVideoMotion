@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.parcelize)
     id("maven-publish")
 }
 
@@ -49,7 +48,19 @@ afterEvaluate {
     }
 }
 
+val parcelizeCompiler: Configuration = configurations.create("parcelizeCompiler")
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            parcelizeCompiler.files.map { "-Xplugin=${it.absolutePath}" }
+        )
+    }
+}
+
 dependencies {
+    parcelizeCompiler("org.jetbrains.kotlin:kotlin-parcelize-compiler:${libs.versions.kotlinVersion.get()}")
+    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:${libs.versions.kotlinVersion.get()}")
     implementation(libs.koin.android)
     implementation(project(":modules:core"))
     implementation(libs.bundles.androidx)
