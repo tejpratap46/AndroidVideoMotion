@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
+    alias(libs.plugins.paparazzi)
 }
 
 android {
@@ -101,6 +102,7 @@ dependencies {
     implementation(libs.bundles.firebase)
 
     testImplementation(libs.junit)
+    testImplementation(project(":modules:paparazzi-motion-ext"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
