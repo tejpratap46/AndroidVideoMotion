@@ -152,37 +152,43 @@ object MotionSdui {
         assetSerializers[clazz] = serializer
     }
 
-    internal fun getViewFactory(type: String): MotionViewFactory? = viewFactories[type]
+    internal fun getViewFactory(type: String): MotionViewFactory? =
+        viewFactories[type] ?: viewFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionView> getViewSerializer(clazz: Class<out T>): MotionViewSerializer<T>? =
         viewSerializers[clazz] as? MotionViewSerializer<T>
 
-    internal fun getEffectFactory(type: String): MotionEffectFactory? = effectFactories[type]
+    internal fun getEffectFactory(type: String): MotionEffectFactory? =
+        effectFactories[type] ?: effectFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionEffect> getEffectSerializer(clazz: Class<out T>): MotionEffectSerializer<T>? =
         effectSerializers[clazz] as? MotionEffectSerializer<T>
 
-    internal fun getTransitionFactory(type: String): MotionTransitionFactory? = transitionFactories[type]
+    internal fun getTransitionFactory(type: String): MotionTransitionFactory? =
+        transitionFactories[type] ?: transitionFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionTransition> getTransitionSerializer(clazz: Class<out T>): MotionTransitionSerializer<T>? =
         transitionSerializers[clazz] as? MotionTransitionSerializer<T>
 
-    internal fun getPluginFactory(type: String): MotionPluginFactory? = pluginFactories[type]
+    internal fun getPluginFactory(type: String): MotionPluginFactory? =
+        pluginFactories[type] ?: pluginFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionPlugin> getPluginSerializer(clazz: Class<out T>): MotionPluginSerializer<T>? =
         pluginSerializers[clazz] as? MotionPluginSerializer<T>
 
-    internal fun getAudioFactory(type: String): MotionAudioFactory? = audioFactories[type]
+    internal fun getAudioFactory(type: String): MotionAudioFactory? =
+        audioFactories[type] ?: audioFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionAudio> getAudioSerializer(clazz: Class<out T>): MotionAudioSerializer<T>? =
         audioSerializers[clazz] as? MotionAudioSerializer<T>
 
-    internal fun getAssetFactory(type: String): MotionAssetFactory? = assetFactories[type]
+    internal fun getAssetFactory(type: String): MotionAssetFactory? =
+        assetFactories[type] ?: assetFactories[type.substringAfterLast('.')]
 
     @Suppress("UNCHECKED_CAST")
     internal fun <T : MotionAsset> getAssetSerializer(clazz: Class<out T>): MotionAssetSerializer<T>? =

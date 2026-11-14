@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
+    alias(libs.plugins.paparazzi)
 }
 
 android {
@@ -53,14 +54,14 @@ val parcelizeCompiler: Configuration = configurations.create("parcelizeCompiler"
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         freeCompilerArgs.addAll(
-            parcelizeCompiler.files.map { "-Xplugin=${it.absolutePath}" }
+            parcelizeCompiler.files.map { "-Xplugin=${it.absolutePath}" },
         )
     }
 }
 
 dependencies {
     parcelizeCompiler("org.jetbrains.kotlin:kotlin-parcelize-compiler:${libs.versions.kotlinVersion.get()}")
-    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:${libs.versions.kotlinVersion.get()}")
+    implementation(libs.parcelize.runtime)
     implementation(libs.koin.android)
     implementation(libs.koin.workmanager)
     implementation(project(":modules:core"))
@@ -101,6 +102,7 @@ dependencies {
     implementation(libs.bundles.firebase)
 
     testImplementation(libs.junit)
+    testImplementation(project(":modules:paparazzi-motion-ext"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)

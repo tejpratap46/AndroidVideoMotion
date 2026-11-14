@@ -47,6 +47,7 @@ coilTransformationsVersion = "2.0.2"
 ketchVersion = "2.0.6"
 mmkvVersion = "2.4.1"
 koinVersion = "4.2.2"
+paparazzi = "2.0.0-alpha05.1"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
@@ -132,6 +133,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinVersion" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinVersion" }
 koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koinVersion" }
 parcelize-runtime = { module = "org.jetbrains.kotlin:kotlin-parcelize-runtime", version.ref = "kotlinVersion" }
+paparazzi-sdk = { module = "app.cash.paparazzi:paparazzi", version.ref = "paparazzi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agpVersion" }
@@ -144,6 +146,7 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesVersion" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsVersion" }
+paparazzi = { id = "app.cash.paparazzi", version.ref = "paparazzi" }
 
 [bundles]
 androidx = [
