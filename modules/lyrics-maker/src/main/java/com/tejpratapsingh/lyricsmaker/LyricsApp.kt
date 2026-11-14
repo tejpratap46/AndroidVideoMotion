@@ -14,7 +14,6 @@ import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motion.tts.TTSAudioAssetSdui
 import com.tejpratapsingh.motionlib.core.di.coreModule
 import com.tejpratapsingh.motionlib.di.motionLibModule
-import com.tejpratapsingh.motionlib.ffmpeg.di.ffmpegModule
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.di.storeModule
 import com.tejpratapsingh.motionstore.infra.DatabaseManager

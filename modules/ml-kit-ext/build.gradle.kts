@@ -66,4 +66,7 @@ dependencies {
     implementation(libs.mlkit.subject.segmentation)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation("org.mockito:mockito-core:5.11.0")
 }
