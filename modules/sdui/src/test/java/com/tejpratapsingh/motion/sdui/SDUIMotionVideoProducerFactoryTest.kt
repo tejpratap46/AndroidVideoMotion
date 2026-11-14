@@ -12,6 +12,7 @@ import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -20,6 +21,8 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 
+import com.tejpratapsingh.motionstore.infra.DeviceInfo
+
 @RunWith(RobolectricTestRunner::class)
 class SDUIMotionVideoProducerFactoryTest {
     private lateinit var mockContext: Context
@@ -27,7 +30,8 @@ class SDUIMotionVideoProducerFactoryTest {
 
     @Before
     fun setup() {
-        mockContext = mock(Context::class.java)
+        mockContext = ApplicationProvider.getApplicationContext()
+        DeviceInfo.initialize(mockContext)
         mockAdapter = mock(VideoProducerAdapter::class.java)
 
         // Register Mock implementations

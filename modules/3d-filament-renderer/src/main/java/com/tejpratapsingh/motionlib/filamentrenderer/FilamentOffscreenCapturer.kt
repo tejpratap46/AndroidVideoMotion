@@ -40,6 +40,10 @@ class FilamentOffscreenCapturer(
     private var resourceLoader: ResourceLoader? = null
     private var asset: FilamentAsset? = null
 
+    private var cachedBuf: ByteBuffer? = null
+    private var cachedPixels: IntArray? = null
+    private var cachedFlippedPixels: IntArray? = null
+
     enum class RotationAxis {
         X,
         Y,
@@ -50,6 +54,11 @@ class FilamentOffscreenCapturer(
         width: Int,
         height: Int,
     ) {
+        val pixelCount = width * height
+        cachedBuf = ByteBuffer.allocateDirect(pixelCount * 4).order(ByteOrder.nativeOrder())
+        cachedPixels = IntArray(pixelCount)
+        cachedFlippedPixels = IntArray(pixelCount)
+
         engine = Engine.create()
         renderer = engine.createRenderer()
 
@@ -224,7 +233,11 @@ class FilamentOffscreenCapturer(
             }
 
             val pixelCount = width * height
-            val buf = ByteBuffer.allocateDirect(pixelCount * 4).order(ByteOrder.nativeOrder())
+            val buf = cachedBuf ?: ByteBuffer.allocateDirect(pixelCount * 4).order(ByteOrder.nativeOrder()).also { cachedBuf = it }
+            val pixels = cachedPixels ?: IntArray(pixelCount).also { cachedPixels = it }
+            val flippedPixels = cachedFlippedPixels ?: IntArray(pixelCount).also { cachedFlippedPixels = it }
+
+            buf.clear()
             val descriptor =
                 Texture.PixelBufferDescriptor(
                     buf,
@@ -234,7 +247,6 @@ class FilamentOffscreenCapturer(
             renderer?.readPixels(0, 0, width, height, descriptor)
 
             buf.rewind()
-            val pixels = IntArray(pixelCount)
             var pi = 0
             for (y in 0 until height) {
                 for (x in 0 until width) {
@@ -246,7 +258,6 @@ class FilamentOffscreenCapturer(
                 }
             }
 
-            val flippedPixels = IntArray(pixelCount)
             for (row in 0 until height) {
                 val srcRow = height - 1 - row
                 System.arraycopy(pixels, srcRow * width, flippedPixels, row * width, width)

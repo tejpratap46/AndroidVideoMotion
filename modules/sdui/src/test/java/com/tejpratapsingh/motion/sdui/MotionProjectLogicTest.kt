@@ -2,6 +2,7 @@ package com.tejpratapsingh.motion.sdui
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.test.core.app.ApplicationProvider
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
@@ -11,20 +12,24 @@ import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionstore.infra.DeviceInfo
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import com.tejpratapsingh.motionstore.tables.SyncTracker
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class MotionProjectLogicTest {
     private lateinit var mockContext: Context
 
     @Before
     fun setup() {
-        mockContext = mock(Context::class.java)
+        mockContext = ApplicationProvider.getApplicationContext()
+        DeviceInfo.initialize(mockContext)
         // Register Logic-only Mock implementations
         MotionSdui.registerView(MockLogicView::class.java.simpleName) { _, json ->
             val startFrame = json.get("startFrame").asInt

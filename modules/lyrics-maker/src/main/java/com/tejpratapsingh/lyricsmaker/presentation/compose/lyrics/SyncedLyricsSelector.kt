@@ -234,7 +234,9 @@ fun SyncedLyricsSelector(
                     }
                 }
                 HorizontalDivider()
-                onSelectionChanged(selected)
+                LaunchedEffect(selected) {
+                    onSelectionChanged(selected)
+                }
             }
 
             if (lyrics.isEmpty()) {

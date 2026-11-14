@@ -1,22 +1,22 @@
 package com.tejpratapsingh.lyricsmaker.presentation.motion
 
 import android.content.Context
-import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.lyricsmaker.presentation.templates.LyricsTemplateRegistry
 import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
+import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.findConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
 import com.tejpratapsingh.motionlib.templates.model.TemplateData
+import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.tables.MotionProject
-import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import timber.log.Timber
 
 fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
@@ -54,16 +54,20 @@ fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
 fun getLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
+    sduiVideoProducerFactory: SDUIMotionVideoProducerFactory,
+    motionProjectDao: MotionProjectDao,
+    videoProducerAdapter: VideoProducerAdapter,
     fromSduiJson: Boolean = true,
 ): MotionVideoProducer {
     if (fromSduiJson) {
-        return SDUIMotionVideoProducerFactory(applicationContext).createFromProject(motionProject)
+        return sduiVideoProducerFactory.createFromProject(motionProject)
     }
 
     val producer =
         createLyricsVideoProducer(
             applicationContext = applicationContext,
             motionProject = motionProject,
+            videoProducerAdapter = videoProducerAdapter,
         )
 
     val views = mutableListOf<MotionView>()
@@ -85,7 +89,7 @@ fun getLyricsVideoProducer(
     motionProject.metadata.add("sdui", sdui)
 
     val updatedProject = motionProject.copy(sdui = sdui)
-    applicationContext.asLyricsApp().motionStoreDao.upsert(updatedProject)
+    motionProjectDao.upsert(updatedProject)
 
     return producer
 }
@@ -93,11 +97,13 @@ fun getLyricsVideoProducer(
 fun createLyricsVideoProducer(
     applicationContext: Context,
     motionProject: MotionProject,
+    videoProducerAdapter: VideoProducerAdapter,
     templateOverride: MotionTemplate? = null,
 ): MotionVideoProducer =
     createLyricsVideoProducerInternal(
         applicationContext = applicationContext,
         motionProject = motionProject,
+        videoProducerAdapter = videoProducerAdapter,
         templateOverride = templateOverride,
         isPreview = false,
     )
@@ -105,11 +111,13 @@ fun createLyricsVideoProducer(
 fun createLyricsVideoPreviewProducer(
     applicationContext: Context,
     motionProject: MotionProject,
+    videoProducerAdapter: VideoProducerAdapter,
     templateOverride: MotionTemplate? = null,
 ): MotionVideoProducer =
     createLyricsVideoProducerInternal(
         applicationContext = applicationContext,
         motionProject = motionProject,
+        videoProducerAdapter = videoProducerAdapter,
         templateOverride = templateOverride,
         isPreview = true,
     )
@@ -117,6 +125,7 @@ fun createLyricsVideoPreviewProducer(
 private fun createLyricsVideoProducerInternal(
     applicationContext: Context,
     motionProject: MotionProject,
+    videoProducerAdapter: VideoProducerAdapter,
     templateOverride: MotionTemplate? = null,
     isPreview: Boolean = false,
 ): MotionVideoProducer {
@@ -133,7 +142,7 @@ private fun createLyricsVideoProducerInternal(
             .with(
                 context = applicationContext,
                 motionConfig = motionConfig,
-                videoProducerAdapter = FfmpegVideoProducerAdapter(),
+                videoProducerAdapter = videoProducerAdapter,
             )
 
     val templateData = extractLyricsTemplateData(motionProject)

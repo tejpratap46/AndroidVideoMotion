@@ -6,15 +6,16 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.widget.ImageView
 import com.tejpratapsingh.lyricsmaker.R
-import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
-import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
-import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepository
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import timber.log.Timber
 
 class MultiLyricsContainer(
@@ -24,7 +25,7 @@ class MultiLyricsContainer(
     endFrame: Int,
     val asset: MotionAsset? = null,
     effects: List<MotionEffect> = emptyList(),
-) : BaseFrameMotionView(context) {
+) : BaseFrameMotionView(context), KoinComponent {
     /**
      * For backward compatibility, the image path.
      */
@@ -33,9 +34,7 @@ class MultiLyricsContainer(
     private val ivAlbumArt: ImageView
     val fakeChartView: FakeAudioChartView
 
-    private val okHttp = OkHttpProvider.httpClient
-    private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
-    private val repository = AlbumArtRepositoryImpl(remote)
+    private val repository: AlbumArtRepository by inject()
 
     init {
         super.startFrame = startFrame

@@ -5,6 +5,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.paparazzi.snapshot
 import com.tejpratapsingh.motionlib.paparazzi.snapshotFrames
@@ -29,19 +30,19 @@ class MotionTemplateScreenshotTest {
         )
 
     @Test
-    fun testMotionTemplateRenderingAndSnapshot() {
+    fun testMotionTemplateSingleFrameSnapshot() {
         val template =
-            motionTemplate("Sample Motion Template") {
+            motionTemplate("Test Motion Template") {
                 parameters {
                     string("title", defaultValue = "Default Title")
-                    string("startColor", defaultValue = "#1E3C72")
-                    string("endColor", defaultValue = "#2A5298")
+                    string("startColor", defaultValue = "#2568FF")
+                    string("endColor", defaultValue = "#BA28FF")
                 }
 
                 content {
-                    val title = data.getString("title") ?: "Title"
-                    val startColor = data.getString("startColor") ?: "#1E3C72"
-                    val endColor = data.getString("endColor") ?: "#2A5298"
+                    val title = data.getString("title") ?: "Default Title"
+                    val startColor = data.getString("startColor") ?: "#2568FF"
+                    val endColor = data.getString("startColor") ?: "#BA28FF"
 
                     gradientView(
                         startFrame = 0,
@@ -68,6 +69,7 @@ class MotionTemplateScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val templateData =
@@ -130,6 +132,7 @@ class MotionTemplateScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val templateData =
@@ -140,16 +143,16 @@ class MotionTemplateScreenshotTest {
         val scope = ContentScope(context = context, producer = producer, data = templateData)
         template.buildContent(scope)
 
-        val bitmaps =
+        val snapshots =
             paparazzi.snapshotFrames(
                 composerView = producer.motionComposerView,
-                frames = listOf(0, 25, 50),
-                namePrefix = "template_sequence",
+                frames = listOf(0, 25, 50, 75, 100),
+                namePrefix = "template_sequence_",
             )
 
-        assertEquals(3, bitmaps.size)
-        bitmaps.forEach { bitmap ->
-            assertNotNull(bitmap)
+        assertEquals(5, snapshots.size)
+        snapshots.forEach { bitmap ->
+            assertNotNull("Snapshot bitmap should not be null", bitmap)
             assertEquals(1080, bitmap.width)
             assertEquals(1920, bitmap.height)
         }

@@ -10,11 +10,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import com.tejpratapsingh.lyricsmaker.R
-import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRemoteDataSourceImpl
-import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepositoryImpl
 import com.tejpratapsingh.lyricsmaker.data.lrc.LrcHelper
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
-import com.tejpratapsingh.lyricsmaker.di.OkHttpProvider
 import com.tejpratapsingh.motionlib.core.MotionAsset
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
@@ -23,13 +20,15 @@ import com.tejpratapsingh.motionlib.core.animation.Interpolators
 import com.tejpratapsingh.motionlib.core.animation.MotionInterpolator
 import com.tejpratapsingh.motionlib.core.extensions.fetchBitmap
 import com.tejpratapsingh.motionlib.core.extensions.toBitmap
-import com.tejpratapsingh.motionlib.core.extensions.toBitmap
 import com.tejpratapsingh.motionlib.core.fontSizeH3
 import com.tejpratapsingh.motionlib.core.fontSizeH5
 import com.tejpratapsingh.motionlib.core.motion.BaseFrameMotionView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import com.tejpratapsingh.lyricsmaker.data.api.albumart.client.AlbumArtRepository
 import kotlinx.coroutines.runBlocking
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import timber.log.Timber
 
 class LyricsContainer(
@@ -40,7 +39,7 @@ class LyricsContainer(
     val lyrics: List<SyncedLyricFrame>,
     val asset: MotionAsset? = null,
     effects: List<MotionEffect> = emptyList(),
-) : BaseFrameMotionView(context) {
+) : BaseFrameMotionView(context), KoinComponent {
     /**
      * For backward compatibility, the image path.
      */
@@ -54,9 +53,7 @@ class LyricsContainer(
     private val progress: SeekBar
     private val fakeChartView: FakeAudioChartView
 
-    private val okHttp = OkHttpProvider.httpClient
-    private val remote = AlbumArtRemoteDataSourceImpl(okHttp)
-    private val repository = AlbumArtRepositoryImpl(remote)
+    private val repository: AlbumArtRepository by inject()
 
     init {
         super.startFrame = startFrame

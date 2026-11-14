@@ -21,7 +21,16 @@ object ThumbnailCache {
         key: String,
         bitmap: Bitmap,
     ) {
-        cache.put(key, bitmap)
+        val scaled =
+            if (bitmap.width > 300 || bitmap.height > 300) {
+                val scale = 300f / maxOf(bitmap.width, bitmap.height)
+                val newW = (bitmap.width * scale).toInt().coerceAtLeast(1)
+                val newH = (bitmap.height * scale).toInt().coerceAtLeast(1)
+                Bitmap.createScaledBitmap(bitmap, newW, newH, true)
+            } else {
+                bitmap
+            }
+        cache.put(key, scaled)
     }
 
     fun remove(key: String) {

@@ -57,6 +57,8 @@ import com.tejpratapsingh.motionstore.tables.SyncTracker
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
+import org.koin.java.KoinJavaComponent.inject
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("ktlint:standard:function-naming")
@@ -69,12 +71,12 @@ fun MotionEditorScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val producerFactory: SDUIMotionVideoProducerFactory by inject(SDUIMotionVideoProducerFactory::class.java)
 
     var draftProject by remember(project) { mutableStateOf(project) }
 
-    val producerFactory = remember { SDUIMotionVideoProducerFactory(context) }
     val motionVideoProducer =
-        remember(draftProject) {
+        remember(draftProject, producerFactory) {
             producerFactory.createFromProject(draftProject)
         }
     val timelineTracks =

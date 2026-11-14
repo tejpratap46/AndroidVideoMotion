@@ -66,6 +66,7 @@ class VideoFrameHandler private constructor(
     private var player: ExoPlayer? = null
     private var imageReader: ImageReader? = null
     private var outputSurface: Surface? = null
+    @Volatile private var frameRetriever: MediaMetadataRetriever? = null
 
     /** Video metadata resolved on [prepare]. */
     private var _durationMs: Long = 0L
@@ -270,18 +271,34 @@ class VideoFrameHandler private constructor(
      * The returned bitmap is in [android.graphics.Bitmap.Config.ARGB_8888].
      * Caller is responsible for recycling it.
      */
+    private fun getFrameRetriever(): MediaMetadataRetriever {
+        val existing = frameRetriever
+        if (existing != null) return existing
+        return synchronized(this) {
+            frameRetriever ?: MediaMetadataRetriever().apply {
+                setDataSource(context, uri)
+                frameRetriever = this
+            }
+        }
+    }
+
+    /**
+     * Returns a [android.graphics.Bitmap] of the frame at the current seek position.
+     *
+     * Uses [MediaMetadataRetriever] with [MediaMetadataRetriever.OPTION_CLOSEST]
+     * for pixel-accurate extraction, independent of the render surface.
+     *
+     * The returned bitmap is in [android.graphics.Bitmap.Config.ARGB_8888].
+     * Caller is responsible for recycling it.
+     */
     suspend fun currentFrameBitmap(): Bitmap? =
         withContext(Dispatchers.IO) {
             val positionUs = currentPositionMs * 1_000L
-            val retriever = MediaMetadataRetriever()
             try {
-                retriever.setDataSource(context, uri)
-                retriever.getFrameAtTime(positionUs, MediaMetadataRetriever.OPTION_CLOSEST)
+                getFrameRetriever().getFrameAtTime(positionUs, MediaMetadataRetriever.OPTION_CLOSEST)
             } catch (e: Exception) {
                 Timber.Forest.e(e, "Frame extraction failed at ${currentPositionMs}ms")
                 null
-            } finally {
-                retriever.release()
             }
         }
 
@@ -385,6 +402,10 @@ class VideoFrameHandler private constructor(
         outputSurface = null
         imageReader?.close()
         imageReader = null
+        try {
+            frameRetriever?.release()
+        } catch (_: Exception) {}
+        frameRetriever = null
         scope.cancel()
         Timber.Forest.d("Released")
     }

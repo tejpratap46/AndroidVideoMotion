@@ -50,8 +50,8 @@ object DeviceInfo {
         }
     }
 
-    /** Called exclusively by [DeviceInfoInitializer]. Not part of the public API. */
-    internal fun initialize(context: Context) {
+    /** Called by [DeviceInfoInitializer] or test setups. */
+    fun initialize(context: Context) {
         prefs =
             context.applicationContext
                 .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)

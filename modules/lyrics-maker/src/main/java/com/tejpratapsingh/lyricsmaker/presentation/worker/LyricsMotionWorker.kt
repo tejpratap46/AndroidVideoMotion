@@ -20,12 +20,11 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.tejpratapsingh.lyricsmaker.R
-import com.tejpratapsingh.lyricsmaker.asLyricsApp
 import com.tejpratapsingh.lyricsmaker.presentation.notification.NotificationFactory
 import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
-import com.tejpratapsingh.motionlib.ffmpeg.FfmpegVideoProducerAdapter
 import com.tejpratapsingh.motionlib.worker.MotionWorker
+import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,6 +37,8 @@ import java.util.UUID
 class LyricsMotionWorker(
     private val appContext: Context,
     parameters: WorkerParameters,
+    private val motionProjectDao: MotionProjectDao,
+    private val sduiFactory: SDUIMotionVideoProducerFactory,
 ) : MotionWorker(appContext, parameters) {
     private val notificationManager = NotificationManagerCompat.from(appContext)
 
@@ -82,18 +83,14 @@ class LyricsMotionWorker(
     override suspend fun getOutputFile(): File =
         withContext(Dispatchers.Unconfined) {
             val projectId = inputData.getString(PROJECT_ID)!!
-            val motionProject =
-                applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
+            val motionProject = motionProjectDao.findById(projectId)!!
             applicationContext.createProjectFile(motionProject)
         }
 
     override fun getMotionVideo(inputData: Data): MotionVideoProducer {
         val projectId = inputData.getString(PROJECT_ID)!!
-        val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
-        return SDUIMotionVideoProducerFactory(
-            context = appContext,
-            videoProducerAdapter = FfmpegVideoProducerAdapter(),
-        ).createFromProject(motionProject)
+        val motionProject = motionProjectDao.findById(projectId)!!
+        return sduiFactory.createFromProject(motionProject)
     }
 
     override suspend fun onProgress(
@@ -138,9 +135,9 @@ class LyricsMotionWorker(
         Timber.d("onCompleted: Video saved to ${videoFile.absolutePath}")
 
         val projectId = inputData.getString(PROJECT_ID)!!
-        val motionProject = applicationContext.asLyricsApp().motionStoreDao.findById(projectId)!!
+        val motionProject = motionProjectDao.findById(projectId)!!
         Timber.i("onCompleted: $motionProject")
-        applicationContext.asLyricsApp().motionStoreDao.upsert(motionProject)
+        motionProjectDao.upsert(motionProject)
 
         // Cancel the progress notification
         notificationManager.cancel(progressNotificationId)

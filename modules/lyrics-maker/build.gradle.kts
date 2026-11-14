@@ -68,6 +68,7 @@ dependencies {
     parcelizeCompiler("org.jetbrains.kotlin:kotlin-parcelize-compiler:${libs.versions.kotlinVersion.get()}")
     implementation(libs.parcelize.runtime)
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
     implementation(libs.koin.workmanager)
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-video-editor"))

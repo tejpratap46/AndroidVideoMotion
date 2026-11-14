@@ -49,14 +49,18 @@ import com.tejpratapsingh.lyricsmaker.presentation.compose.details.compact.Proje
 import com.tejpratapsingh.lyricsmaker.presentation.compose.details.expanded.ProjectDetailsExpanded
 import com.tejpratapsingh.lyricsmaker.presentation.motion.getLyricsVideoProducer
 import com.tejpratapsingh.lyricsmaker.presentation.worker.LyricsMotionWorker
+import com.tejpratapsingh.motion.sdui.infra.SDUIMotionVideoProducerFactory
 import com.tejpratapsingh.motion.sdui.infra.getMotionConfig
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.video.MotionVideoPlayerCompose
 import com.tejpratapsingh.motionlib.worker.MotionWorker
 import com.tejpratapsingh.motionstore.extensions.createProjectFile
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
+import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.inject
 
 @Composable
 @Suppress("ktlint:standard:function-naming")
@@ -70,10 +74,21 @@ fun ProjectDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val sduiVideoProducerFactory: SDUIMotionVideoProducerFactory by inject(SDUIMotionVideoProducerFactory::class.java)
+    val motionProjectDao: MotionProjectDao by inject(MotionProjectDao::class.java)
+    val videoProducerAdapter: VideoProducerAdapter by inject(VideoProducerAdapter::class.java)
+
     val motionVideoProducer by produceState<MotionVideoProducer?>(initialValue = null, project) {
         value =
             withContext(Dispatchers.IO) {
-                getLyricsVideoProducer(context, project, fromSduiJson = true)
+                getLyricsVideoProducer(
+                    applicationContext = context,
+                    motionProject = project,
+                    sduiVideoProducerFactory = sduiVideoProducerFactory,
+                    motionProjectDao = motionProjectDao,
+                    videoProducerAdapter = videoProducerAdapter,
+                    fromSduiJson = true,
+                )
             }
     }
 

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import com.tejpratapsingh.motion.sdui.infra.createMotionSDUIJson
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.templates.model.MotionTemplate
@@ -20,6 +21,7 @@ object MotionTemplateSDUIProvider {
      * @param context [Context] to use for building template.
      * @param template [MotionTemplate] to generate SDUI from.
      * @param data [TemplateData] to apply to template.
+     * @param videoProducerAdapter [VideoProducerAdapter] to use for rendering.
      * @param config [MotionConfig] to use for template. If null, current config will be used.
      * @return [JsonObject] representing SDUI.
      */
@@ -27,6 +29,7 @@ object MotionTemplateSDUIProvider {
         context: Context,
         template: MotionTemplate,
         data: TemplateData,
+        videoProducerAdapter: VideoProducerAdapter,
         config: MotionConfig? = null,
     ): JsonObject {
         val motionConfig = config ?: MotionConfig()
@@ -35,6 +38,7 @@ object MotionTemplateSDUIProvider {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = videoProducerAdapter,
             )
 
         val contentScope =

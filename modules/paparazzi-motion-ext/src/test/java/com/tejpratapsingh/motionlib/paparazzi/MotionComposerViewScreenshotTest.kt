@@ -4,6 +4,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.Orientation
@@ -31,6 +32,7 @@ class MotionComposerViewScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val gradientView =
@@ -60,6 +62,7 @@ class MotionComposerViewScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val gradientView =
@@ -90,6 +93,7 @@ class MotionComposerViewScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val gradientView =
@@ -98,16 +102,15 @@ class MotionComposerViewScreenshotTest {
                 startFrame = 0,
                 endFrame = 60,
                 orientation = Orientation.VERTICAL,
-                colors = intArrayOf(0xFF123456.toInt(), 0xFF654321.toInt()),
+                colors = intArrayOf(0xFF888888.toInt(), 0xFF333333.toInt()),
             )
         producer.addMotionViewToSequence(gradientView)
 
         paparazzi.snapshot(
             composerView = producer.motionComposerView,
-            frame = 15,
+            frame = 30,
             widthPx = customWidthPx,
             heightPx = customHeightPx,
-            name = "custom_px_frame_15",
         )
     }
 }

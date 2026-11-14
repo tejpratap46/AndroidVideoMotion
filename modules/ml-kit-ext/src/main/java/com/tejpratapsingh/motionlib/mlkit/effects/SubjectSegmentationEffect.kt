@@ -9,7 +9,6 @@ import android.graphics.Shader
 import android.os.Build
 import android.view.View
 import androidx.core.graphics.createBitmap
-import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
@@ -36,6 +35,7 @@ class SubjectSegmentationEffect(
     private val segmenter = SubjectSegmentation.getClient(options)
 
     private val maskCache = mutableMapOf<Int, Bitmap>()
+    private val pendingFrames = mutableSetOf<Int>()
 
     @Suppress("ktlint:standard:property-naming")
     private val MASK_SHADER =
@@ -65,26 +65,27 @@ class SubjectSegmentationEffect(
             return motionView
         }
 
-        val maskBitmap =
-            maskCache[frame] ?: run {
-                val bitmap = motionView.getViewBitmap()
-                val image = InputImage.fromBitmap(bitmap, 0)
-                try {
-                    // This is synchronous and can be slow.
-                    // Ideally, this should be pre-processed or run on a background thread.
-                    val result = Tasks.await(segmenter.process(image))
-                    val mask = result.foregroundConfidenceMask // This is a FloatBuffer
+        val maskBitmap = maskCache[frame]
+        if (maskBitmap == null && !pendingFrames.contains(frame)) {
+            pendingFrames.add(frame)
+            val bitmap = motionView.getViewBitmap()
+            val image = InputImage.fromBitmap(bitmap, 0)
+            segmenter
+                .process(image)
+                .addOnSuccessListener { result ->
+                    val mask = result.foregroundConfidenceMask
                     if (mask != null) {
                         val createdMask = createBitmapFromMask(mask, bitmap.width, bitmap.height)
                         maskCache[frame] = createdMask
-                        createdMask
-                    } else {
-                        null
+                        view.postInvalidate()
                     }
-                } catch (_: Exception) {
-                    null
+                    pendingFrames.remove(frame)
+                    bitmap.recycle()
+                }.addOnFailureListener {
+                    pendingFrames.remove(frame)
+                    bitmap.recycle()
                 }
-            }
+        }
 
         if (maskBitmap != null) {
             val shader = RuntimeShader(MASK_SHADER)

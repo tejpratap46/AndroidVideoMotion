@@ -5,6 +5,7 @@ import app.cash.paparazzi.Paparazzi
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.paparazzi.snapshot
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
@@ -50,7 +51,12 @@ class LyricsTemplateScreenshotTest {
     ) {
         val context = paparazzi.context
         val motionConfig = MotionConfig(aspectRatio = VideoAspectRatio.Ratio9x16_1080)
-        val producer = MotionVideoProducer.with(context = context, motionConfig = motionConfig)
+        val producer =
+            MotionVideoProducer.with(
+                context = context,
+                motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
+            )
         val scope = ContentScope(context = context, producer = producer, data = templateData)
 
         template.buildContent(scope)

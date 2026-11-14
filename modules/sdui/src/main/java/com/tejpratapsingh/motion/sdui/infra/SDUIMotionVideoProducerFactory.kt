@@ -6,7 +6,6 @@ import com.google.gson.JsonObject
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
-import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionstore.tables.MotionProject
 import timber.log.Timber
@@ -16,7 +15,7 @@ import timber.log.Timber
  */
 class SDUIMotionVideoProducerFactory(
     private val context: Context,
-    private val videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
+    private val videoProducerAdapter: VideoProducerAdapter,
 ) {
     /**
      * Create [MotionVideoProducer] from [MotionProject].
