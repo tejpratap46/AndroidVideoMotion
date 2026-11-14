@@ -14,9 +14,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class LyricsTemplateScreenshotTest {
-
     @get:Rule
     val paparazzi =
         Paparazzi(

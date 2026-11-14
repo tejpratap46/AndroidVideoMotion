@@ -54,14 +54,14 @@ val parcelizeCompiler: Configuration = configurations.create("parcelizeCompiler"
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         freeCompilerArgs.addAll(
-            parcelizeCompiler.files.map { "-Xplugin=${it.absolutePath}" }
+            parcelizeCompiler.files.map { "-Xplugin=${it.absolutePath}" },
         )
     }
 }
 
 dependencies {
     parcelizeCompiler("org.jetbrains.kotlin:kotlin-parcelize-compiler:${libs.versions.kotlinVersion.get()}")
-    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:${libs.versions.kotlinVersion.get()}")
+    implementation(libs.parcelize.runtime)
     implementation(libs.koin.android)
     implementation(libs.koin.workmanager)
     implementation(project(":modules:core"))
