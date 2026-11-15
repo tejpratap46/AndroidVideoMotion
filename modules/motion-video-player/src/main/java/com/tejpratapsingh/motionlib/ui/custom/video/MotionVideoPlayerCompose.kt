@@ -83,7 +83,12 @@ fun MotionVideoPlayerCompose(
     // Update preview when effectiveCurrentFrame changes
     LaunchedEffect(motionVideoProducer, effectiveCurrentFrame, refreshKey) {
         motionVideoProducer.motionComposerView.forFrame(effectiveCurrentFrame)
-        previewBitmap = motionVideoProducer.motionComposerView.getViewBitmap()
+        val oldBitmap = previewBitmap
+        val newBitmap = motionVideoProducer.motionComposerView.getViewBitmap()
+        previewBitmap = newBitmap
+        if (oldBitmap != null && oldBitmap != newBitmap && !oldBitmap.isRecycled) {
+            oldBitmap.recycle()
+        }
     }
 
     // Playback loop
@@ -168,6 +173,10 @@ fun MotionVideoPlayerCompose(
                 it.release()
             }
             activePlayers.clear()
+            previewBitmap?.let {
+                if (!it.isRecycled) it.recycle()
+            }
+            previewBitmap = null
         }
     }
 

@@ -1,4 +1,5 @@
-pluginManagement { // <--- Add this block
+pluginManagement {
+    // <--- Add this block
     repositories {
         google()
         mavenCentral()
@@ -41,6 +42,5 @@ include(":modules:paparazzi-motion-ext")
 
 if (System.getenv("JITPACK") == null) {
     include(":modules:app")
-    include(":modules:ivi-demo")
-    include(":modules:lyrics-maker")  
+    include(":modules:lyrics-maker")
 }

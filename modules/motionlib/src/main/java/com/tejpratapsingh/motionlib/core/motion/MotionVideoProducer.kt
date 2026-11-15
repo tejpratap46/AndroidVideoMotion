@@ -9,7 +9,6 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.MotionTransition
 import com.tejpratapsingh.motionlib.core.MotionView
 import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
-import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,9 +30,9 @@ open class MotionVideoProducer private constructor(
         fun with(
             context: Context,
             motionConfig: MotionConfig,
+            videoProducerAdapter: VideoProducerAdapter,
             plugins: List<MotionPlugin> = emptyList(),
             motionAudio: List<MotionAudio> = emptyList(),
-            videoProducerAdapter: VideoProducerAdapter = AndroidVideoProducerAdapter(),
         ) = MotionVideoProducer(
             context = context,
             videoProducerAdapter = videoProducerAdapter,

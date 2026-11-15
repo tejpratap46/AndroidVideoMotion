@@ -3,6 +3,7 @@ package com.tejpratapsingh.motionlib.templates.sdui
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.templates.dsl.motionTemplate
 import com.tejpratapsingh.motionlib.templates.extensions.popUpTextView
 import com.tejpratapsingh.motionlib.templates.model.TemplateData
@@ -47,6 +48,7 @@ class MotionTemplateSDUIProviderTest {
                 context = appContext,
                 template = template,
                 data = data,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         assertNotNull(sdui)

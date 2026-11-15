@@ -27,6 +27,9 @@ import com.tejpratapsingh.motionstore.tables.MotionProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
+import org.koin.java.KoinJavaComponent.inject
+
 @Composable
 @Suppress("ktlint:standard:function-naming")
 internal fun TemplatePreviewItem(
@@ -35,12 +38,18 @@ internal fun TemplatePreviewItem(
     isActive: Boolean,
 ) {
     val context = LocalContext.current
+    val videoProducerAdapter: VideoProducerAdapter by inject(VideoProducerAdapter::class.java)
 
     val motionVideoProducer by
         produceState<MotionVideoProducer?>(initialValue = null, project.id, template.name) {
             value =
                 withContext(Dispatchers.Default) {
-                    createLyricsVideoPreviewProducer(context, project, template)
+                    createLyricsVideoPreviewProducer(
+                        applicationContext = context,
+                        motionProject = project,
+                        videoProducerAdapter = videoProducerAdapter,
+                        templateOverride = template,
+                    )
                 }
         }
 

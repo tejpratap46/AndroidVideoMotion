@@ -12,6 +12,8 @@ import com.tejpratapsingh.motionlib.templates.extensions.videoFrameView
 import com.tejpratapsingh.motionlib.templates.model.TemplateData
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import com.tejpratapsingh.motionlib.core.MotionConfig
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -29,7 +31,12 @@ class MotionTemplateInstrumentationTest {
         val appContext: Context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // We need a real MotionVideoProducer for the content block to execute addView/audio calls
-        val producer = MotionVideoProducer.with(appContext)
+        val producer =
+            MotionVideoProducer.with(
+                context = appContext,
+                motionConfig = MotionConfig(),
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
+            )
 
         val lyricsVideoTemplate =
             motionTemplate("Lyrics Master") {

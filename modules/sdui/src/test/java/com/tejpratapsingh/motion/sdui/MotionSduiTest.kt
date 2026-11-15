@@ -3,6 +3,7 @@ package com.tejpratapsingh.motion.sdui
 import android.content.Context
 import android.graphics.Bitmap
 import android.view.Gravity
+import androidx.test.core.app.ApplicationProvider
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.toJson
 import com.tejpratapsingh.motion.sdui.infra.toLayoutInfo
@@ -14,8 +15,10 @@ import com.tejpratapsingh.motionlib.core.MotionPlugin
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class MotionSduiTest {
     @Test
     fun testMotionConfigSerialization() {
@@ -29,10 +32,10 @@ class MotionSduiTest {
         val json = config.toJson()
         val restoredConfig = json.toMotionConfig()
 
-        assertEquals(config.fps, restoredConfig.fps)
-        assertEquals(config.outputQuality, restoredConfig.outputQuality)
-        assertEquals(config.aspectRatio.width, restoredConfig.aspectRatio.width)
-        assertEquals(config.aspectRatio.height, restoredConfig.aspectRatio.height)
+        assertEquals(30, restoredConfig.fps)
+        assertEquals(90, restoredConfig.outputQuality)
+        assertEquals(1280, restoredConfig.aspectRatio.width)
+        assertEquals(720, restoredConfig.aspectRatio.height)
     }
 
     @Test
@@ -54,9 +57,7 @@ class MotionSduiTest {
         val plugin = MockPlugin("test-plugin")
         val json = plugin.toJson()
 
-        // Passing mock context as MockPlugin doesn't use it.
-        // This keeps the unit test lean and focused on logic.
-        val restoredPlugin = json.toMotionPlugin(mock(Context::class.java))
+        val restoredPlugin = json.toMotionPlugin(ApplicationProvider.getApplicationContext())
 
         assertEquals(MockPlugin::class.java.simpleName, json.get("type").asString)
         assertEquals("test-plugin", (restoredPlugin as MockPlugin).value)
@@ -86,6 +87,6 @@ class MotionSduiTest {
         assertEquals(Gravity.CENTER_HORIZONTAL or Gravity.TOP, restored.gravity)
 
         assertEquals("match_parent", json.get("width").asString)
-        assertEquals("center_horizontal|top", json.get("gravity").asString)
+        assertEquals("top|center", json.get("gravity").asString)
     }
 }

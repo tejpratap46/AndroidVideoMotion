@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaExtractor
@@ -19,7 +20,7 @@ import java.nio.ByteBuffer
 
 class AndroidVideoGenerator {
     companion object {
-        private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_MPEG4 // H.264
+        private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_AVC // H.264
         private const val I_FRAME_INTERVAL = 5 // Keyframe interval in seconds
         private const val TIMEOUT_USEC = 10000L // Timeout for MediaCodec operations
     }
@@ -61,36 +62,56 @@ class AndroidVideoGenerator {
         motionConfig: MotionConfig,
         bitmaps: List<Bitmap> = emptyList(),
         inputDir: File? = null,
+        totalFrames: Int? = null,
+        frameRenderer: ((Canvas, Int) -> Unit)? = null,
         outputFile: File,
         motionAudio: List<MotionAudio> = emptyList(),
     ) {
-        if (bitmaps.isEmpty() && inputDir == null) {
-            Timber.w("No bitmaps provided. Cannot generate video.")
+        val totalFrameCount = totalFrames ?: getBitmapCount(bitmaps, inputDir)
+        if (totalFrameCount == 0 && frameRenderer == null) {
+            Timber.w("No bitmaps or frame renderer provided. Cannot generate video.")
             return
         }
 
         var mediaCodec: MediaCodec? = null
         var mediaMuxer: MediaMuxer? = null
+        var inputSurface: android.view.Surface? = null
         var presentationTimeUs = 0L
         var muxerStarted = false
 
+        // Ensure video dimensions are even numbers aligned for H.264 MediaCodec hardware encoding
+        val videoWidth = (motionConfig.aspectRatio.width and 1.inv()).coerceAtLeast(16)
+        val videoHeight = (motionConfig.aspectRatio.height and 1.inv()).coerceAtLeast(16)
+
         try {
             val format =
-                MediaFormat.createVideoFormat(MIME_TYPE, motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
+                MediaFormat.createVideoFormat(MIME_TYPE, videoWidth, videoHeight)
             format.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
             )
             format.setInteger(
                 MediaFormat.KEY_BIT_RATE,
-                calculateBitRate(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height, motionConfig.fps),
+                calculateBitRate(videoWidth, videoHeight, motionConfig.fps),
             )
             format.setInteger(MediaFormat.KEY_FRAME_RATE, motionConfig.fps)
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
 
             mediaCodec = MediaCodec.createEncoderByType(MIME_TYPE)
-            mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            val inputSurface = mediaCodec.createInputSurface()
+            try {
+                mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            } catch (e: IllegalArgumentException) {
+                Timber.e(
+                    e,
+                    "Failed to configure MediaCodec with format: $format (width=$videoWidth, height=$videoHeight, mime=$MIME_TYPE, fps=${motionConfig.fps})",
+                )
+                throw IllegalArgumentException(
+                    "Failed to configure MediaCodec encoder ($MIME_TYPE ${videoWidth}x${videoHeight}): ${e.message}",
+                    e,
+                )
+            }
+            val activeSurface = mediaCodec.createInputSurface()
+            inputSurface = activeSurface
             mediaCodec.start()
 
             // Collect audio track formats beforehand (use original formats; no re-encode here)
@@ -117,18 +138,27 @@ class AndroidVideoGenerator {
             val bufferInfo = MediaCodec.BufferInfo()
 
             // Encode frames
-            for (i in 0 until getBitmapCount(bitmaps, inputDir)) {
-                val canvas = inputSurface.lockCanvas(null)
-                val bitmap = getBitmap(bitmaps, inputDir, i) ?: continue
-
+            for (i in 0 until totalFrameCount) {
+                val canvas = activeSurface.lockCanvas(null)
                 try {
-                    val scaledBitmap = bitmap.scale(motionConfig.aspectRatio.width, motionConfig.aspectRatio.height)
-                    canvas.drawBitmap(scaledBitmap, 0f, 0f, null)
-                    if (scaledBitmap != bitmap) {
-                        scaledBitmap.recycle()
+                    if (frameRenderer != null) {
+                        frameRenderer(canvas, i)
+                    } else {
+                        val bitmap = getBitmap(bitmaps, inputDir, i)
+                        if (bitmap != null) {
+                            if (bitmap.width == videoWidth && bitmap.height == videoHeight) {
+                                canvas.drawBitmap(bitmap, 0f, 0f, null)
+                            } else {
+                                val scaledBitmap = bitmap.scale(videoWidth, videoHeight)
+                                canvas.drawBitmap(scaledBitmap, 0f, 0f, null)
+                                if (scaledBitmap != bitmap) {
+                                    scaledBitmap.recycle()
+                                }
+                            }
+                        }
                     }
                 } finally {
-                    inputSurface.unlockCanvasAndPost(canvas)
+                    activeSurface.unlockCanvasAndPost(canvas)
                 }
 
                 // Drain available encoder output so we can catch INFO_OUTPUT_FORMAT_CHANGED early
@@ -219,6 +249,11 @@ class AndroidVideoGenerator {
             }
             throw e
         } finally {
+            try {
+                inputSurface?.release()
+            } catch (e: Exception) {
+                Timber.e(e, "Error releasing inputSurface")
+            }
             try {
                 mediaCodec?.stop()
                 mediaCodec?.release()
@@ -375,7 +410,10 @@ class AndroidVideoGenerator {
         width: Int,
         height: Int,
         frameRate: Int,
-    ): Int = (width * height * frameRate * 0.25).toInt()
+    ): Int {
+        val rawBitRate = (width.toLong() * height.toLong() * frameRate.toLong() * 0.25).toLong()
+        return rawBitRate.coerceIn(1_000_000L, 50_000_000L).toInt()
+    }
 
     private fun getBitmapCount(
         bitmaps: List<Bitmap> = mutableListOf(),

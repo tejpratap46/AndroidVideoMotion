@@ -18,7 +18,6 @@
             <option value="$PROJECT_DIR$/modules/core" />
             <option value="$PROJECT_DIR$/modules/ffmpeg-kit" />
             <option value="$PROJECT_DIR$/modules/ffmpeg-motion-ext" />
-            <option value="$PROJECT_DIR$/modules/ivi-demo" />
             <option value="$PROJECT_DIR$/modules/jcodec-motion-ext" />
             <option value="$PROJECT_DIR$/modules/lyrics-maker" />
             <option value="$PROJECT_DIR$/modules/media3-motion-ext" />

@@ -1,93 +1,565 @@
 ---
 name: generate_sdui_video_json
-description: Generates valid SDUI JSON for the video rendering engine based on MotionView, MotionEffect, and MotionTransition.
+description: Generates valid SDUI JSON for the video rendering engine based on MotionView, MotionEffect, MotionTransition, MotionAudio, and MotionAsset from the SDUI module.
 ---
 
 # Generate SDUI Video JSON
 
-This skill provides a comprehensive reference for generating valid SDUI JSON for the video rendering engine. The engine uses a frame-based timeline where all timings are defined in frames relative to the global FPS.
+This skill provides the comprehensive reference and schema instructions for generating valid Server-Driven UI (SDUI) JSON to produce video projects using the `modules/sdui` engine.
 
-## 1. Root Structure
+The rendering engine operates on a **frame-based timeline**, where all durations, delays, and animation keyframes are specified in integer frames relative to the global project frame rate (`fps`). For example, at 30 FPS, 30 frames represent 1 second of video.
 
-The root object defines the entire video project.
+---
+
+## 1. Root Project Structure
+
+The root JSON object defines the configuration, audio tracks, rendering plugins, and visual components of the video.
 
 ```json
 {
   "config": {
-    "aspectRatio": { "width": 1080, "height": 1920 },
+    "aspectRatio": {
+      "width": 1080,
+      "height": 1920,
+      "label": "9:16 Full HD"
+    },
     "fps": 30,
     "outputQuality": 100
   },
   "audios": [],
   "plugins": [],
-  "views": []
+  "views": [],
+  "sequence": []
 }
 ```
 
-- **`config`**: (Optional) Global settings.
-- **`audios`**: (Optional) List of background audio tracks.
-- **`plugins`**: (Optional) Global rendering plugins (e.g., `SubjectSegmentationPlugin`).
-- **`views`**: (Optional) Parallel layers of views. Higher index = higher Z-order (rendered on top).
+### Top-Level Fields
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| **`config`** | `Object` | No | Global rendering configuration (resolution, FPS, quality). Defaults to 24 FPS, 100 quality. |
+| **`views`** | `Array<MotionView>` | Conditional | Parallel composition layer mode: all views run concurrently according to their frame ranges. Rendered in array order (higher index = higher Z-order, rendered on top). |
+| **`sequence`** | `Array<MotionView \| MotionTransition>` | Conditional | Sequential composition mode: views and transitions play sequentially in the timeline. |
+| **`audios`** | `Array<MotionAudio>` | No | Background music tracks, voiceovers, and sound effects. |
+| **`plugins`** | `Array<MotionPlugin>` | No | Global canvas-level video filters or AI segmenters applied across frames. |
+
+> [!NOTE]
+> If `"sequence"` is provided, the producer processes elements sequentially, applying `MotionTransition` between sequential views. If `"sequence"` is omitted, the engine uses the `"views"` list as parallel overlay layers.
 
 ---
 
-## 2. MotionAsset
+## 2. Video Configuration (`config`)
 
-Assets are polymorphic resources used by views and audio components.
+The `config` object specifies video dimensions, frame rate, and output encoding quality.
 
-| Type | URI Protocol | Description |
-| :--- | :--- | :--- |
-| `SimpleMotionAsset` | `http(s)://`, `file://` | Generic file reference. |
-| `ImageAsset` | `http(s)://`, `file://` | Specifically for images. |
-| `VideoAsset` | `http(s)://`, `file://` | Specifically for video files. |
-| `FontAsset` | `http(s)://`, `file://` | Custom web fonts (requires `fontName`). |
-| `TTSAudioAsset` | `content://tts_...` | Text-to-Speech audio (metadata contains `text`). |
-
----
-
-## 3. MotionView
-
-### 3.1 Text Views
-All text views support `textSizeVariant` (H1-H6, P) and `fontAsset`.
-
-| Type | Specific Parameters | JSON Sample |
-| :--- | :--- | :--- |
-| `TransparentTextView` | `text`, `textColor` | `{"type": "TransparentTextView", "text": "Hello"}` |
-| `SyncedLyricsMotionTextView` | `lyrics` (Array) | `{"type": "SyncedLyricsMotionTextView", "lyrics": [{"frame": 0, "text": "Lyric Line"}]}` |
-| `TypeWriterTextView` | `writingSpeed` | `{"type": "TypeWriterTextView", "text": "Typing...", "writingSpeed": 0.1}` |
-| `PopUpTextView` | `maxTranslationY` | `{"type": "PopUpTextView", "text": "Pop!", "maxTranslationY": 50.0}` |
-| `WordVibrateMotionTextView` | `amplitude`, `frequency` | `{"type": "WordVibrateMotionTextView", "text": "Vibrating", "amplitude": 5.0, "frequency": 0.5}` |
-
-### 3.2 Media & Backgrounds
-| Type | Specific Parameters | JSON Sample |
-| :--- | :--- | :--- |
-| `MotionImageView` | `asset` | `{"type": "MotionImageView", "asset": {"type": "ImageAsset", "uri": "..."}}` |
-| `VideoFrameView` | `asset` | `{"type": "VideoFrameView", "asset": {"type": "VideoAsset", "uri": "..."}}` |
-| `GradientView` | `colors` (Hex Array) | `{"type": "GradientView", "colors": ["#FF0000", "#0000FF"]}` |
-| `TranslucentMotionView` | `color`, `alpha` | `{"type": "TranslucentMotionView", "color": "#000000", "alpha": 0.5}` |
-
-### 3.3 UI Components
-| Type | Description | JSON Sample |
-| :--- | :--- | :--- |
-| `MotionProgressBar` | Animated video progress indicator. | `{"type": "MotionProgressBar", "startFrame": 0, "endFrame": 300}` |
-| `CircularAudioWaveformView`| Circular music visualizer. | `{"type": "CircularAudioWaveformView", "amplitudes": [0.1, 0.5, 0.3]}` |
-
-### 3.4 Container Views
-Manage nested views using percentage-based sizing.
-
-| Type | Specific Parameters | JSON Sample |
-| :--- | :--- | :--- |
-| `VerticalStackMotionView` | `sections` (Array) | See below. |
-| `HorizontalStackMotionView` | `sections` (Array) | See below. |
-
-**`StackSection` Structure:**
-- `percentage`: Float (0-100) share of the container's height (Vertical) or width (Horizontal).
-- `view`: A nested `MotionView` object.
-
-**Example: Side-by-Side (Horizontal Stack)**
 ```json
 {
-  "type": "HorizontalStackMotionView",
+  "aspectRatio": {
+    "width": 1080,
+    "height": 1920
+  },
+  "fps": 30,
+  "outputQuality": 100
+}
+```
+
+### Predefined Aspect Ratios
+
+The engine recognizes predefined aspect ratio dimensions:
+
+| Aspect Ratio | Preset Dimensions (`width` x `height`) | Common Use Case |
+| :--- | :--- | :--- |
+| **9:16 (Portrait)** | `1080 x 1920` (Full HD), `720 x 1280` (HD), `480 x 854` (SD) | TikTok, Instagram Reels, YouTube Shorts |
+| **16:9 (Landscape)** | `1920 x 1080` (Full HD), `1280 x 720` (HD), `2560 x 1440` (2K), `3840 x 2160` (4K) | Standard YouTube, TV, Desktop |
+| **1:1 (Square)** | `1080 x 1080` (Full HD), `720 x 720` (HD), `480 x 480` (SD) | Instagram Feed, Square ads |
+| **4:3 (Classic)** | `960 x 720` (HD), `768 x 576` (PAL SD), `640 x 480` (SD) | Retro / Classic TV formats |
+| **21:9 (Cinema)** | `2520 x 1080` (Full HD), `5120 x 2160` (5K) | Ultrawide cinematic widescreen |
+
+*Custom dimensions:* Any custom positive integer `width` and `height` are supported.
+
+---
+
+## 3. MotionAsset Architecture
+
+Assets are polymorphic resources referenced by views and audio components. Every asset contains a `type`, a `uri` string (`https://`, `http://`, `file://`, or `content://`), and optional `metadata`.
+
+### Asset Types
+
+| Type | URI Protocol | Parameters | Description |
+| :--- | :--- | :--- | :--- |
+| **`SimpleMotionAsset`** | `https://`, `file://` | `uri`, `metadata` (optional) | Generic media file reference. |
+| **`ImageAsset`** | `https://`, `file://` | `uri`, `metadata` (optional) | Bitmap images (JPEG, PNG, WebP). |
+| **`VideoAsset`** | `https://`, `file://` | `uri`, `metadata` (optional) | Video files (MP4, WebM, etc.). |
+| **`FontAsset`** | `https://`, `file://` | `uri`, `fontName` (optional), `metadata` (optional) | Custom TrueType/OpenType web font. |
+| **`TTSAudioAsset`** | `content://tts_...` | `uri`, `metadata: { "text": "..." }` | Synthetic text-to-speech audio asset. |
+
+### JSON Asset Samples
+
+```json
+// Image Asset
+{
+  "type": "ImageAsset",
+  "uri": "https://picsum.photos/1080/1920"
+}
+
+// Font Asset
+{
+  "type": "FontAsset",
+  "uri": "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.ttf",
+  "fontName": "Roboto"
+}
+
+// TTS Audio Asset
+{
+  "type": "TTSAudioAsset",
+  "uri": "content://tts_audio",
+  "metadata": {
+    "text": "Welcome to our newly generated video."
+  }
+}
+```
+
+---
+
+## 4. Common MotionView Properties & Layout
+
+All views inherit common timeline and layout properties.
+
+### Common Base Properties
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **`type`** | `String` | **Required** | The registered class name of the view (e.g., `"TransparentTextView"`). |
+| **`startFrame`** | `Int` | `0` | Starting frame index on the timeline when the view becomes visible. |
+| **`endFrame`** | `Int` | `0` | Ending frame index on the timeline when the view ceases to be visible. `-1` keeps the view visible until the end of the video. |
+| **`loop`** | `Object` | `{ "start": 0, "end": 0 }` | Optional internal loop range: `{ "start": 0, "end": 60 }`. |
+| **`layout`** | `Object` | Default layout | Sizing, alignment, margin, and padding (`MotionLayoutInfo`). |
+| **`effects`** | `Array<MotionEffect>` | `[]` | List of visual effects applied to this view over time. |
+
+---
+
+### MotionLayoutInfo (`layout`)
+
+Controls how a view is positioned and sized inside its parent canvas or container:
+
+```json
+{
+  "width": "match_parent",
+  "height": "wrap_content",
+  "gravity": "bottom|center_horizontal",
+  "margin": {
+    "left": 40,
+    "top": 0,
+    "right": 40,
+    "bottom": 120
+  },
+  "padding": {
+    "left": 20,
+    "top": 20,
+    "right": 20,
+    "bottom": 20
+  }
+}
+```
+
+#### Sizing (`width` & `height`)
+- `"match_parent"`: Expands to the parent container's full dimension.
+- `"wrap_content"`: Bounds to the internal content size.
+- Exact integer: Explicit pixel dimensions (e.g., `1080`, `450`).
+
+#### Alignment (`gravity`)
+Combine horizontal and vertical flags using the pipe `|` character:
+- **Vertical flags:** `top`, `bottom`, `center_vertical`
+- **Horizontal flags:** `left`, `right`, `start`, `end`, `center_horizontal`
+- **Combined centering:** `center` (centers both horizontally and vertically)
+- *Default centering:* If horizontal gravity is omitted, the engine centers horizontally. If vertical gravity is omitted, the engine centers vertically.
+
+#### Spacing (`margin` & `padding`)
+- `margin`: `{ "left": 0, "top": 0, "right": 0, "bottom": 0 }` (offset from parent border)
+- `padding`: `{ "left": 0, "top": 0, "right": 0, "bottom": 0 }` (offset within the view border)
+
+---
+
+## 5. Complete MotionView Catalog
+
+The following `MotionView` components are registered and available in `modules/sdui`:
+
+### 5.1 Text Views
+
+All text views extend `AbstractMotionTextView` and share these styling properties:
+- `textSizeVariant`: Typography scale enum: `"H1"`, `"H2"`, `"H3"`, `"H4"`, `"H5"`, `"H6"`, or `"P"`. These auto-scale proportionally with the video resolution.
+- `textColor`: Hex color string (e.g., `"#FFFFFF"`, `"#00E5FF"`).
+- `highlightColor`: Hex color string for emphasis (e.g., `"#FFEB3B"`).
+- `fontAsset`: Polymorphic `FontAsset` object for custom web typography.
+
+#### 1. `TransparentTextView`
+Static text overlay with a transparent background.
+- **Properties:**
+  - `text` (`String`): The string to render.
+- **Sample:**
+  ```json
+  {
+    "type": "TransparentTextView",
+    "startFrame": 0,
+    "endFrame": 150,
+    "text": "Breaking Headlines",
+    "textSizeVariant": "H1",
+    "textColor": "#FFFFFF",
+    "layout": {
+      "width": "match_parent",
+      "height": "wrap_content",
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 2. `TypeWriterTextView`
+Reveals text character by character with an optional blinking cursor.
+- **Properties:**
+  - `text` (`String`): The text to type.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor. `0.0` calculates speed automatically to fit `startFrame` to `endFrame`. Values `> 1.0` speed up typing.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Opacity of untyped letters.
+  - `cursorChar` (`String`, default `"|"`): Character used for typing cursor.
+  - `blinkFrameRate` (`Int`, default `10`): Number of frames per cursor blink cycle.
+- **Sample:**
+  ```json
+  {
+    "type": "TypeWriterTextView",
+    "startFrame": 0,
+    "endFrame": 120,
+    "text": "Generating intelligence across devices...",
+    "writingSpeed": 1.0,
+    "cursorChar": "|",
+    "blinkFrameRate": 8,
+    "textSizeVariant": "H3",
+    "textColor": "#00FFCC",
+    "layout": {
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 3. `WordWriterTextView`
+Reveals text word by word (rather than character by character), highlighting the current word.
+- **Properties:**
+  - `text` (`String`): The full sentence.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Opacity of words not yet revealed.
+  - `highlightColor` (`String`): Hex color used to highlight the currently spoken/written word.
+- **Sample:**
+  ```json
+  {
+    "type": "WordWriterTextView",
+    "startFrame": 0,
+    "endFrame": 150,
+    "text": "Every single word appears with precise timing",
+    "writingSpeed": 1.0,
+    "unwrittenTextAlpha": 0.2,
+    "textSizeVariant": "H2",
+    "textColor": "#FFFFFF",
+    "highlightColor": "#FFD700",
+    "layout": {
+      "gravity": "center",
+      "margin": { "left": 40, "right": 40 }
+    }
+  }
+  ```
+
+#### 4. `WordBlinkTextView`
+Displays one word at a time in rapid succession (RSVP speed-reading style).
+- **Properties:**
+  - `text` (`String`): Sentence to cycle through.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor.
+- **Sample:**
+  ```json
+  {
+    "type": "WordBlinkTextView",
+    "startFrame": 0,
+    "endFrame": 90,
+    "text": "FOCUS SPEED PRECISION POWER",
+    "textSizeVariant": "H1",
+    "textColor": "#FF3366",
+    "layout": { "gravity": "center" }
+  }
+  ```
+
+#### 5. `PopUpTextView`
+Each word smoothly animates popping up from the bottom with vertical translation and alpha fade.
+- **Properties:**
+  - `text` (`String`): Sentence to animate.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Alpha of pending words.
+  - `maxTranslationY` (`Float`, default `50.0`): Pixel distance words translate upward from below.
+- **Sample:**
+  ```json
+  {
+    "type": "PopUpTextView",
+    "startFrame": 0,
+    "endFrame": 180,
+    "text": "Words smoothly pop into place",
+    "maxTranslationY": 60.0,
+    "textSizeVariant": "H2",
+    "textColor": "#FFFFFF",
+    "layout": {
+      "gravity": "center",
+      "margin": { "left": 50, "right": 50 }
+    }
+  }
+  ```
+
+#### 6. `RainbowPopUpTextView`
+Each word pops up from below while cycling through animated rainbow colors.
+- **Properties:**
+  - `text` (`String`): Words to pop up.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Alpha for unwritten words.
+  - `maxTranslationY` (`Float`, default `50.0`): Upward translation distance.
+- **Sample:**
+  ```json
+  {
+    "type": "RainbowPopUpTextView",
+    "startFrame": 0,
+    "endFrame": 180,
+    "text": "Unleash vibrant colorful motion graphics",
+    "maxTranslationY": 50.0,
+    "textSizeVariant": "H1",
+    "layout": { "gravity": "center" }
+  }
+  ```
+
+#### 7. `AccentMiddlePopUpTextView`
+Pop-up words animation where the middle word in the phrase receives an accent color.
+- **Properties:**
+  - `text` (`String`): Input phrase.
+  - `writingSpeed` (`Float`, default `0.0`): Speed factor.
+  - `maxTranslationY` (`Float`, default `50.0`): Upward translation distance.
+  - `accentColor` (`String`, default `"#FFFF00"`): Hex color applied exclusively to the middle word.
+- **Sample:**
+  ```json
+  {
+    "type": "AccentMiddlePopUpTextView",
+    "startFrame": 0,
+    "endFrame": 150,
+    "text": "Create The Future",
+    "accentColor": "#FF4081",
+    "textSizeVariant": "H2",
+    "textColor": "#FFFFFF",
+    "layout": { "gravity": "center" }
+  }
+  ```
+
+#### 8. `WordVibrateMotionTextView`
+Each word oscillates independently with sinusoidal vibration.
+- **Properties:**
+  - `text` (`String`): Text string.
+  - `amplitude` (`Float`, default `5.0`): Vibration displacement in pixels.
+  - `frequency` (`Float`, default `0.5`): Oscillation cycles per frame.
+  - `phaseShiftPerWord` (`Float`, default `1.0`): Phase lag between consecutive words.
+- **Sample:**
+  ```json
+  {
+    "type": "WordVibrateMotionTextView",
+    "startFrame": 0,
+    "endFrame": 200,
+    "text": "HIGH ENERGY VIBRATION",
+    "amplitude": 8.0,
+    "frequency": 1.0,
+    "phaseShiftPerWord": 0.8,
+    "textSizeVariant": "H1",
+    "textColor": "#FFEA00",
+    "layout": { "gravity": "center" }
+  }
+  ```
+
+---
+
+### 5.2 Media & Background Views
+
+#### 9. `MotionImageView`
+Renders an image from an asset with `CENTER_CROP` scaling.
+- **Properties:**
+  - `asset` (`MotionAsset`): Polymorphic asset (or legacy `imageUri` string).
+- **Sample:**
+  ```json
+  {
+    "type": "MotionImageView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "asset": {
+      "type": "ImageAsset",
+      "uri": "https://images.unsplash.com/photo-1518791841217-8f162f1e1131"
+    },
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+#### 10. `CircularMotionImageView`
+Clips and displays an image within a circular/oval shape.
+- **Properties:**
+  - `asset` (`MotionAsset`): Image asset (or legacy `imageUri` string).
+- **Sample:**
+  ```json
+  {
+    "type": "CircularMotionImageView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "asset": {
+      "type": "ImageAsset",
+      "uri": "https://i.pravatar.cc/500"
+    },
+    "layout": {
+      "width": 360,
+      "height": 360,
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 11. `VideoFrameView`
+Decodes and renders sequential video frames in sync with the project timeline.
+- **Properties:**
+  - `asset` (`MotionAsset`): Video asset (or legacy `videoUri` string).
+- **Sample:**
+  ```json
+  {
+    "type": "VideoFrameView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "asset": {
+      "type": "VideoAsset",
+      "uri": "file:///android_asset/sample_clip.mp4"
+    },
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+#### 12. `GradientView`
+Smooth multi-stop gradient background.
+- **Properties:**
+  - `orientation` (`String`): `"VERTICAL"`, `"HORIZONTAL"`, or `"CIRCULAR"` (default `"VERTICAL"`).
+  - `colors` (`Array<String>`): Array of hex color strings (at least 2 colors).
+- **Sample:**
+  ```json
+  {
+    "type": "GradientView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "orientation": "VERTICAL",
+    "colors": ["#0F2027", "#203A43", "#2C5364"],
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+#### 13. `TranslucentMotionView`
+A solid or semi-transparent color tint overlay. Useful for darkening video backgrounds behind readable text.
+- **Properties:**
+  - `color` (`String`, default `"#00000000"`): Hex color string.
+  - `alpha` (`Float`, default `1.0`): Opacity (0.0 to 1.0).
+- **Sample:**
+  ```json
+  {
+    "type": "TranslucentMotionView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "color": "#000000",
+    "alpha": 0.5,
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+---
+
+### 5.3 Progress & Audio Waveforms
+
+#### 14. `MotionProgressBar`
+A real-time progress bar synchronized with video progression.
+- **Properties:**
+  - `style` (`String`): `"HORIZONTAL"` or `"CIRCULAR"` (default `"HORIZONTAL"`).
+  - `color` (`String`): Hex color string (default `"#FFFFFF"`).
+- **Sample:**
+  ```json
+  {
+    "type": "MotionProgressBar",
+    "startFrame": 0,
+    "endFrame": 300,
+    "style": "HORIZONTAL",
+    "color": "#E91E63",
+    "layout": {
+      "width": "match_parent",
+      "height": 16,
+      "gravity": "bottom"
+    }
+  }
+  ```
+
+#### 15. `CircularAudioWaveformView`
+Circular music audio visualizer spikes.
+- **Properties:**
+  - `amplitudes` (`Array<Float>`): List of audio amplitude values per frame.
+- **Sample:**
+  ```json
+  {
+    "type": "CircularAudioWaveformView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "amplitudes": [0.1, 0.35, 0.7, 0.45, 0.2, 0.8, 0.6],
+    "layout": {
+      "width": 500,
+      "height": 500,
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 16. `RadialAudioWaveformView`
+Dynamic radial spikes pulsing outwards from the center.
+- **Properties:**
+  - `amplitudes` (`Array<Float>`): List of audio amplitude values per frame.
+- **Sample:**
+  ```json
+  {
+    "type": "RadialAudioWaveformView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "amplitudes": [0.2, 0.5, 0.9, 0.3, 0.7, 0.4],
+    "layout": {
+      "width": 600,
+      "height": 600,
+      "gravity": "center"
+    }
+  }
+  ```
+
+---
+
+### 5.4 Container Views
+
+#### 17. `VerticalStackMotionView` & 18. `HorizontalStackMotionView`
+Partitions the canvas into proportional stacked slices using percentage shares (sum of section percentages should equal 100.0).
+
+- **`VerticalStackMotionView`**: Stacks children vertically (top-to-bottom).
+- **`HorizontalStackMotionView`**: Stacks children horizontally (side-by-side).
+
+**Section Structure (`StackSection`):**
+- `percentage` (`Float`): Percent share of the container dimension (0.0 to 100.0).
+- `view` (`MotionView`): The nested `MotionView` inside this section.
+
+**Split-Screen Sample:**
+```json
+{
+  "type": "VerticalStackMotionView",
   "startFrame": 0,
   "endFrame": 300,
   "sections": [
@@ -95,14 +567,24 @@ Manage nested views using percentage-based sizing.
       "percentage": 50.0,
       "view": {
         "type": "MotionImageView",
-        "asset": { "type": "ImageAsset", "uri": "https://server.com/left.jpg" }
+        "startFrame": 0,
+        "endFrame": 300,
+        "asset": {
+          "type": "ImageAsset",
+          "uri": "https://picsum.photos/1080/960?1"
+        }
       }
     },
     {
       "percentage": 50.0,
       "view": {
         "type": "MotionImageView",
-        "asset": { "type": "ImageAsset", "uri": "https://server.com/right.jpg" }
+        "startFrame": 0,
+        "endFrame": 300,
+        "asset": {
+          "type": "ImageAsset",
+          "uri": "https://picsum.photos/1080/960?2"
+        }
       }
     }
   ]
@@ -111,117 +593,359 @@ Manage nested views using percentage-based sizing.
 
 ---
 
-## 4. MotionLayoutInfo (Layout & Sizing)
+## 6. Complete MotionEffect Catalog
 
-The `layout` object is available on all `MotionView` types. It controls how the view is sized and positioned within its parent container.
+Effects are added to a view's `"effects"` array. Every effect **must specify `startFrame` and `endFrame`**.
 
-### 4.1 Dimension Properties (`width` & `height`)
-- **`"match_parent"`**: Stretch to fill the parent's full dimension.
-- **`"wrap_content"`**: Size according to the view's content (e.g., text length or image aspect ratio).
-- **`Int`**: Specify absolute size in pixels (e.g., `1080`).
+| Effect Name | Parameters & Defaults | Description | Sample |
+| :--- | :--- | :--- | :--- |
+| **`FadeInEffect`** | None | Smoothly fades opacity from 0.0 to 1.0. | `{"type": "FadeInEffect", "startFrame": 0, "endFrame": 30}` |
+| **`FadeOutEffect`** | None | Smoothly fades opacity from 1.0 to 0.0. | `{"type": "FadeOutEffect", "startFrame": 270, "endFrame": 300}` |
+| **`ZoomInEffect`** | `startScale` (1.0), `endScale` (2.0) | Zooms view scale up between frames. | `{"type": "ZoomInEffect", "startFrame": 0, "endFrame": 60, "startScale": 1.0, "endScale": 1.25}` |
+| **`ZoomOutEffect`** | `startScale` (2.0), `endScale` (1.0) | Zooms view scale down between frames. | `{"type": "ZoomOutEffect", "startFrame": 0, "endFrame": 60, "startScale": 1.3, "endScale": 1.0}` |
+| **`BlurEffect`** | `maxBlurRadius` (20.0) | Blurs view from 0.1 to `maxBlurRadius`. | `{"type": "BlurEffect", "startFrame": 0, "endFrame": 30, "maxBlurRadius": 15.0}` |
+| **`GlitchEffect`** | `intensity` (10.0) | Applies digital glitch displacement. | `{"type": "GlitchEffect", "startFrame": 45, "endFrame": 60, "intensity": 12.0}` |
+| **`VibrateEffect`** | `amplitude` (5.0), `frequency` (1.0) | Applies rapid shake vibration to view. | `{"type": "VibrateEffect", "startFrame": 0, "endFrame": 90, "amplitude": 6.0, "frequency": 1.5}` |
+| **`VintageEffect`** | `fromIntensity` (0.0), `toIntensity` (1.0) | Color wash / sepia vintage transition. | `{"type": "VintageEffect", "startFrame": 0, "endFrame": 100, "fromIntensity": 0.0, "toIntensity": 0.8}` |
+| **`SlideLeftToRightEffect`** | None | Slides view in from the left edge. | `{"type": "SlideLeftToRightEffect", "startFrame": 0, "endFrame": 30}` |
+| **`SlideRightToLeftEffect`** | None | Slides view in from the right edge. | `{"type": "SlideRightToLeftEffect", "startFrame": 0, "endFrame": 30}` |
+| **`SlideTopToBottomEffect`** | None | Slides view in from the top edge. | `{"type": "SlideTopToBottomEffect", "startFrame": 0, "endFrame": 30}` |
+| **`SlideBottomToTopEffect`** | None | Slides view in from the bottom edge. | `{"type": "SlideBottomToTopEffect", "startFrame": 0, "endFrame": 30}` |
+| **`SlideEffect`** | `fromX`, `toX`, `fromY`, `toY` | Arbitrary custom coordinate sliding. | `{"type": "SlideEffect", "startFrame": 0, "endFrame": 25, "fromX": -1.0, "toX": 0.0}` |
 
-### 4.2 Alignment (`gravity`)
-The `gravity` property is a string that can combine multiple alignment flags using the pipe `|` character.
+---
 
-**Supported Values:**
-- `top`, `bottom`: Vertical alignment.
-- `left`, `right`, `start`, `end`: Horizontal alignment.
-- `center`: Centers both horizontally and vertically.
-- `center_horizontal`, `center_vertical`: Independent centering.
+## 7. MotionTransitions (Sequential Mode)
 
-**Example:** `"top|center_horizontal"`
+When using the root `"sequence"` array, views are sequenced one after another, separated by transition items.
 
-### 4.3 Spacing (`margin` & `padding`)
-Both `margin` and `padding` are objects containing optional pixel offsets.
-- **`margin`**: Outer spacing (distance from parent or siblings).
-- **`padding`**: Inner spacing (distance between view border and content).
+| Transition Name | Parameters & Defaults | Description | Sample |
+| :--- | :--- | :--- | :--- |
+| **`CrossFadeTransition`** | `duration` (30 frames) | Smoothly cross-fades the preceding view into the following view. | `{"type": "CrossFadeTransition", "duration": 30}` |
+| **`BlurTransition`** | `maxBlurRadius` (20.0), `duration` (30 frames) | Blurs the outgoing view and unblurs the incoming view. | `{"type": "BlurTransition", "duration": 25, "maxBlurRadius": 25.0}` |
+| **`SlideTransition`** | `direction` (`"LEFT_TO_RIGHT"`, `"RIGHT_TO_LEFT"`, `"TOP_TO_BOTTOM"`, `"BOTTOM_TO_TOP"`), `duration` (30 frames) | Slides the next view into frame while sliding the current view out. | `{"type": "SlideTransition", "duration": 30, "direction": "RIGHT_TO_LEFT"}` |
 
-**Structure:**
+### Sequence Example
 ```json
 {
-  "left": 20,
-  "top": 0,
-  "right": 20,
-  "bottom": 50
+  "sequence": [
+    {
+      "type": "MotionImageView",
+      "startFrame": 0,
+      "endFrame": 90,
+      "asset": { "type": "ImageAsset", "uri": "https://picsum.photos/1080/1920?1" }
+    },
+    {
+      "type": "CrossFadeTransition",
+      "duration": 30
+    },
+    {
+      "type": "MotionImageView",
+      "startFrame": 90,
+      "endFrame": 180,
+      "asset": { "type": "ImageAsset", "uri": "https://picsum.photos/1080/1920?2" }
+    }
+  ]
 }
 ```
 
-### 4.4 Comprehensive Layout Example
+---
+
+## 8. MotionAudio (Audio Tracks)
+
+Audio tracks in the `"audios"` array configure background music, voiceovers, or effects.
+
 ```json
 {
-  "type": "TransparentTextView",
-  "text": "Overlaid Caption",
-  "layout": {
-    "width": "match_parent",
-    "height": 300,
-    "gravity": "bottom|center_horizontal",
-    "margin": { "bottom": 100, "left": 40, "right": 40 },
-    "padding": { "top": 20, "bottom": 20 }
-  }
+  "type": "MotionAudio",
+  "asset": {
+    "type": "SimpleMotionAsset",
+    "uri": "https://example.com/audio/soundtrack.mp3"
+  },
+  "startFrame": 0,
+  "endFrame": 300,
+  "delayFrame": 15
+}
+```
+
+### Parameters
+- **`asset`**: Polymorphic `MotionAsset` (e.g., `SimpleMotionAsset` or `TTSAudioAsset`).
+- **`startFrame`**: Audio trim start frame (offset within the source audio file).
+- **`endFrame`**: Audio trim end frame (trim cut-off within the source audio file).
+- **`delayFrame`**: Playback delay in frames from the beginning of the video timeline before playback starts.
+
+---
+
+## 9. Rules for LLMs Generating SDUI JSON
+
+When generating SDUI JSON for videos, you MUST adhere to the following rules:
+
+1. **Calculate Frames from FPS:**
+   - Always check or specify `config.fps` (typically `30`).
+   - `duration_in_frames = duration_in_seconds * fps`.
+   - Ensure all `endFrame` values are greater than `startFrame`.
+2. **Correct Layer Z-Ordering in `views`:**
+   - Background views (`GradientView`, `MotionImageView`, `VideoFrameView`) MUST come first.
+   - Tint overlays (`TranslucentMotionView`) come second.
+   - Foreground text (`TypeWriterTextView`, `PopUpTextView`), visualizers, and `MotionProgressBar` come last so they remain visible on top.
+3. **Effect Frame Boundaries:**
+   - Any effect in `"effects"` MUST have `startFrame` and `endFrame` that lie strictly within the containing view's `[startFrame, endFrame]` range.
+4. **Valid Aspect Ratios:**
+   - For vertical reels (Shorts / TikTok / Reels), use `1080 x 1920` (`Ratio9x16_1080`).
+   - For horizontal video, use `1920 x 1080` (`Ratio16x9_1080`).
+5. **Exact Gravity Syntax:**
+   - Gravity strings must be lowercase pipe-separated flags (e.g., `"top|center_horizontal"`, `"bottom|center_horizontal"`, `"center"`).
+6. **Valid Hex Colors:**
+   - Use standard 6-digit or 8-digit hex codes (e.g., `"#FFFFFF"`, `"#80000000"`, `"#FFD700"`).
+
+---
+
+## 10. Complete Production Recipes
+
+### Recipe 1: Vertical Viral Reel with Pop-Up Text & Audio (9:16)
+Features a background image with a Ken Burns zoom, a dark translucent overlay for contrast, pop-up animated text, a progress bar, and background audio.
+
+```json
+{
+  "config": {
+    "aspectRatio": {
+      "width": 1080,
+      "height": 1920,
+      "label": "9:16 Full HD"
+    },
+    "fps": 30,
+    "outputQuality": 100
+  },
+  "audios": [
+    {
+      "type": "MotionAudio",
+      "asset": {
+        "type": "SimpleMotionAsset",
+        "uri": "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3"
+      },
+      "startFrame": 0,
+      "endFrame": 180,
+      "delayFrame": 0
+    }
+  ],
+  "views": [
+    {
+      "type": "MotionImageView",
+      "startFrame": 0,
+      "endFrame": 180,
+      "asset": {
+        "type": "ImageAsset",
+        "uri": "https://images.unsplash.com/photo-1518770660439-4636190af475"
+      },
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      },
+      "effects": [
+        {
+          "type": "ZoomInEffect",
+          "startFrame": 0,
+          "endFrame": 180,
+          "startScale": 1.0,
+          "endScale": 1.15
+        }
+      ]
+    },
+    {
+      "type": "TranslucentMotionView",
+      "startFrame": 0,
+      "endFrame": 180,
+      "color": "#000000",
+      "alpha": 0.45,
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "AccentMiddlePopUpTextView",
+      "startFrame": 15,
+      "endFrame": 165,
+      "text": "BUILD THE FUTURE",
+      "accentColor": "#00E5FF",
+      "textSizeVariant": "H1",
+      "textColor": "#FFFFFF",
+      "maxTranslationY": 60.0,
+      "layout": {
+        "width": "match_parent",
+        "height": "wrap_content",
+        "gravity": "center",
+        "margin": {
+          "left": 40,
+          "right": 40
+        }
+      },
+      "effects": [
+        {
+          "type": "FadeInEffect",
+          "startFrame": 15,
+          "endFrame": 35
+        },
+        {
+          "type": "FadeOutEffect",
+          "startFrame": 145,
+          "endFrame": 165
+        }
+      ]
+    },
+    {
+      "type": "MotionProgressBar",
+      "startFrame": 0,
+      "endFrame": 180,
+      "style": "HORIZONTAL",
+      "color": "#00E5FF",
+      "layout": {
+        "width": "match_parent",
+        "height": 16,
+        "gravity": "bottom"
+      }
+    }
+  ]
 }
 ```
 
 ---
 
-## 5. MotionEffect
-
-Applied to views via the `effects` array. **Requires `startFrame` and `endFrame`.**
-
-| Type | Parameters | JSON Sample |
-| :--- | :--- | :--- |
-| `FadeInEffect` | - | `{"type": "FadeInEffect", "startFrame": 0, "endFrame": 15}` |
-| `ZoomInEffect` | `startScale`, `endScale` | `{"type": "ZoomInEffect", "startFrame": 0, "endFrame": 60, "startScale": 1.0, "endScale": 1.2}` |
-| `BlurEffect` | `maxBlurRadius` | `{"type": "BlurEffect", "startFrame": 0, "endFrame": 30, "maxBlurRadius": 20.0}` |
-| `SlideEffect` | `fromX`, `toX`, `fromY`, `toY` | `{"type": "SlideEffect", "fromX": -1.0, "toX": 0.0}` |
-
----
-
-## 6. MotionTransition
-
-Used in the `sequence` array to morph between views.
-
-| Type | Parameters | JSON Sample |
-| :--- | :--- | :--- |
-| `CrossFadeTransition` | `duration` | `{"type": "CrossFadeTransition", "duration": 30}` |
-| `BlurTransition` | `duration`, `maxBlurRadius` | `{"type": "BlurTransition", "duration": 45, "maxBlurRadius": 40.0}` |
-
----
-
-## 7. Comprehensive Recipe: Stacked Lyrics Template
-This mimics the `StackedLyricsTemplate` using percentage-based stacking.
+### Recipe 2: Split-Screen Comparison (Stacked Layout)
+Demonstrates vertical 50/50 split partitioning using `VerticalStackMotionView`.
 
 ```json
 {
+  "config": {
+    "aspectRatio": {
+      "width": 1080,
+      "height": 1920,
+      "label": "9:16 Full HD"
+    },
+    "fps": 30,
+    "outputQuality": 100
+  },
   "views": [
     {
       "type": "VerticalStackMotionView",
       "startFrame": 0,
-      "endFrame": 300,
+      "endFrame": 180,
       "sections": [
         {
           "percentage": 50.0,
           "view": {
             "type": "MotionImageView",
-            "asset": { "type": "ImageAsset", "uri": "https://picsum.photos/1080" }
+            "startFrame": 0,
+            "endFrame": 180,
+            "asset": {
+              "type": "ImageAsset",
+              "uri": "https://picsum.photos/1080/960?image=10"
+            }
           }
         },
         {
-          "percentage": 30.0,
+          "percentage": 50.0,
           "view": {
-            "type": "SyncedLyricsMotionTextView",
-            "lyrics": [
-              { "frame": 0, "text": "First line of the song" },
-              { "frame": 60, "text": "Second line appears here" }
-            ],
-            "textSizeVariant": "H3",
-            "textColor": "#FFFFFF"
+            "type": "MotionImageView",
+            "startFrame": 0,
+            "endFrame": 180,
+            "asset": {
+              "type": "ImageAsset",
+              "uri": "https://picsum.photos/1080/960?image=20"
+            }
           }
-        },
-        {
-          "percentage": 20.0,
-          "view": { "type": "MotionProgressBar" }
         }
-      ]
+      ],
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "WordWriterTextView",
+      "startFrame": 10,
+      "endFrame": 170,
+      "text": "Before vs After Transformation",
+      "writingSpeed": 1.0,
+      "textSizeVariant": "H2",
+      "textColor": "#FFFFFF",
+      "highlightColor": "#FFD700",
+      "layout": {
+        "width": "match_parent",
+        "height": "wrap_content",
+        "gravity": "center",
+        "padding": {
+          "left": 30,
+          "top": 15,
+          "right": 30,
+          "bottom": 15
+        }
+      }
+    }
+  ]
+}
+```
+
+---
+
+### Recipe 3: Multi-Scene Sequential Storyboard (`sequence`)
+Demonstrates multi-scene progression where views transition seamlessly using `SlideTransition` and `CrossFadeTransition`.
+
+```json
+{
+  "config": {
+    "aspectRatio": {
+      "width": 1920,
+      "height": 1080,
+      "label": "16:9 Full HD"
+    },
+    "fps": 30,
+    "outputQuality": 100
+  },
+  "sequence": [
+    {
+      "type": "GradientView",
+      "startFrame": 0,
+      "endFrame": 90,
+      "orientation": "VERTICAL",
+      "colors": ["#141E30", "#243B55"],
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "SlideTransition",
+      "duration": 30,
+      "direction": "RIGHT_TO_LEFT"
+    },
+    {
+      "type": "MotionImageView",
+      "startFrame": 90,
+      "endFrame": 180,
+      "asset": {
+        "type": "ImageAsset",
+        "uri": "https://picsum.photos/1920/1080?image=100"
+      },
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "CrossFadeTransition",
+      "duration": 20
+    },
+    {
+      "type": "GradientView",
+      "startFrame": 180,
+      "endFrame": 270,
+      "orientation": "HORIZONTAL",
+      "colors": ["#8A2387", "#E94057", "#F27121"],
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
     }
   ]
 }

@@ -61,12 +61,7 @@ import java.net.URLConnection
 import kotlin.time.Duration.Companion.milliseconds
 
 class SearchActivity : ComponentActivity() {
-    private val projectsViewModel: ProjectsViewModel by viewModels {
-        ProjectsViewModelFactory(
-            applicationContext.asLyricsApp().motionStoreDao,
-            applicationContext.asLyricsApp().preferenceManager,
-        )
-    }
+    private val projectsViewModel: ProjectsViewModel by viewModel()
 
     private val lyricsViewModel: LyricsViewModel by viewModel()
 

@@ -31,6 +31,7 @@ android {
 
 dependencies {
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
     implementation(libs.androidx.activity.compose)
     implementation(project(":modules:core"))
     implementation(project(":modules:sdui"))

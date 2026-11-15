@@ -9,6 +9,7 @@ import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
 import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.downloadFile
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.core.motion.transitions.CrossFadeTransition
@@ -123,6 +124,7 @@ fun sampleMotionVideo(applicationContext: Context): MotionVideoProducer {
         .with(
             context = applicationContext,
             motionConfig = motionConfig,
+            videoProducerAdapter = AndroidVideoProducerAdapter(),
             motionAudio = motionAudio,
         ).addMotionViewToSequence(motionView = motionView)
         .addTransition(CrossFadeTransition(), duration = 30)

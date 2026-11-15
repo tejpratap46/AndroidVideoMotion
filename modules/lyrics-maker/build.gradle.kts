@@ -68,6 +68,7 @@ dependencies {
     parcelizeCompiler("org.jetbrains.kotlin:kotlin-parcelize-compiler:${libs.versions.kotlinVersion.get()}")
     implementation(libs.parcelize.runtime)
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
     implementation(libs.koin.workmanager)
     implementation(project(":modules:core"))
     implementation(project(":modules:motion-video-editor"))
@@ -89,7 +90,7 @@ dependencies {
     implementation(project(":modules:motion-video-player"))
     implementation(project(":modules:motion-store"))
     implementation(project(":modules:metadata-extractor"))
-    implementation(project(":modules:ffmpeg-motion-ext"))
+//    implementation(project(":modules:ffmpeg-motion-ext"))
     implementation(project(":modules:sdui"))
     implementation(project(":modules:templates"))
 
@@ -108,6 +109,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(project(":modules:paparazzi-motion-ext"))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)

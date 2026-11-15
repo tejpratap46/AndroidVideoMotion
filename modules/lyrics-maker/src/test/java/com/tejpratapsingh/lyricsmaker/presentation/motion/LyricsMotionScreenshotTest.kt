@@ -5,6 +5,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.adapter.AndroidVideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.motion.MotionVideoProducer
 import com.tejpratapsingh.motionlib.paparazzi.snapshot
 import com.tejpratapsingh.motionlib.paparazzi.snapshotFrames
@@ -25,7 +26,7 @@ class LyricsMotionScreenshotTest {
         )
 
     @Test
-    fun testLyricsComposerViewSnapshot() {
+    fun testLyricsComposerViewSingleSnapshot() {
         val context = paparazzi.context
         val motionConfig =
             MotionConfig(
@@ -36,6 +37,7 @@ class LyricsMotionScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val gradientView =
@@ -86,6 +88,7 @@ class LyricsMotionScreenshotTest {
             MotionVideoProducer.with(
                 context = context,
                 motionConfig = motionConfig,
+                videoProducerAdapter = AndroidVideoProducerAdapter(),
             )
 
         val gradientView =
@@ -98,16 +101,25 @@ class LyricsMotionScreenshotTest {
             )
         producer.addMotionViewToSequence(gradientView)
 
-        val bitmaps =
+        val textView =
+            PopUpTextView(
+                context = context,
+                text = "Sequence Test",
+                startFrame = 0,
+                endFrame = 100,
+            )
+        producer.addMotionViewToSequence(textView)
+
+        val snapshots =
             paparazzi.snapshotFrames(
                 composerView = producer.motionComposerView,
-                frames = listOf(0, 25, 50),
-                namePrefix = "lyrics_maker_sequence",
+                frames = listOf(0, 25, 50, 75, 100),
+                namePrefix = "lyrics_sequence_",
             )
 
-        assertEquals(3, bitmaps.size)
-        bitmaps.forEach { bitmap ->
-            assertNotNull("Each frame screenshot bitmap should not be null", bitmap)
+        assertEquals(5, snapshots.size)
+        snapshots.forEach { bitmap ->
+            assertNotNull("Snapshot bitmap should not be null", bitmap)
             assertEquals(1080, bitmap.width)
             assertEquals(1920, bitmap.height)
         }

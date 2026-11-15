@@ -27,9 +27,11 @@ import com.tejpratapsingh.motion.download.ui.MotionDownloadViewModel
 import com.tejpratapsingh.motioneditor.ui.MotionEditorScreen
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.VideoAspectRatio
+import com.tejpratapsingh.motionlib.core.VideoProducerAdapter
 import com.tejpratapsingh.motionlib.core.extensions.md5
 import com.tejpratapsingh.motionlib.templates.sdui.MotionTemplateSDUIProvider
 import com.tejpratapsingh.motionstore.tables.MotionProject
+import org.koin.java.KoinJavaComponent.inject
 
 @Composable
 @Suppress("ktlint:standard:function-naming")
@@ -43,6 +45,7 @@ fun AppNavHost(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier,
 ) {
+    val videoProducerAdapter: VideoProducerAdapter by inject(VideoProducerAdapter::class.java)
     NavHost(navController = navController, startDestination = currentScreen.route) {
         composable(route = Screen.Projects.route) {
             ProjectsRoute(
@@ -159,6 +162,7 @@ fun AppNavHost(
                                 context = navController.context,
                                 template = template,
                                 data = templateData,
+                                videoProducerAdapter = videoProducerAdapter,
                                 config = config,
                             )
 

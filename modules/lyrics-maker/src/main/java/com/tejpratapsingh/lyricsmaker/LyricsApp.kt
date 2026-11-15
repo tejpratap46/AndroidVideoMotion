@@ -9,9 +9,11 @@ import com.tejpratapsingh.lyricsmaker.di.lyricsDataModule
 import com.tejpratapsingh.lyricsmaker.domain.sdui.MultiLyricsContainerSdui
 import com.tejpratapsingh.motion.assetstore.di.assetStoreModule
 import com.tejpratapsingh.motion.download.di.downloadModule
+import com.tejpratapsingh.motion.sdui.di.sduiModule
 import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motion.tts.TTSAudioAssetSdui
 import com.tejpratapsingh.motionlib.core.di.coreModule
+import com.tejpratapsingh.motionlib.di.motionLibModule
 import com.tejpratapsingh.motionstore.dao.MotionProjectDao
 import com.tejpratapsingh.motionstore.di.storeModule
 import com.tejpratapsingh.motionstore.infra.DatabaseManager
@@ -40,7 +42,16 @@ class LyricsApp :
 
         startKoin {
             androidContext(this@LyricsApp)
-            modules(coreModule, downloadModule, assetStoreModule, lyricsDataModule, appModule, storeModule)
+            modules(
+                coreModule,
+                downloadModule,
+                assetStoreModule,
+                lyricsDataModule,
+                appModule,
+                storeModule,
+                motionLibModule,
+                sduiModule,
+            )
         }
 
         FirebaseApp.initializeApp(this)

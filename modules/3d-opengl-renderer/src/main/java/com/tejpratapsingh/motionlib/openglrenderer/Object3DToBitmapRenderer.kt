@@ -44,6 +44,7 @@ class Object3DToBitmapRenderer(
 
     private var mesh: Mesh? = null
     private var isInitialized = false
+    private var pixelBuffer: ByteBuffer? = null
 
     data class Mesh(
         val vertices: FloatBuffer,
@@ -457,7 +458,8 @@ class Object3DToBitmapRenderer(
         )
 
         // Read pixels
-        val pixelBuffer = ByteBuffer.allocateDirect(width * height * 4)
+        val buf = pixelBuffer ?: ByteBuffer.allocateDirect(width * height * 4).also { pixelBuffer = it }
+        buf.clear()
         GLES20.glReadPixels(
             0,
             0,
@@ -465,13 +467,13 @@ class Object3DToBitmapRenderer(
             height,
             GLES20.GL_RGBA,
             GLES20.GL_UNSIGNED_BYTE,
-            pixelBuffer,
+            buf,
         )
 
         // Convert to bitmap
         val bitmap = createBitmap(width, height)
-        pixelBuffer.rewind()
-        bitmap.copyPixelsFromBuffer(pixelBuffer)
+        buf.rewind()
+        bitmap.copyPixelsFromBuffer(buf)
 
         // Flip bitmap vertically (OpenGL coordinates are inverted)
         val matrix = android.graphics.Matrix()

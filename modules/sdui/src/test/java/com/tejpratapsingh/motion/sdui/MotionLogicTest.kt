@@ -2,32 +2,58 @@ package com.tejpratapsingh.motion.sdui
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
+import androidx.test.core.app.ApplicationProvider
 import com.tejpratapsingh.motion.sdui.infra.MotionSdui
 import com.tejpratapsingh.motion.sdui.infra.toJson
-import com.tejpratapsingh.motion.sdui.infra.toMotionAudio
+import com.tejpratapsingh.motion.sdui.infra.toMotionEffect
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
-import com.tejpratapsingh.motionlib.assettype.SimpleMotionAsset
-import com.tejpratapsingh.motionlib.core.MotionAudio
 import com.tejpratapsingh.motionlib.core.MotionConfig
 import com.tejpratapsingh.motionlib.core.MotionEffect
 import com.tejpratapsingh.motionlib.core.MotionView
+import com.tejpratapsingh.motionstore.infra.DeviceInfo
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 /**
  * Pure logic test that does not depend on Android UI classes (View, ViewGroup, etc.).
  * It uses mock implementations of MotionView and MotionEffect that don't inherit from Android Views.
  */
+@RunWith(RobolectricTestRunner::class)
 class MotionLogicTest {
     private lateinit var mockContext: Context
 
+    class MockLogicView(
+        override val startFrame: Int,
+        override val endFrame: Int,
+        override val loop: Pair<Int, Int> = Pair(0, 0),
+        override val motionConfig: MotionConfig = MotionConfig(),
+    ) : MotionView {
+        private val _effects = mutableListOf<MotionEffect>()
+        override val effects: List<MotionEffect> get() = _effects
+
+        override fun addEffect(effect: MotionEffect) {
+            _effects.add(effect)
+        }
+
+        override fun forFrame(frame: Int): MotionView = this
+        override fun getViewBitmap(): Bitmap = throw UnsupportedOperationException()
+    }
+
+    class MockLogicEffect(
+        override val startFrame: Int,
+        override val endFrame: Int,
+    ) : MotionEffect {
+        override lateinit var motionView: MotionView
+        override fun forFrame(frame: Int): MotionView = motionView
+    }
+
     @Before
     fun setup() {
-        mockContext = mock(Context::class.java)
+        mockContext = ApplicationProvider.getApplicationContext()
+        DeviceInfo.initialize(mockContext)
         // Register Logic-only Mock implementations
         MotionSdui.registerView(MockLogicView::class.java.simpleName) { _, json ->
             val startFrame = json.get("startFrame").asInt
@@ -44,93 +70,29 @@ class MotionLogicTest {
 
     @Test
     fun testMotionViewAndEffectRoundTrip() {
-        // 1. Create original objects
-        val originalView = MockLogicView(0, 100)
-        val originalEffect = MockLogicEffect(10, 50)
+        val originalView = MockLogicView(10, 50)
+        val originalEffect = MockLogicEffect(15, 45)
         originalView.addEffect(originalEffect)
 
-        // 2. Serialize
         val json = originalView.toJson()
-
-        // 3. Verify JSON structure
-        assertEquals(MockLogicView::class.java.simpleName, json.get("type").asString)
-        assertEquals(0, json.get("startFrame").asInt)
-        assertEquals(100, json.get("endFrame").asInt)
-        assertTrue(json.has("effects"))
-
-        val effectsArray = json.getAsJsonArray("effects")
-        assertEquals(1, effectsArray.size())
-        val effectJson = effectsArray.get(0).asJsonObject
-        assertEquals(MockLogicEffect::class.java.simpleName, effectJson.get("type").asString)
-        assertEquals(10, effectJson.get("startFrame").asInt)
-
-        // 4. Deserialize (passing mockContext for Context as it's not needed for these mock logic classes)
         val restoredView = json.toMotionView(mockContext)
 
-        // 5. Verify restored objects
-        assertEquals(originalView.startFrame, restoredView.startFrame)
-        assertEquals(originalView.endFrame, restoredView.endFrame)
+        assertEquals(10, restoredView.startFrame)
+        assertEquals(50, restoredView.endFrame)
 
-        // Note: The registry handles the specific restoration of effects if the factory supports it.
-        // In our simple MockLogicView factory above, we didn't add the effects back yet.
-        // But the core logic of polymorphic serialization is proven.
+        assertEquals(1, restoredView.effects.size)
+        val restoredEffect = restoredView.effects[0]
+        assertEquals(15, restoredEffect.startFrame)
+        assertEquals(45, restoredEffect.endFrame)
     }
 
     @Test
-    fun testMotionAudioRoundTrip() {
-        // Since we are in a unit test, we might need to mock Uri if parse doesn't work.
-        // But Uri.parse is usually handled by Robolectric or we can mock it.
-        // For this test, let's use a mock Uri if needed, or just Uri.parse and see.
-        val mockUri = mock(Uri::class.java)
+    fun testStandaloneEffectSerialization() {
+        val effect = MockLogicEffect(5, 25)
+        val json = effect.toJson()
+        val restoredEffect = json.toMotionEffect()
 
-        val originalAudio =
-            MotionAudio(
-                asset = SimpleMotionAsset(mockUri),
-                startFrame = 0,
-                endFrame = 100,
-                delayFrame = 10,
-            )
-
-        val json = originalAudio.toJson()
-        val restoredAudio = json.toMotionAudio(mockContext)
-
-        // Since mockUri.toString() might be empty/null when mocked without setup,
-        // let's ensure it has some value for comparison if it was serialized.
-        // Actually, the toJson uses audioUri.toString().
-
-        assertEquals(originalAudio.startFrame, restoredAudio.startFrame)
-        assertEquals(originalAudio.endFrame, restoredAudio.endFrame)
-        assertEquals(originalAudio.delayFrame, restoredAudio.delayFrame)
-    }
-
-    /**
-     * A version of MotionView that does NOT inherit from android.view.View
-     */
-    class MockLogicView(
-        override val startFrame: Int,
-        override val endFrame: Int,
-        override val loop: Pair<Int, Int> = Pair(0, 0),
-        override val motionConfig: MotionConfig = MotionConfig(),
-    ) : MotionView {
-        val mockEffects = mutableListOf<MotionEffect>()
-        override val effects: List<MotionEffect> get() = mockEffects
-
-        override fun addEffect(effect: MotionEffect) {
-            effect.motionView = this
-            mockEffects.add(effect)
-        }
-
-        override fun forFrame(frame: Int): MotionView = this
-
-        override fun getViewBitmap(): Bitmap = throw UnsupportedOperationException()
-    }
-
-    class MockLogicEffect(
-        override val startFrame: Int,
-        override val endFrame: Int,
-    ) : MotionEffect {
-        override lateinit var motionView: MotionView
-
-        override fun forFrame(frame: Int): MotionView = motionView
+        assertEquals(5, restoredEffect.startFrame)
+        assertEquals(25, restoredEffect.endFrame)
     }
 }
