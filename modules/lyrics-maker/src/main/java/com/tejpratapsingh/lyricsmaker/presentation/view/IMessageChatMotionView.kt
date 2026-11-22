@@ -16,6 +16,7 @@ import android.text.TextPaint
 import android.text.style.CharacterStyle
 import android.text.style.UpdateAppearance
 import androidx.core.graphics.toColorInt
+import androidx.core.graphics.withSave
 import androidx.core.graphics.withTranslation
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
 import com.tejpratapsingh.motionlib.core.MotionAsset
@@ -281,17 +282,12 @@ class IMessageChatMotionView(
         width: Int,
     ): StaticLayout {
         val safeWidth = width.coerceAtLeast(1)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            StaticLayout.Builder
-                .obtain(content, 0, content.length, textPaint, safeWidth)
-                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-                .setLineSpacing(0f, 1.15f)
-                .setIncludePad(false)
-                .build()
-        } else {
-            @Suppress("DEPRECATION")
-            StaticLayout(content, textPaint, safeWidth, Layout.Alignment.ALIGN_NORMAL, 1.15f, 0f, false)
-        }
+        return StaticLayout.Builder
+            .obtain(content, 0, content.length, textPaint, safeWidth)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setLineSpacing(0f, 1.15f)
+            .setIncludePad(false)
+            .build()
     }
 
     private fun buildBubblePath(
@@ -322,19 +318,18 @@ class IMessageChatMotionView(
             path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         } else {
-            val leftBody = tw
-            path.moveTo(leftBody + r, 0f)
+            path.moveTo(tw + r, 0f)
             path.lineTo(width - r, 0f)
             reusableArcRect.set(width - 2 * r, 0f, width, 2 * r)
             path.arcTo(reusableArcRect, -90f, 90f)
             path.lineTo(width, height - r)
             reusableArcRect.set(width - 2 * r, height - 2 * r, width, height)
             path.arcTo(reusableArcRect, 0f, 90f)
-            path.lineTo(leftBody + r, height)
-            path.quadTo(leftBody + tw * 0.3f, height, 0f, height)
-            path.quadTo(leftBody, height - th * 0.25f, leftBody, height - th)
-            path.lineTo(leftBody, r)
-            reusableArcRect.set(leftBody, 0f, leftBody + 2 * r, 2 * r)
+            path.lineTo(tw + r, height)
+            path.quadTo(tw + tw * 0.3f, height, 0f, height)
+            path.quadTo(tw, height - th * 0.25f, tw, height - th)
+            path.lineTo(tw, r)
+            reusableArcRect.set(tw, 0f, tw + 2 * r, 2 * r)
             path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         }
@@ -443,7 +438,7 @@ class IMessageChatMotionView(
             val bubble = measuredBubbles[i]
             val bubbleWidth = if (isLast) activeBubbleWidth else bubble.bubbleWidth
             val bubbleHeight = if (isLast) activeBubbleHeight else bubble.bubbleHeight
-            val isOutgoing = if (isAlternating) (i % 2 == 0) else true
+            val isOutgoing = !isAlternating || (i % 2 == 0)
 
             val bubbleX =
                 if (isOutgoing) {
@@ -498,12 +493,12 @@ class IMessageChatMotionView(
                     val textX = if (isOutgoing) horizontalPadding else tailWidth + horizontalPadding
                     val textY = verticalPadding
 
-                    val checkpoint = save()
-                    clipPath(reusableBubblePath)
-                    withTranslation(textX, textY) {
-                        layout.draw(this)
+                    withSave {
+                        clipPath(reusableBubblePath)
+                        withTranslation(textX, textY) {
+                            layout.draw(this)
+                        }
                     }
-                    restoreToCount(checkpoint)
                 }
 
                 bubblePaint.alpha = savedBubbleAlpha
