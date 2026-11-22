@@ -28,6 +28,7 @@ import com.tejpratapsingh.motionlib.ui.custom.stack.HorizontalStackMotionView
 import com.tejpratapsingh.motionlib.ui.custom.stack.StackSection
 import com.tejpratapsingh.motionlib.ui.custom.stack.VerticalStackMotionView
 import com.tejpratapsingh.motionlib.ui.custom.text.AccentMiddlePopUpTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.IMessageBubbleTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.RainbowPopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
@@ -214,6 +215,44 @@ object MotionSduiInitializer {
             view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
             view.textColor?.let { json.addProperty("textColor", it) }
             view.highlightColor?.let { json.addProperty("highlightColor", it) }
+        }
+
+        // Register IMessageBubbleTextView
+        MotionSdui.registerView(IMessageBubbleTextView::class.java.simpleName) { context, json ->
+            val props = json.parseMotionViewProps(context)
+            val text = json.get("text")?.asString ?: ""
+            val writingSpeed = json.get("writingSpeed")?.asFloat ?: 0f
+            val unwrittenTextAlpha = json.get("unwrittenTextAlpha")?.asFloat ?: 0f
+            val bubbleColor = json.get("bubbleColor")?.asString ?: "#007AFF"
+            val textColor = json.get("textColor")?.asString ?: "#FFFFFF"
+            val isOutgoing = if (json.has("isOutgoing")) json.get("isOutgoing").asBoolean else true
+            val fontAsset = json.get("fontAsset")?.asJsonObject?.toMotionAsset(context)
+            val textSizeVariant = json.get("textSizeVariant")?.asString?.let { MotionTextVariant.valueOf(it) }
+            IMessageBubbleTextView(
+                context = context,
+                text = text,
+                startFrame = props.startFrame,
+                endFrame = props.endFrame,
+                writingSpeed = writingSpeed,
+                unwrittenTextAlpha = unwrittenTextAlpha,
+                bubbleColor = bubbleColor,
+                textColor = textColor,
+                isOutgoing = isOutgoing,
+                fontAsset = fontAsset,
+                textSizeVariant = textSizeVariant,
+                effects = props.effects,
+            )
+        }
+        MotionSdui.registerViewSerializer(IMessageBubbleTextView::class.java) { view, json ->
+            json.addProperty("type", view.javaClass.simpleName)
+            json.addProperty("text", view.text)
+            view.fontAsset?.let { json.add("fontAsset", it.toJson()) }
+            json.addProperty("writingSpeed", view.writingSpeed)
+            json.addProperty("unwrittenTextAlpha", view.unwrittenTextAlpha)
+            json.addProperty("bubbleColor", view.bubbleColor)
+            json.addProperty("textColor", view.textColor)
+            json.addProperty("isOutgoing", view.isOutgoing)
+            view.textSizeVariant?.let { json.addProperty("textSizeVariant", it.name) }
         }
 
         // Register WordBlinkTextView

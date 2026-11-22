@@ -5,6 +5,7 @@ import com.tejpratapsingh.motion.sdui.infra.MotionSduiInitializer
 import com.tejpratapsingh.motion.sdui.infra.toMotionView
 import com.tejpratapsingh.motionlib.ui.custom.background.GradientView
 import com.tejpratapsingh.motionlib.ui.custom.background.TranslucentMotionView
+import com.tejpratapsingh.motionlib.ui.custom.text.IMessageBubbleTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TypeWriterTextView
 import org.junit.Assert.assertTrue
@@ -74,5 +75,27 @@ class MotionSduiRegistryTest {
         val view = json.toMotionView(RuntimeEnvironment.getApplication())
         assertTrue(view is TranslucentMotionView)
         assertTrue((view as TranslucentMotionView).alpha == 0.5f)
+    }
+
+    @Test
+    fun testIMessageBubbleTextViewRegistration() {
+        val json =
+            JsonObject().apply {
+                addProperty("type", "IMessageBubbleTextView")
+                addProperty("text", "Hello from iMessage")
+                addProperty("startFrame", 0)
+                addProperty("endFrame", 100)
+                addProperty("bubbleColor", "#34C759")
+                addProperty("textColor", "#FFFFFF")
+                addProperty("isOutgoing", true)
+                addProperty("writingSpeed", 1.5f)
+            }
+        val view = json.toMotionView(RuntimeEnvironment.getApplication())
+        assertTrue(view is IMessageBubbleTextView)
+        val bubbleView = view as IMessageBubbleTextView
+        assertTrue(bubbleView.text == "Hello from iMessage")
+        assertTrue(bubbleView.bubbleColor == "#34C759")
+        assertTrue(bubbleView.isOutgoing)
+        assertTrue(bubbleView.writingSpeed == 1.5f)
     }
 }

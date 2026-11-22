@@ -17,6 +17,7 @@ object LyricsTemplateRegistry {
             AccentLyricsTemplate,
             VintageLyricsTemplate,
             StackedLyricsTemplate,
+            IMessageLyricsTemplate,
         )
 
     fun getTemplate(name: String?): MotionTemplate = templates.find { it.name == name } ?: PopupLyricsTemplate

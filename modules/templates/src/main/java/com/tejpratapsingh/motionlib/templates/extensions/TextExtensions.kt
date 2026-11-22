@@ -7,6 +7,7 @@ import com.tejpratapsingh.motionlib.core.MotionLayoutInfo
 import com.tejpratapsingh.motionlib.core.MotionTextVariant
 import com.tejpratapsingh.motionlib.templates.dsl.ContentScope
 import com.tejpratapsingh.motionlib.ui.custom.text.AccentMiddlePopUpTextView
+import com.tejpratapsingh.motionlib.ui.custom.text.IMessageBubbleTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.PopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.RainbowPopUpTextView
 import com.tejpratapsingh.motionlib.ui.custom.text.TransparentTextView
@@ -107,6 +108,37 @@ fun ContentScope.wordWriterTextView(
     textSizeVariant,
     textColor,
     highlightColor,
+    effects = effects,
+).apply { this.layoutInfo = layoutInfo }
+    .apply { block?.invoke(this) }
+    .also { addView(it) }
+
+fun ContentScope.iMessageBubbleTextView(
+    text: String,
+    startFrame: Int,
+    endFrame: Int,
+    writingSpeed: Float = 0f,
+    unwrittenTextAlpha: Float = 0f,
+    bubbleColor: String = "#007AFF",
+    textColor: String = "#FFFFFF",
+    isOutgoing: Boolean = true,
+    fontAsset: MotionAsset? = null,
+    textSizeVariant: MotionTextVariant? = null,
+    effects: List<MotionEffect> = emptyList(),
+    layoutInfo: MotionLayoutInfo = MotionLayoutInfo(),
+    block: (IMessageBubbleTextView.() -> Unit)? = null,
+) = IMessageBubbleTextView(
+    context = context,
+    text = text,
+    startFrame = startFrame,
+    endFrame = endFrame,
+    writingSpeed = writingSpeed,
+    unwrittenTextAlpha = unwrittenTextAlpha,
+    bubbleColor = bubbleColor,
+    textColor = textColor,
+    isOutgoing = isOutgoing,
+    fontAsset = fontAsset,
+    textSizeVariant = textSizeVariant,
     effects = effects,
 ).apply { this.layoutInfo = layoutInfo }
     .apply { block?.invoke(this) }

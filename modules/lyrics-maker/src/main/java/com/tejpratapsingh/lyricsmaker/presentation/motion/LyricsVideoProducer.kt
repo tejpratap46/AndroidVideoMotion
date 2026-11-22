@@ -42,11 +42,25 @@ fun extractLyricsTemplateData(motionProject: MotionProject): TemplateData {
             ?.takeIf { it.isJsonPrimitive }
             ?.asString
 
+    val bubbleColor =
+        motionProject.metadata
+            .get("bubbleColor")
+            ?.takeIf { it.isJsonPrimitive }
+            ?.asString ?: "#007AFF"
+
+    val isAlternating =
+        motionProject.metadata
+            .get("isAlternating")
+            ?.takeIf { it.isJsonPrimitive }
+            ?.asBoolean ?: false
+
     return TemplateData(
         mapOf(
             "songName" to motionProject.name,
             "image" to (image ?: ""),
             "lyrics" to lyrics,
+            "bubbleColor" to bubbleColor,
+            "isAlternating" to isAlternating,
         ),
     )
 }
