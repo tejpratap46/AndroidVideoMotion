@@ -8,8 +8,13 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.os.Build
 import android.text.Layout
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.text.style.CharacterStyle
+import android.text.style.UpdateAppearance
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.withTranslation
 import com.tejpratapsingh.lyricsmaker.data.lrc.SyncedLyricFrame
@@ -44,7 +49,6 @@ class IMessageChatMotionView(
     val textSizeVariant: MotionTextVariant = MotionTextVariant.H5,
     effects: List<MotionEffect> = emptyList(),
 ) : BaseContourMotionView(context, startFrame, endFrame, effects = effects) {
-
     private val textPaint: TextPaint by lazy {
         TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             val fontSize = motionConfig.getFontSize(textSizeVariant)
@@ -56,35 +60,54 @@ class IMessageChatMotionView(
         }
     }
 
+    private var parsedTextColor: Int = Color.WHITE
+    private var parsedIncomingTextColor: Int = Color.WHITE
+    private var parsedBubbleColor: Int = "#007AFF".toColorInt()
+    private var parsedIncomingBubbleColor: Int = "#26252A".toColorInt()
+
     private val outgoingBubblePaint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
-            try {
-                color = bubbleColor.toColorInt()
-            } catch (e: Exception) {
-                color = Color.parseColor("#007AFF")
-            }
+            color = parsedBubbleColor
         }
     }
 
     private val incomingBubblePaint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
-            try {
-                color = incomingBubbleColor.toColorInt()
-            } catch (e: Exception) {
-                color = Color.parseColor("#26252A")
-            }
+            color = parsedIncomingBubbleColor
         }
     }
 
-    // Cached measurements for completed full lines
+    private val reusableBubblePath = Path()
+    private val reusableArcRect = RectF()
+
+    private class MutableColorSpan(
+        var color: Int = Color.WHITE,
+    ) : CharacterStyle(),
+        UpdateAppearance {
+        override fun updateDrawState(tp: TextPaint) {
+            tp.color = color
+        }
+    }
+
+    private data class PrefixLayoutData(
+        val layout: StaticLayout,
+        val bubbleWidth: Float,
+        val bubbleHeight: Float,
+        val prevSpan: MutableColorSpan?,
+        val wordSpan: MutableColorSpan,
+    )
+
+    // Cached measurements for completed full lines and word-by-word prefixes
     private data class MeasuredBubble(
         val bubbleWidth: Float,
         val bubbleHeight: Float,
-        val textWidth: Float,
-        val textHeight: Float,
         val words: List<String>,
+        val wordDimensions: List<Pair<Float, Float>>,
+        val prefixLayouts: List<PrefixLayoutData>,
+        val fullLayout: StaticLayout,
+        val fullSpan: MutableColorSpan,
     )
 
     private var measuredBubbles: List<MeasuredBubble> = emptyList()
@@ -103,13 +126,44 @@ class IMessageChatMotionView(
     init {
         setWillNotDraw(false)
 
+        parsedTextColor =
+            try {
+                textColor.toColorInt()
+            } catch (e: Exception) {
+                Color.WHITE
+            }
+        parsedIncomingTextColor =
+            try {
+                incomingTextColor.toColorInt()
+            } catch (e: Exception) {
+                Color.WHITE
+            }
+        parsedBubbleColor =
+            try {
+                bubbleColor.toColorInt()
+            } catch (e: Exception) {
+                "#007AFF".toColorInt()
+            }
+        parsedIncomingBubbleColor =
+            try {
+                incomingBubbleColor.toColorInt()
+            } catch (e: Exception) {
+                "#26252A".toColorInt()
+            }
+
         contourWidthOf {
-            if (layoutInfo.width > 0) layoutInfo.width.toXInt()
-            else motionConfig.aspectRatio.width.toXInt()
+            if (layoutInfo.width > 0) {
+                layoutInfo.width.toXInt()
+            } else {
+                motionConfig.aspectRatio.width.toXInt()
+            }
         }
         contourHeightOf {
-            if (layoutInfo.height > 0) layoutInfo.height.toYInt()
-            else motionConfig.aspectRatio.height.toYInt()
+            if (layoutInfo.height > 0) {
+                layoutInfo.height.toYInt()
+            } else {
+                motionConfig.aspectRatio.height.toYInt()
+            }
         }
     }
 
@@ -127,40 +181,109 @@ class IMessageChatMotionView(
         val screenWidth = motionConfig.aspectRatio.width.toFloat()
         maxAllowedTextWidth = (screenWidth * 0.72f) - (horizontalPadding * 2 + tailWidth)
 
-        measuredBubbles = lyrics.map { lyric ->
-            val words = if (lyric.text.isEmpty()) emptyList() else lyric.text.split(" ")
-            val measuredSingleWidth = textPaint.measureText(lyric.text)
-            val layoutWidth = if (measuredSingleWidth > maxAllowedTextWidth) {
-                maxAllowedTextWidth.toInt().coerceAtLeast(1)
-            } else {
-                (measuredSingleWidth + 4).toInt()
+        measuredBubbles =
+            lyrics.map { lyric ->
+                val words = if (lyric.text.isEmpty()) emptyList() else lyric.text.split(" ")
+                val wordDimensions = mutableListOf<Pair<Float, Float>>()
+                val prefixLayouts = mutableListOf<PrefixLayoutData>()
+
+                for (wordIdx in words.indices) {
+                    val prefixText = words.take(wordIdx + 1).joinToString(" ")
+                    val measuredSingleWidth = textPaint.measureText(prefixText)
+                    val layoutWidth =
+                        if (measuredSingleWidth > maxAllowedTextWidth) {
+                            maxAllowedTextWidth.toInt().coerceAtLeast(1)
+                        } else {
+                            (measuredSingleWidth + 4).toInt()
+                        }
+
+                    val activeWordStart =
+                        if (wordIdx > 0) {
+                            words.take(wordIdx).joinToString(" ").length + 1
+                        } else {
+                            0
+                        }
+                    val activeWordEnd = prefixText.length
+
+                    val spannable = SpannableString(prefixText)
+                    var prevSpan: MutableColorSpan? = null
+                    if (activeWordStart > 0) {
+                        prevSpan = MutableColorSpan(Color.WHITE)
+                        spannable.setSpan(prevSpan, 0, activeWordStart, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    val wordSpan = MutableColorSpan(Color.WHITE)
+                    spannable.setSpan(wordSpan, activeWordStart, activeWordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                    val layout = createStaticLayout(spannable, layoutWidth)
+                    val actualLineWidth =
+                        if (layout.lineCount > 0) {
+                            (0 until layout.lineCount).maxOf { layout.getLineWidth(it) }
+                        } else {
+                            measuredSingleWidth
+                        }
+
+                    val bWidth = actualLineWidth + horizontalPadding * 2 + tailWidth
+                    val bHeight = layout.height + verticalPadding * 2
+                    val dims = Pair(bWidth, bHeight)
+                    wordDimensions.add(dims)
+                    prefixLayouts.add(PrefixLayoutData(layout, bWidth, bHeight, prevSpan, wordSpan))
+                }
+
+                val fullWidth = wordDimensions.lastOrNull()?.first ?: (cornerRadius * 2 + tailWidth)
+                val fullHeight = wordDimensions.lastOrNull()?.second ?: (textPaint.textSize + verticalPadding * 2)
+
+                val fullSpannable = SpannableString(lyric.text)
+                val fullSpan = MutableColorSpan(Color.WHITE)
+                if (lyric.text.isNotEmpty()) {
+                    fullSpannable.setSpan(fullSpan, 0, lyric.text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val fullMeasuredWidth = textPaint.measureText(lyric.text)
+                val fullLayoutWidth =
+                    if (fullMeasuredWidth > maxAllowedTextWidth) {
+                        maxAllowedTextWidth.toInt().coerceAtLeast(1)
+                    } else {
+                        (fullMeasuredWidth + 4).toInt()
+                    }
+                val fullLayout = createStaticLayout(fullSpannable, fullLayoutWidth)
+
+                MeasuredBubble(
+                    bubbleWidth = fullWidth,
+                    bubbleHeight = fullHeight,
+                    words = words,
+                    wordDimensions = wordDimensions,
+                    prefixLayouts = prefixLayouts,
+                    fullLayout = fullLayout,
+                    fullSpan = fullSpan,
+                )
             }
-
-            val layout = createStaticLayout(lyric.text, layoutWidth)
-            val actualLineWidth = if (layout.lineCount > 0) {
-                (0 until layout.lineCount).maxOf { layout.getLineWidth(it) }
-            } else {
-                measuredSingleWidth
-            }
-
-            val bWidth = actualLineWidth + horizontalPadding * 2 + tailWidth
-            val bHeight = layout.height + verticalPadding * 2
-
-            MeasuredBubble(
-                bubbleWidth = bWidth,
-                bubbleHeight = bHeight,
-                textWidth = actualLineWidth,
-                textHeight = layout.height.toFloat(),
-                words = words,
-            )
-        }
         isMeasured = true
     }
 
-    private fun createStaticLayout(content: CharSequence, width: Int): StaticLayout {
+    private fun getBubbleDimension(
+        index: Int,
+        wordCount: Int,
+    ): Pair<Float, Float> {
+        val defaultMin =
+            Pair(
+                cornerRadius * 2 + tailWidth,
+                textPaint.textSize + verticalPadding * 2,
+            )
+        val bubble = measuredBubbles.getOrNull(index) ?: return defaultMin
+        if (wordCount <= 0 || bubble.wordDimensions.isEmpty()) {
+            return defaultMin
+        }
+        val idx = (wordCount - 1).coerceIn(0, bubble.wordDimensions.size - 1)
+        return bubble.wordDimensions[idx]
+    }
+
+    private fun createStaticLayout(
+        content: CharSequence,
+        width: Int,
+    ): StaticLayout {
         val safeWidth = width.coerceAtLeast(1)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            StaticLayout.Builder.obtain(content, 0, content.length, textPaint, safeWidth)
+            StaticLayout.Builder
+                .obtain(content, 0, content.length, textPaint, safeWidth)
                 .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                 .setLineSpacing(0f, 1.15f)
                 .setIncludePad(false)
@@ -171,40 +294,50 @@ class IMessageChatMotionView(
         }
     }
 
-    private fun buildBubblePath(width: Float, height: Float, isOutgoing: Boolean): Path {
-        val path = Path()
-        val r = cornerRadius
-        val tw = tailWidth
-        val th = tailHeight
+    private fun buildBubblePath(
+        path: Path,
+        width: Float,
+        height: Float,
+        isOutgoing: Boolean,
+    ) {
+        path.reset()
+        val r = cornerRadius.coerceAtMost(height / 2f).coerceAtMost(width / 2f)
+        val tw = tailWidth.coerceAtMost(width * 0.3f)
+        val th = tailHeight.coerceAtMost(height * 0.4f)
 
         if (isOutgoing) {
             val rightBody = width - tw
             path.moveTo(r, 0f)
             path.lineTo(rightBody - r, 0f)
-            path.arcTo(RectF(rightBody - 2 * r, 0f, rightBody, 2 * r), -90f, 90f)
+            reusableArcRect.set(rightBody - 2 * r, 0f, rightBody, 2 * r)
+            path.arcTo(reusableArcRect, -90f, 90f)
             path.lineTo(rightBody, height - th)
             path.quadTo(rightBody, height - th * 0.25f, width, height)
             path.quadTo(rightBody - tw * 0.3f, height, rightBody - r, height)
             path.lineTo(r, height)
-            path.arcTo(RectF(0f, height - 2 * r, 2 * r, height), 90f, 90f)
+            reusableArcRect.set(0f, height - 2 * r, 2 * r, height)
+            path.arcTo(reusableArcRect, 90f, 90f)
             path.lineTo(0f, r)
-            path.arcTo(RectF(0f, 0f, 2 * r, 2 * r), 180f, 90f)
+            reusableArcRect.set(0f, 0f, 2 * r, 2 * r)
+            path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         } else {
             val leftBody = tw
             path.moveTo(leftBody + r, 0f)
             path.lineTo(width - r, 0f)
-            path.arcTo(RectF(width - 2 * r, 0f, width, 2 * r), -90f, 90f)
+            reusableArcRect.set(width - 2 * r, 0f, width, 2 * r)
+            path.arcTo(reusableArcRect, -90f, 90f)
             path.lineTo(width, height - r)
-            path.arcTo(RectF(width - 2 * r, height - 2 * r, width, height), 0f, 90f)
+            reusableArcRect.set(width - 2 * r, height - 2 * r, width, height)
+            path.arcTo(reusableArcRect, 0f, 90f)
             path.lineTo(leftBody + r, height)
             path.quadTo(leftBody + tw * 0.3f, height, 0f, height)
             path.quadTo(leftBody, height - th * 0.25f, leftBody, height - th)
             path.lineTo(leftBody, r)
-            path.arcTo(RectF(leftBody, 0f, leftBody + 2 * r, 2 * r), 180f, 90f)
+            reusableArcRect.set(leftBody, 0f, leftBody + 2 * r, 2 * r)
+            path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         }
-        return path
     }
 
     override fun forFrame(frame: Int): MotionView {
@@ -214,15 +347,6 @@ class IMessageChatMotionView(
         return this
     }
 
-    private data class ActiveBubbleRenderData(
-        val index: Int,
-        val text: String,
-        val isOutgoing: Boolean,
-        val bubbleWidth: Float,
-        val bubbleHeight: Float,
-        val staticLayout: StaticLayout,
-    )
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         ensureMeasurements()
@@ -231,150 +355,158 @@ class IMessageChatMotionView(
         val screenWidth = width.toFloat().takeIf { it > 0 } ?: motionConfig.aspectRatio.width.toFloat()
         val screenHeight = height.toFloat().takeIf { it > 0 } ?: motionConfig.aspectRatio.height.toFloat()
 
-        // 1. Determine all lyrics arrived up to currentFrame
-        val visibleIndices = lyrics.indices.filter { lyrics[it].frame <= currentFrameIndex }
-        if (visibleIndices.isEmpty()) return
-
-        val activeIndex = visibleIndices.last()
-
-        // 2. Build list of bubbles to render (with active line width growing per visible word)
-        val bubblesToDraw = mutableListOf<ActiveBubbleRenderData>()
-
-        visibleIndices.forEach { index ->
-            val lyric = lyrics[index]
-            val isOutgoing = if (isAlternating) (index % 2 == 0) else true
-
-            if (index == activeIndex) {
-                val words = measuredBubbles[index].words
-                val nextFrame = if (index + 1 < lyrics.size) lyrics[index + 1].frame else (lyric.frame + 60)
-                val duration = (nextFrame - lyric.frame).coerceAtLeast(1)
-                val elapsed = (currentFrameIndex - lyric.frame).coerceAtLeast(0)
-                val progress = if (writingSpeed > 0f) {
-                    (elapsed.toFloat() * writingSpeed / duration).coerceIn(0f, 1f)
-                } else {
-                    (elapsed.toFloat() / duration).coerceIn(0f, 1f)
-                }
-
-                val visibleWordCount = (progress * words.size).toInt().coerceIn(0, words.size)
-                if (visibleWordCount > 0) {
-                    val currentText = words.take(visibleWordCount).joinToString(" ")
-                    val singleLineWidth = textPaint.measureText(currentText)
-                    val layoutWidth = if (singleLineWidth > maxAllowedTextWidth) {
-                        maxAllowedTextWidth.toInt().coerceAtLeast(1)
-                    } else {
-                        (singleLineWidth + 4).toInt()
-                    }
-
-                    val layout = createStaticLayout(currentText, layoutWidth)
-                    val actualLineWidth = if (layout.lineCount > 0) {
-                        (0 until layout.lineCount).maxOf { layout.getLineWidth(it) }
-                    } else {
-                        singleLineWidth
-                    }
-
-                    val bWidth = actualLineWidth + horizontalPadding * 2 + tailWidth
-                    val bHeight = layout.height + verticalPadding * 2
-
-                    bubblesToDraw.add(
-                        ActiveBubbleRenderData(
-                            index = index,
-                            text = currentText,
-                            isOutgoing = isOutgoing,
-                            bubbleWidth = bWidth,
-                            bubbleHeight = bHeight,
-                            staticLayout = layout,
-                        )
-                    )
-                }
+        // 1. Find last visible lyric index without allocations
+        var lastVisibleIndex = -1
+        for (i in lyrics.indices) {
+            if (lyrics[i].frame <= currentFrameIndex) {
+                lastVisibleIndex = i
             } else {
-                val bubble = measuredBubbles[index]
-                val layout = createStaticLayout(lyric.text, (bubble.textWidth + 4).toInt().coerceAtLeast(1))
-                bubblesToDraw.add(
-                    ActiveBubbleRenderData(
-                        index = index,
-                        text = lyric.text,
-                        isOutgoing = isOutgoing,
-                        bubbleWidth = bubble.bubbleWidth,
-                        bubbleHeight = bubble.bubbleHeight,
-                        staticLayout = layout,
-                    )
-                )
+                break
+            }
+        }
+        if (lastVisibleIndex < 0) return
+
+        // 2. Active bubble layout & dimensions
+        val activeLyric = lyrics[lastVisibleIndex]
+        val activeBubble = measuredBubbles[lastVisibleIndex]
+        val totalWords = activeBubble.words.size
+
+        var activeBubbleWidth = activeBubble.bubbleWidth
+        var activeBubbleHeight = activeBubble.bubbleHeight
+        var activeWordIndex = totalWords - 1
+        var activeWordAnimAlpha = 1.0f
+        var isFirstWord = false
+
+        if (totalWords > 0) {
+            val nextFrame = if (lastVisibleIndex + 1 < lyrics.size) lyrics[lastVisibleIndex + 1].frame else (activeLyric.frame + 60)
+            val duration = (nextFrame - activeLyric.frame).coerceAtLeast(1)
+            val elapsed = (currentFrameIndex - activeLyric.frame).coerceAtLeast(0)
+            val speed = if (writingSpeed > 0f) writingSpeed else 1.0f
+            val lineTypingDuration = (duration / speed).coerceAtLeast(1f)
+            val lineProgress = (elapsed / lineTypingDuration).coerceIn(0f, 1f)
+
+            if (lineProgress < 1f) {
+                val continuousWordIndex = lineProgress * totalWords
+                activeWordIndex = continuousWordIndex.toInt().coerceIn(0, totalWords - 1)
+                val wordSubProgress = (continuousWordIndex - activeWordIndex).coerceIn(0f, 1f)
+
+                val framesPerWord = lineTypingDuration / totalWords
+                val animFrames = minOf(6f, framesPerWord * 0.75f).coerceAtLeast(2f)
+                val animDurationFraction = (animFrames / framesPerWord).coerceIn(0.2f, 0.9f)
+                val wordAnimT = (wordSubProgress / animDurationFraction).coerceIn(0f, 1f)
+                val f = 1f - wordAnimT
+                val easedAnimT = 1f - f * f * f
+
+                val prevDim = getBubbleDimension(lastVisibleIndex, activeWordIndex)
+                val targetDim = getBubbleDimension(lastVisibleIndex, activeWordIndex + 1)
+
+                activeBubbleWidth = prevDim.first + (targetDim.first - prevDim.first) * easedAnimT
+                activeBubbleHeight = prevDim.second + (targetDim.second - prevDim.second) * easedAnimT
+                activeWordAnimAlpha = easedAnimT
+                isFirstWord = (activeWordIndex == 0)
             }
         }
 
-        if (bubblesToDraw.isEmpty()) return
-
-        // 3. Compute vertical placement anchored to the BOTTOM
+        // 3. Compute vertical placement anchored to the BOTTOM (zero allocations)
         val sideMargin = 48f
-        val topSafeArea = screenHeight * 0.15f
-        val bottomSafeArea = screenHeight * 0.85f
-        val maxAvailableHeight = bottomSafeArea - topSafeArea
+        val topSafeArea = screenHeight * 0.12f
+        val bottomSafeArea = screenHeight * 0.88f
 
-        val totalChatHeight = bubblesToDraw.map { it.bubbleHeight }.sum() +
-            (bubblesToDraw.size - 1) * bubbleSpacing
-
-        // Start at bottom: bottom of newest bubble anchored at bottomSafeArea
-        val scrollOffset = if (totalChatHeight > maxAvailableHeight) {
-            totalChatHeight - maxAvailableHeight
-        } else {
-            0f
+        var prevChatHeight = 0f
+        for (i in 0 until lastVisibleIndex) {
+            prevChatHeight += measuredBubbles[i].bubbleHeight
+            if (i > 0) prevChatHeight += bubbleSpacing
+        }
+        if (lastVisibleIndex > 0) {
+            prevChatHeight += bubbleSpacing
         }
 
-        var currentY = bottomSafeArea - totalChatHeight + scrollOffset
+        val startY =
+            if (lastVisibleIndex > 0) {
+                val elapsedSinceLineStart = (currentFrameIndex - activeLyric.frame).coerceAtLeast(0)
+                val scrollAnimDuration = 8f
+                val scrollProgress = (elapsedSinceLineStart.toFloat() / scrollAnimDuration).coerceIn(0f, 1f)
+                val f = 1f - scrollProgress
+                val easedScrollProgress = 1f - f * f * f
 
-        // 4. Draw each bubble
-        bubblesToDraw.forEach { item ->
-            val bubbleWidth = item.bubbleWidth
-            val bubbleHeight = item.bubbleHeight
-            val isOutgoing = item.isOutgoing
-
-            val bubbleX = if (isOutgoing) {
-                screenWidth - sideMargin - bubbleWidth
+                val animatedTotalHeight = prevChatHeight + activeBubbleHeight * easedScrollProgress
+                bottomSafeArea - animatedTotalHeight
             } else {
-                sideMargin
+                bottomSafeArea - activeBubbleHeight
             }
+
+        var currentY = startY
+
+        // 4. Draw bubbles directly without allocating wrappers
+        for (i in 0..lastVisibleIndex) {
+            val isLast = (i == lastVisibleIndex)
+            val bubble = measuredBubbles[i]
+            val bubbleWidth = if (isLast) activeBubbleWidth else bubble.bubbleWidth
+            val bubbleHeight = if (isLast) activeBubbleHeight else bubble.bubbleHeight
+            val isOutgoing = if (isAlternating) (i % 2 == 0) else true
+
+            val bubbleX =
+                if (isOutgoing) {
+                    screenWidth - sideMargin - bubbleWidth
+                } else {
+                    sideMargin
+                }
 
             val bubbleTop = currentY
             val bubbleBottom = currentY + bubbleHeight
 
             if (bubbleBottom > 0 && bubbleTop < screenHeight) {
-                // Fade out as message approaches/exceeds topSafeArea
-                var alpha = 1.0f
+                // Fade out as message moves above topSafeArea
+                var scrollAlpha = 1.0f
                 if (bubbleTop < topSafeArea) {
-                    val fadeDistance = topSafeArea * 0.6f
-                    alpha = ((bubbleBottom - (topSafeArea - fadeDistance)) / (fadeDistance + bubbleHeight)).coerceIn(0f, 1f)
+                    val fadeDistance = topSafeArea * 0.8f
+                    scrollAlpha = ((bubbleBottom - (topSafeArea - fadeDistance)) / (fadeDistance + bubbleHeight)).coerceIn(0f, 1f)
                 }
 
-                val savedOutgoingAlpha = outgoingBubblePaint.alpha
-                val savedIncomingAlpha = incomingBubblePaint.alpha
-                outgoingBubblePaint.alpha = (255 * alpha).toInt()
-                incomingBubblePaint.alpha = (255 * alpha).toInt()
+                val bubbleAlpha =
+                    if (isLast && isFirstWord) {
+                        scrollAlpha * activeWordAnimAlpha
+                    } else {
+                        scrollAlpha
+                    }
 
-                val textHex = if (isOutgoing) textColor else incomingTextColor
-                val baseTextColor = try { textHex.toColorInt() } catch (e: Exception) { Color.WHITE }
-                textPaint.color = Color.argb(
-                    (255 * alpha).toInt(),
-                    Color.red(baseTextColor),
-                    Color.green(baseTextColor),
-                    Color.blue(baseTextColor),
-                )
+                val bubblePaint = if (isOutgoing) outgoingBubblePaint else incomingBubblePaint
+                val savedBubbleAlpha = bubblePaint.alpha
+                bubblePaint.alpha = (255 * bubbleAlpha).toInt().coerceIn(0, 255)
+
+                val baseTextColor = if (isOutgoing) parsedTextColor else parsedIncomingTextColor
+                val r = Color.red(baseTextColor)
+                val g = Color.green(baseTextColor)
+                val b = Color.blue(baseTextColor)
+
+                val layout: StaticLayout
+                if (isLast && bubble.prefixLayouts.isNotEmpty() && activeWordIndex < bubble.words.size - 1) {
+                    val prefixData = bubble.prefixLayouts.getOrNull(activeWordIndex) ?: bubble.prefixLayouts.last()
+                    prefixData.prevSpan?.color = Color.argb((255 * scrollAlpha).toInt().coerceIn(0, 255), r, g, b)
+                    prefixData.wordSpan.color = Color.argb((255 * scrollAlpha * activeWordAnimAlpha).toInt().coerceIn(0, 255), r, g, b)
+                    layout = prefixData.layout
+                } else {
+                    bubble.fullSpan.color = Color.argb((255 * scrollAlpha).toInt().coerceIn(0, 255), r, g, b)
+                    layout = bubble.fullLayout
+                }
+
+                buildBubblePath(reusableBubblePath, bubbleWidth, bubbleHeight, isOutgoing)
 
                 canvas.withTranslation(bubbleX, bubbleTop) {
-                    // Draw bubble path
-                    val bubblePath = buildBubblePath(bubbleWidth, bubbleHeight, isOutgoing)
-                    drawPath(bubblePath, if (isOutgoing) outgoingBubblePaint else incomingBubblePaint)
+                    drawPath(reusableBubblePath, bubblePaint)
 
-                    // Draw text inside bubble
                     val textX = if (isOutgoing) horizontalPadding else tailWidth + horizontalPadding
                     val textY = verticalPadding
 
+                    val checkpoint = save()
+                    clipPath(reusableBubblePath)
                     withTranslation(textX, textY) {
-                        item.staticLayout.draw(this)
+                        layout.draw(this)
                     }
+                    restoreToCount(checkpoint)
                 }
 
-                outgoingBubblePaint.alpha = savedOutgoingAlpha
-                incomingBubblePaint.alpha = savedIncomingAlpha
+                bubblePaint.alpha = savedBubbleAlpha
             }
 
             currentY += bubbleHeight + bubbleSpacing
@@ -382,14 +514,15 @@ class IMessageChatMotionView(
     }
 
     override fun getEditableProperties(): List<PropertySpec> =
-        super.getEditableProperties() + listOf(
-            PropertySpec.color("bubbleColor", label = "Bubble Color"),
-            PropertySpec.color("textColor", label = "Text Color"),
-            PropertySpec.color("incomingBubbleColor", label = "Incoming Bubble Color"),
-            PropertySpec.color("incomingTextColor", label = "Incoming Text Color"),
-            PropertySpec.dropdown("textSizeVariant", label = "Text Size", options = MotionTextVariant.entries.map { it.name }),
-            PropertySpec.slider("writingSpeed", label = "Writing Speed", min = 0.0f, max = 5.0f, step = 0.1f),
-            PropertySpec.slider("unwrittenTextAlpha", label = "Unwritten Text Opacity", min = 0.0f, max = 1.0f, step = 0.05f),
-            PropertySpec.boolean("isAlternating", label = "Is Alternating")
-        )
+        super.getEditableProperties() +
+            listOf(
+                PropertySpec.color("bubbleColor", label = "Bubble Color"),
+                PropertySpec.color("textColor", label = "Text Color"),
+                PropertySpec.color("incomingBubbleColor", label = "Incoming Bubble Color"),
+                PropertySpec.color("incomingTextColor", label = "Incoming Text Color"),
+                PropertySpec.dropdown("textSizeVariant", label = "Text Size", options = MotionTextVariant.entries.map { it.name }),
+                PropertySpec.slider("writingSpeed", label = "Writing Speed", min = 0.0f, max = 5.0f, step = 0.1f),
+                PropertySpec.slider("unwrittenTextAlpha", label = "Unwritten Text Opacity", min = 0.0f, max = 1.0f, step = 0.05f),
+                PropertySpec.boolean("isAlternating", label = "Is Alternating"),
+            )
 }

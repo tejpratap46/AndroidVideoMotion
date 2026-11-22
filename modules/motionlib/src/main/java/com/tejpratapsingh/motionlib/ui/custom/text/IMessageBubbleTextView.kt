@@ -10,9 +10,11 @@ import android.os.Build
 import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
 import android.text.StaticLayout
 import android.text.TextPaint
-import android.text.style.ForegroundColorSpan
+import android.text.style.CharacterStyle
+import android.text.style.UpdateAppearance
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.withTranslation
 import com.tejpratapsingh.motionlib.core.MotionAsset
@@ -68,15 +70,14 @@ class IMessageBubbleTextView(
             endFrame
         }
 
+    private var parsedTextColor: Int = Color.WHITE
+    private var parsedBubbleColor: Int = Color.parseColor("#007AFF")
+
     private val textPaint: TextPaint by lazy {
         TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             val fontSize = motionConfig.getFontSize(textSizeVariant ?: MotionTextVariant.H3)
             textSize = fontSize
-            try {
-                color = textColor.toColorInt()
-            } catch (e: Exception) {
-                color = Color.WHITE
-            }
+            color = parsedTextColor
             fontAsset?.let {
                 typeface = context.getWebFont(it.getUri().toString())
             }
@@ -86,13 +87,32 @@ class IMessageBubbleTextView(
     private val bubblePaint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
-            try {
-                color = bubbleColor.toColorInt()
-            } catch (e: Exception) {
-                color = "#007AFF".toColorInt()
+            color = parsedBubbleColor
+        }
+    }
+
+    private class MutableColorSpan(var color: Int = Color.WHITE) : CharacterStyle(), UpdateAppearance {
+        override fun updateDrawState(tp: TextPaint) {
+            tp.color = color
+        }
+    }
+
+    private val reusableBubblePath = Path()
+    private val reusableArcRect = RectF()
+    private var isPathBuilt = false
+    private var cachedLayout: StaticLayout? = null
+
+    private val writtenSpan = MutableColorSpan(Color.WHITE)
+    private val unwrittenSpan = MutableColorSpan(Color.TRANSPARENT)
+    private val preallocatedSpannable: SpannableString by lazy {
+        SpannableString(text).apply {
+            if (text.isNotEmpty()) {
+                setSpan(writtenSpan, 0, 0, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(unwrittenSpan, 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
     }
+    private var wordEndCharIndices: IntArray = IntArray(0)
 
     private var calculatedBubbleWidth: Int = 0
     private var calculatedBubbleHeight: Int = 0
@@ -106,6 +126,21 @@ class IMessageBubbleTextView(
 
     init {
         setWillNotDraw(false)
+
+        parsedTextColor =
+            try {
+                textColor.toColorInt()
+            } catch (e: Exception) {
+                Color.WHITE
+            }
+        parsedBubbleColor =
+            try {
+                bubbleColor.toColorInt()
+            } catch (e: Exception) {
+                Color.parseColor("#007AFF")
+            }
+
+        writtenSpan.color = parsedTextColor
 
         contourWidthOf {
             if (layoutInfo.width > 0) {
@@ -155,6 +190,10 @@ class IMessageBubbleTextView(
 
         calculatedBubbleWidth = (actualLineWidth + horizontalPadding * 2 + tailWidth).toInt()
         calculatedBubbleHeight = (layout.height + verticalPadding * 2).toInt()
+        wordEndCharIndices =
+            IntArray(wordArray.size) { i ->
+                wordArray.take(i + 1).joinToString(" ").length
+            }
         isMeasured = true
     }
 
@@ -174,49 +213,53 @@ class IMessageBubbleTextView(
     }
 
     private fun buildBubblePath(
+        path: Path,
         width: Float,
         height: Float,
-    ): Path {
-        val path = Path()
-        val r = cornerRadius
-        val tw = tailWidth
-        val th = tailHeight
+    ) {
+        path.reset()
+        val r = cornerRadius.coerceAtMost(height / 2f).coerceAtMost(width / 2f)
+        val tw = tailWidth.coerceAtMost(width * 0.3f)
+        val th = tailHeight.coerceAtMost(height * 0.4f)
 
         if (isOutgoing) {
             // Outgoing message: tail on bottom-right
             val rightBody = width - tw
             path.moveTo(r, 0f)
             path.lineTo(rightBody - r, 0f)
-            path.arcTo(RectF(rightBody - 2 * r, 0f, rightBody, 2 * r), -90f, 90f)
+            reusableArcRect.set(rightBody - 2 * r, 0f, rightBody, 2 * r)
+            path.arcTo(reusableArcRect, -90f, 90f)
             path.lineTo(rightBody, height - th)
             // Tail curving out to bottom-right corner
             path.quadTo(rightBody, height - th * 0.25f, width, height)
             path.quadTo(rightBody - tw * 0.3f, height, rightBody - r, height)
             path.lineTo(r, height)
-            path.arcTo(RectF(0f, height - 2 * r, 2 * r, height), 90f, 90f)
+            reusableArcRect.set(0f, height - 2 * r, 2 * r, height)
+            path.arcTo(reusableArcRect, 90f, 90f)
             path.lineTo(0f, r)
-            path.arcTo(RectF(0f, 0f, 2 * r, 2 * r), 180f, 90f)
+            reusableArcRect.set(0f, 0f, 2 * r, 2 * r)
+            path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         } else {
             // Incoming message: tail on bottom-left
             val leftBody = tw
             path.moveTo(leftBody + r, 0f)
             path.lineTo(width - r, 0f)
-            path.arcTo(RectF(width - 2 * r, 0f, width, 2 * r), -90f, 90f)
+            reusableArcRect.set(width - 2 * r, 0f, width, 2 * r)
+            path.arcTo(reusableArcRect, -90f, 90f)
             path.lineTo(width, height - r)
-            path.arcTo(RectF(width - 2 * r, height - 2 * r, width, height), 0f, 90f)
+            reusableArcRect.set(width - 2 * r, height - 2 * r, width, height)
+            path.arcTo(reusableArcRect, 0f, 90f)
             path.lineTo(leftBody + r, height)
             // Tail curving out to bottom-left corner
             path.quadTo(leftBody + tw * 0.3f, height, 0f, height)
             path.quadTo(leftBody, height - th * 0.25f, leftBody, height - th)
             path.lineTo(leftBody, r)
-            path.arcTo(RectF(leftBody, 0f, leftBody + 2 * r, 2 * r), 180f, 90f)
+            reusableArcRect.set(leftBody, 0f, leftBody + 2 * r, 2 * r)
+            path.arcTo(reusableArcRect, 180f, 90f)
             path.close()
         }
-        return path
     }
-
-    private var currentSpannableText: SpannableString = SpannableString(text)
 
     override fun forFrame(frame: Int): MotionView {
         super.forFrame(frame)
@@ -238,42 +281,34 @@ class IMessageBubbleTextView(
                 } else if (visibleWordCount <= 0) {
                     0
                 } else {
-                    wordArray.subList(0, visibleWordCount).joinToString(" ").length
-                }
-
-            val mainColor =
-                try {
-                    textColor.toColorInt()
-                } catch (e: Exception) {
-                    Color.WHITE
+                    wordEndCharIndices[visibleWordCount - 1]
                 }
 
             val unwrittenColor =
                 Color.argb(
-                    (unwrittenTextAlpha * 255).toInt(),
-                    Color.red(mainColor),
-                    Color.green(mainColor),
-                    Color.blue(mainColor),
+                    (unwrittenTextAlpha * 255).toInt().coerceIn(0, 255),
+                    Color.red(parsedTextColor),
+                    Color.green(parsedTextColor),
+                    Color.blue(parsedTextColor),
                 )
 
-            val spannable = SpannableString(text)
-            if (visibleCharsCount > 0) {
-                spannable.setSpan(
-                    ForegroundColorSpan(mainColor),
+            writtenSpan.color = parsedTextColor
+            unwrittenSpan.color = unwrittenColor
+
+            if (text.isNotEmpty()) {
+                preallocatedSpannable.setSpan(
+                    writtenSpan,
                     0,
                     visibleCharsCount,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
-            }
-            if (visibleCharsCount < text.length) {
-                spannable.setSpan(
-                    ForegroundColorSpan(unwrittenColor),
+                preallocatedSpannable.setSpan(
+                    unwrittenSpan,
                     visibleCharsCount,
                     text.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
-            currentSpannableText = spannable
         }
 
         invalidate()
@@ -289,14 +324,17 @@ class IMessageBubbleTextView(
         if (w <= 0f || h <= 0f || text.isEmpty()) return
 
         // 1. Draw Apple iMessage bubble
-        val bubblePath = buildBubblePath(w, h)
-        canvas.drawPath(bubblePath, bubblePaint)
+        if (!isPathBuilt) {
+            buildBubblePath(reusableBubblePath, w, h)
+            isPathBuilt = true
+        }
+        canvas.drawPath(reusableBubblePath, bubblePaint)
 
         // 2. Draw word-by-word text inside bubble
         val textX = if (isOutgoing) horizontalPadding else tailWidth + horizontalPadding
         val textY = verticalPadding
 
-        val layout = createStaticLayout(currentSpannableText)
+        val layout = cachedLayout ?: createStaticLayout(preallocatedSpannable).also { cachedLayout = it }
         canvas.withTranslation(textX, textY) {
             layout.draw(canvas)
         }
