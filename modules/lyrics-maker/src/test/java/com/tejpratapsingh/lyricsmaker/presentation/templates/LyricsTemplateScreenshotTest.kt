@@ -133,4 +133,9 @@ class LyricsTemplateScreenshotTest {
     fun testStackedLyricsTemplate() {
         assertTemplateSnapshot(StackedLyricsTemplate)
     }
+
+    @Test
+    fun testIMessageLyricsTemplate() {
+        assertTemplateSnapshot(IMessageLyricsTemplate)
+    }
 }

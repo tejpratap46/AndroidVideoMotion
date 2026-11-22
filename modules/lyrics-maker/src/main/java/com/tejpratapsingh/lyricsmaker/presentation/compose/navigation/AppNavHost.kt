@@ -204,11 +204,7 @@ fun AppNavHost(
                     },
                     onNext = {
                         projectsViewModel.loadProjects()
-
-                        navController.navigate(Screen.VideoEditor.createRoute(it.id)) {
-                            popUpTo(Screen.AssetDownload.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
+                        navController.popBackStack()
                     },
                     modifier = modifier,
                 )

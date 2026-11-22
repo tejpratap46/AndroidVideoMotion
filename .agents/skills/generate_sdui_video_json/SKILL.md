@@ -439,7 +439,28 @@ Decodes and renders sequential video frames in sync with the project timeline.
   }
   ```
 
-#### 12. `GradientView`
+#### 12. `CoilVideoPlayer`
+Hardware-accelerated video decoding and frame rendering using the Coil media pipeline (`modules/coil-motion-ext`). Supports all Coil-based filters, effects, and plugins.
+- **Properties:**
+  - `asset` (`MotionAsset`): Video asset (`VideoAsset` or `SimpleMotionAsset`).
+- **Sample:**
+  ```json
+  {
+    "type": "CoilVideoPlayer",
+    "startFrame": 0,
+    "endFrame": 300,
+    "asset": {
+      "type": "VideoAsset",
+      "uri": "file:///android_asset/sample_clip.mp4"
+    },
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+#### 13. `GradientView`
 Smooth multi-stop gradient background.
 - **Properties:**
   - `orientation` (`String`): `"VERTICAL"`, `"HORIZONTAL"`, or `"CIRCULAR"` (default `"VERTICAL"`).
@@ -459,7 +480,7 @@ Smooth multi-stop gradient background.
   }
   ```
 
-#### 13. `TranslucentMotionView`
+#### 14. `TranslucentMotionView`
 A solid or semi-transparent color tint overlay. Useful for darkening video backgrounds behind readable text.
 - **Properties:**
   - `color` (`String`, default `"#00000000"`): Hex color string.
@@ -483,7 +504,7 @@ A solid or semi-transparent color tint overlay. Useful for darkening video backg
 
 ### 5.3 Progress & Audio Waveforms
 
-#### 14. `MotionProgressBar`
+#### 15. `MotionProgressBar`
 A real-time progress bar synchronized with video progression.
 - **Properties:**
   - `style` (`String`): `"HORIZONTAL"` or `"CIRCULAR"` (default `"HORIZONTAL"`).
@@ -504,7 +525,7 @@ A real-time progress bar synchronized with video progression.
   }
   ```
 
-#### 15. `CircularAudioWaveformView`
+#### 16. `CircularAudioWaveformView`
 Circular music audio visualizer spikes.
 - **Properties:**
   - `amplitudes` (`Array<Float>`): List of audio amplitude values per frame.
@@ -523,7 +544,7 @@ Circular music audio visualizer spikes.
   }
   ```
 
-#### 16. `RadialAudioWaveformView`
+#### 17. `RadialAudioWaveformView`
 Dynamic radial spikes pulsing outwards from the center.
 - **Properties:**
   - `amplitudes` (`Array<Float>`): List of audio amplitude values per frame.
@@ -546,7 +567,7 @@ Dynamic radial spikes pulsing outwards from the center.
 
 ### 5.4 Container Views
 
-#### 17. `VerticalStackMotionView` & 18. `HorizontalStackMotionView`
+#### 18. `VerticalStackMotionView` & 19. `HorizontalStackMotionView`
 Partitions the canvas into proportional stacked slices using percentage shares (sum of section percentages should equal 100.0).
 
 - **`VerticalStackMotionView`**: Stacks children vertically (top-to-bottom).
@@ -590,6 +611,144 @@ Partitions the canvas into proportional stacked slices using percentage shares (
   ]
 }
 ```
+
+---
+
+### 5.5 Chat & Lyrics Views
+
+#### 20. `IMessageBubbleTextView`
+Renders a standalone speech bubble in Apple iMessage style with rounded corners and a directional tail, revealing text word-by-word.
+- **Properties:**
+  - `text` (`String`): The text content inside the bubble.
+  - `bubbleColor` (`String`, default `"#007AFF"`): Background color of the bubble (hex string).
+  - `textColor` (`String`, default `"#FFFFFF"`): Text font color (hex string).
+  - `isOutgoing` (`Boolean`, default `true`): If `true`, renders as an outgoing message with a tail on the bottom-right; if `false`, renders as an incoming message with a tail on the bottom-left.
+  - `writingSpeed` (`Float`, default `0.0`): Word reveal speed factor. If `0.0`, reveals words evenly across the frame range.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Alpha opacity for words not yet written/revealed.
+  - `textSizeVariant` (`String`, default `"H4"`): Typography scale enum (`"H1"` to `"H6"`, or `"P"`).
+  - `fontAsset` (`FontAsset`, optional): Custom web typography font asset.
+- **Sample:**
+  ```json
+  {
+    "type": "IMessageBubbleTextView",
+    "startFrame": 0,
+    "endFrame": 120,
+    "text": "Hey! Are you ready for this?",
+    "bubbleColor": "#007AFF",
+    "textColor": "#FFFFFF",
+    "isOutgoing": true,
+    "writingSpeed": 1.0,
+    "unwrittenTextAlpha": 0.0,
+    "textSizeVariant": "H4",
+    "layout": {
+      "width": "wrap_content",
+      "height": "wrap_content",
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 21. `IMessageChatMotionView`
+Renders song lyrics flowing as an Apple iMessage conversation stream. Multiple chat bubbles appear sequentially on a single screen anchored to the bottom. Each line expands multi-frame word-by-word with alpha fade-in on newly added words, and older lyrics smoothly scroll upward out of the frame when the page fills up.
+- **Key Features:**
+  - **Bottom Anchored:** Messages begin anchored to the bottom safe area and push earlier lines upwards.
+  - **Dynamic Animated Expansion:** Bubble dimensions expand smoothly across multiple video frames as each new word appears.
+  - **Word Alpha Fade:** Newly added words fade in smoothly (`0.0 -> 1.0`) during expansion while earlier words remain fully opaque.
+  - **Continuous Flow & Upward Glide:** When the screen is full, older lines glide upward above the visible page (`Y < 0`) with smooth fade-out, keeping active lyrics in the bottom safe area.
+  - **Alternating Conversations:** Supports duet songs with incoming (left) and outgoing (right) bubbles.
+- **Properties:**
+  - `lyrics` (`Array<SyncedLyricFrame>`): List of synchronized lyric objects:
+    - `frame` (`Int`): Keyframe index on the timeline when this line begins typing.
+    - `text` (`String`): The lyric text for this line.
+  - `bubbleColor` (`String`, default `"#007AFF"`): Outgoing bubble background color (hex string).
+  - `textColor` (`String`, default `"#FFFFFF"`): Outgoing text color (hex string).
+  - `incomingBubbleColor` (`String`, default `"#26252A"`): Incoming bubble background color (hex string).
+  - `incomingTextColor` (`String`, default `"#FFFFFF"`): Incoming text color (hex string).
+  - `isAlternating` (`Boolean`, default `false`): If `true`, alternates bubbles between outgoing and incoming for duet lyrics.
+  - `writingSpeed` (`Float`, default `1.0`): Word reveal typing speed factor.
+  - `unwrittenTextAlpha` (`Float`, default `0.0`): Opacity of unwritten words.
+  - `textSizeVariant` (`String`, default `"H5"`): Typography variant. `"H5"` is recommended for authentic mobile chat bubble proportions.
+  - `fontAsset` (`FontAsset`, optional): Custom web font.
+- **Sample:**
+  ```json
+  {
+    "type": "IMessageChatMotionView",
+    "startFrame": 0,
+    "endFrame": 360,
+    "lyrics": [
+      { "frame": 0, "text": "I found a love for me" },
+      { "frame": 60, "text": "Darling, just dive right in" },
+      { "frame": 120, "text": "And follow my lead" },
+      { "frame": 180, "text": "Well, I found a girl, beautiful and sweet" },
+      { "frame": 240, "text": "Oh, I never knew you were the someone" },
+      { "frame": 300, "text": "Waiting for me" }
+    ],
+    "bubbleColor": "#007AFF",
+    "textColor": "#FFFFFF",
+    "incomingBubbleColor": "#26252A",
+    "incomingTextColor": "#FFFFFF",
+    "isAlternating": false,
+    "writingSpeed": 1.0,
+    "unwrittenTextAlpha": 0.0,
+    "textSizeVariant": "H5",
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
+
+#### 22. `SyncedLyricsMotionTextView`
+Displays synchronized line-by-line lyrics synchronized to keyframes, showing the active line corresponding to the current playback frame.
+- **Properties:**
+  - `lyrics` (`Array<SyncedLyricFrame>`): Array of `{ "frame": Int, "text": String }`.
+  - `textColor` (`String`, default `"#FFFFFF"`): Text font color.
+  - `textSizeVariant` (`String`, default `"H2"`): Typography scale enum (`"H1"` to `"H6"`, or `"P"`).
+  - `fontAsset` (`FontAsset`, optional): Custom web font.
+- **Sample:**
+  ```json
+  {
+    "type": "SyncedLyricsMotionTextView",
+    "startFrame": 0,
+    "endFrame": 300,
+    "lyrics": [
+      { "frame": 0, "text": "Is this the real life?" },
+      { "frame": 90, "text": "Is this just fantasy?" },
+      { "frame": 180, "text": "Caught in a landslide" },
+      { "frame": 240, "text": "No escape from reality" }
+    ],
+    "textSizeVariant": "H2",
+    "textColor": "#FFFFFF",
+    "layout": {
+      "width": "match_parent",
+      "height": "wrap_content",
+      "gravity": "center"
+    }
+  }
+  ```
+
+#### 23. `MultiLyricsContainer`
+Container view managing multi-lyrics song playback and media assets.
+- **Properties:**
+  - `songName` (`String`): Title of the song.
+  - `asset` (`MotionAsset`, optional): Media asset associated with the lyrics.
+- **Sample:**
+  ```json
+  {
+    "type": "MultiLyricsContainer",
+    "startFrame": 0,
+    "endFrame": 300,
+    "songName": "Bohemian Rhapsody",
+    "asset": {
+      "type": "SimpleMotionAsset",
+      "uri": "https://example.com/audio/song.mp3"
+    },
+    "layout": {
+      "width": "match_parent",
+      "height": "match_parent"
+    }
+  }
+  ```
 
 ---
 
@@ -945,6 +1104,109 @@ Demonstrates multi-scene progression where views transition seamlessly using `Sl
       "layout": {
         "width": "match_parent",
         "height": "match_parent"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### Recipe 4: Apple iMessage Chat Lyrics Video (9:16 Portrait)
+Features an Apple iMessage flowing chat conversation where lyric lines expand word-by-word into chat bubbles, anchored to the bottom, pushing earlier lines upward as the screen fills. Includes background imagery with subtle zoom, dark contrast scrim, and an audio soundtrack.
+
+```json
+{
+  "config": {
+    "aspectRatio": {
+      "width": 1080,
+      "height": 1920,
+      "label": "9:16 Full HD"
+    },
+    "fps": 30,
+    "outputQuality": 100
+  },
+  "audios": [
+    {
+      "type": "MotionAudio",
+      "asset": {
+        "type": "SimpleMotionAsset",
+        "uri": "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"
+      },
+      "startFrame": 0,
+      "endFrame": 360,
+      "delayFrame": 0
+    }
+  ],
+  "views": [
+    {
+      "type": "MotionImageView",
+      "startFrame": 0,
+      "endFrame": 360,
+      "asset": {
+        "type": "ImageAsset",
+        "uri": "https://images.unsplash.com/photo-1518770660439-4636190af475"
+      },
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      },
+      "effects": [
+        {
+          "type": "ZoomInEffect",
+          "startFrame": 0,
+          "endFrame": 360,
+          "startScale": 1.0,
+          "endScale": 1.12
+        }
+      ]
+    },
+    {
+      "type": "TranslucentMotionView",
+      "startFrame": 0,
+      "endFrame": 360,
+      "color": "#000000",
+      "alpha": 0.55,
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "IMessageChatMotionView",
+      "startFrame": 0,
+      "endFrame": 360,
+      "lyrics": [
+        { "frame": 0, "text": "I found a love for me" },
+        { "frame": 60, "text": "Darling, just dive right in" },
+        { "frame": 120, "text": "And follow my lead" },
+        { "frame": 180, "text": "Well, I found a girl, beautiful and sweet" },
+        { "frame": 240, "text": "Oh, I never knew you were the someone" },
+        { "frame": 300, "text": "Waiting for me" }
+      ],
+      "bubbleColor": "#007AFF",
+      "textColor": "#FFFFFF",
+      "incomingBubbleColor": "#26252A",
+      "incomingTextColor": "#FFFFFF",
+      "isAlternating": false,
+      "writingSpeed": 1.0,
+      "unwrittenTextAlpha": 0.0,
+      "textSizeVariant": "H5",
+      "layout": {
+        "width": "match_parent",
+        "height": "match_parent"
+      }
+    },
+    {
+      "type": "MotionProgressBar",
+      "startFrame": 0,
+      "endFrame": 360,
+      "style": "HORIZONTAL",
+      "color": "#007AFF",
+      "layout": {
+        "width": "match_parent",
+        "height": 12,
+        "gravity": "bottom"
       }
     }
   ]
